@@ -1,13 +1,14 @@
 import React, { useState, useMemo } from 'react';
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell 
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell
 } from 'recharts';
-import { Download, Copy, RefreshCw, ChevronDown, ChevronUp, Settings, Calculator } from 'lucide-react';
+import { Download, Copy, RefreshCw, ChevronDown, ChevronUp, Settings, Calculator, HelpCircle } from 'lucide-react';
 
 import { UseCaseInputs, CalculationResults, ValueMethod, SensitivityModifiers, ModelParams } from './types';
 import { DEFAULT_INPUTS, PRESETS, DEFAULT_MODEL_PARAMS } from './constants';
 import { calculateROI } from './utils/calculations';
 import { MoneyInput, NumberInput, PercentInput, SectionHeader } from './components/InputComponents';
+import { HelpGuide } from './components/HelpGuide';
 
 const formatMoney = (val: number, decimals = 2) => 
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(val);
@@ -18,6 +19,7 @@ const formatNumber = (val: number) =>
 export default function App() {
   const [inputs, setInputs] = useState<UseCaseInputs>(DEFAULT_INPUTS);
   const [mode, setMode] = useState<'simple' | 'advanced'>('simple');
+  const [showHelp, setShowHelp] = useState<boolean>(false);
   const [modifiers, setModifiers] = useState<SensitivityModifiers>({
     volumeMultiplier: 1,
     successRateMultiplier: 1,
@@ -98,31 +100,52 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900">
+      {/* Help Guide Modal */}
+      <HelpGuide isOpen={showHelp} onClose={() => setShowHelp(false)} />
+
       {/* Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="bg-accent text-white p-2 rounded-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+          {/* Left: Logo */}
+          <div className="flex items-center">
+            <img
+              src="/images/Logo.png"
+              alt="Logo"
+              className="h-12 w-auto object-contain"
+            />
+          </div>
+
+          {/* Center: Title */}
+          <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center space-x-3">
+            <div className="bg-accent text-charcoal p-2 rounded-lg">
               <Calculator size={20} />
             </div>
-            <h1 className="text-xl font-bold text-slate-800 tracking-tight">AI ROI Calculator</h1>
+            <h1 className="text-xl font-bold text-slate-800 tracking-tight whitespace-nowrap">AI ROI Calculator</h1>
           </div>
-          
+
+          {/* Right: Controls */}
           <div className="flex items-center space-x-3">
-             <div className="flex bg-slate-100 rounded-lg p-1 mr-4">
-                <button 
-                  onClick={() => setMode('simple')} 
+             <div className="flex bg-slate-100 rounded-lg p-1">
+                <button
+                  onClick={() => setMode('simple')}
                   className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${mode === 'simple' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
                 >
                   Simple
                 </button>
-                <button 
-                  onClick={() => setMode('advanced')} 
+                <button
+                  onClick={() => setMode('advanced')}
                   className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${mode === 'advanced' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
                 >
                   Advanced
                 </button>
              </div>
+            <button
+              onClick={() => setShowHelp(true)}
+              className="p-2 text-slate-500 hover:bg-accent hover:bg-opacity-10 rounded-md transition-colors"
+              title="How to Fill the Calculator"
+            >
+              <HelpCircle size={20} />
+            </button>
             <button onClick={handleCopyMarkdown} className="p-2 text-slate-500 hover:bg-slate-100 rounded-md" title="Copy Summary">
               <Copy size={18} />
             </button>
