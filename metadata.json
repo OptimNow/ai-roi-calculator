@@ -1,0 +1,5 @@
+{
+  "name": "AI ROI Calculator",
+  "description": "A comprehensive 3-layer ROI calculator for AI use cases, analyzing infrastructure costs, solution harness costs, and value-based returns.",
+  "requestFramePermissions": []
+}

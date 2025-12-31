@@ -1,0 +1,535 @@
+import React, { useState, useMemo } from 'react';
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell 
+} from 'recharts';
+import { Download, Copy, RefreshCw, ChevronDown, ChevronUp, Settings, Calculator } from 'lucide-react';
+
+import { UseCaseInputs, CalculationResults, ValueMethod, SensitivityModifiers, ModelParams } from './types';
+import { DEFAULT_INPUTS, PRESETS, DEFAULT_MODEL_PARAMS } from './constants';
+import { calculateROI } from './utils/calculations';
+import { MoneyInput, NumberInput, PercentInput, SectionHeader } from './components/InputComponents';
+
+const formatMoney = (val: number, decimals = 2) => 
+  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(val);
+
+const formatNumber = (val: number) => 
+  new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 }).format(val);
+
+export default function App() {
+  const [inputs, setInputs] = useState<UseCaseInputs>(DEFAULT_INPUTS);
+  const [mode, setMode] = useState<'simple' | 'advanced'>('simple');
+  const [modifiers, setModifiers] = useState<SensitivityModifiers>({
+    volumeMultiplier: 1,
+    successRateMultiplier: 1,
+    costMultiplier: 1,
+    valueMultiplier: 1
+  });
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    general: true,
+    layer1: true,
+    layer2: true,
+    layer3: true,
+    fixed: false
+  });
+
+  const toggleSection = (key: string) => setExpandedSections(prev => ({...prev, [key]: !prev[key]}));
+
+  const results = useMemo(() => calculateROI(inputs, modifiers), [inputs, modifiers]);
+
+  const updateInput = (field: keyof UseCaseInputs, value: any) => {
+    setInputs(prev => ({ ...prev, [field]: value }));
+  };
+
+  const updateModelParam = (model: 'primaryModel' | 'secondaryModel', field: keyof ModelParams, value: any) => {
+    setInputs(prev => ({
+      ...prev,
+      [model]: { ...prev[model], [field]: value }
+    }));
+  };
+
+  const loadPreset = (key: string) => {
+    if (PRESETS[key]) {
+      setInputs(prev => ({ ...prev, ...PRESETS[key] }));
+    }
+  };
+
+  const handleExportJSON = () => {
+    const dataStr = JSON.stringify({ inputs, results }, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `roi-calculator-${inputs.useCaseName.replace(/\s+/g, '-').toLowerCase()}.json`;
+    link.click();
+  };
+
+  const handleCopyMarkdown = () => {
+    const md = `
+# AI ROI Analysis: ${inputs.useCaseName}
+
+## Summary
+- **Monthly Net Benefit**: ${formatMoney(results.netMonthlyBenefit, 0)}
+- **ROI**: ${results.roiPercentage.toFixed(1)}%
+- **Payback Period**: ${results.paybackMonths} months
+- **Cost per Unit**: ${formatMoney(results.totalCostPerUnit, 4)}
+- **Value per Unit**: ${formatMoney(results.grossValuePerUnit, 4)}
+
+## Inputs
+- Volume: ${formatNumber(inputs.monthlyVolume)} ${inputs.unitName}s/mo
+- Success Rate: ${inputs.successRate}%
+- Model: Simple/Complex split ${inputs.routingSimplePercent}% / ${100 - inputs.routingSimplePercent}%
+    `.trim();
+    navigator.clipboard.writeText(md);
+    alert('Summary copied to clipboard!');
+  };
+
+  // --- Charts Data Preparation ---
+  const chartDataMonthly = [
+    { name: 'Cost', value: results.totalMonthlyCost, fill: '#ef4444' },
+    { name: 'Value', value: results.totalMonthlyValue, fill: '#22c55e' },
+  ];
+
+  const pieDataCost = [
+    { name: 'Model (L1)', value: results.layer1MonthlyCost },
+    { name: 'Harness (L2)', value: results.layer2MonthlyCost - results.layer1MonthlyCost },
+    { name: 'Fixed (Amort)', value: results.monthlyAmortizedFixedCost },
+  ];
+  const COLORS = ['#3b82f6', '#8b5cf6', '#64748b'];
+
+  return (
+    <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900">
+      {/* Header */}
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="bg-accent text-white p-2 rounded-lg">
+              <Calculator size={20} />
+            </div>
+            <h1 className="text-xl font-bold text-slate-800 tracking-tight">AI ROI Calculator</h1>
+          </div>
+          
+          <div className="flex items-center space-x-3">
+             <div className="flex bg-slate-100 rounded-lg p-1 mr-4">
+                <button 
+                  onClick={() => setMode('simple')} 
+                  className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${mode === 'simple' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  Simple
+                </button>
+                <button 
+                  onClick={() => setMode('advanced')} 
+                  className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${mode === 'advanced' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
+                >
+                  Advanced
+                </button>
+             </div>
+            <button onClick={handleCopyMarkdown} className="p-2 text-slate-500 hover:bg-slate-100 rounded-md" title="Copy Summary">
+              <Copy size={18} />
+            </button>
+            <button onClick={handleExportJSON} className="p-2 text-slate-500 hover:bg-slate-100 rounded-md" title="Download JSON">
+              <Download size={18} />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        {/* --- LEFT COLUMN: INPUTS --- */}
+        <div className="lg:col-span-5 space-y-6 overflow-y-auto h-full pr-2">
+          
+          {/* Preset Loader */}
+          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+            <h3 className="text-xs font-bold text-slate-500 uppercase mb-3">Load Example Profile</h3>
+            <div className="flex flex-wrap gap-2">
+              {Object.keys(PRESETS).map(key => (
+                <button
+                  key={key}
+                  onClick={() => loadPreset(key)}
+                  className="px-3 py-1.5 text-xs font-medium bg-slate-50 border border-slate-200 rounded hover:bg-slate-100 hover:border-slate-300 transition-colors"
+                >
+                  {PRESETS[key].useCaseName}
+                </button>
+              ))}
+              <button onClick={() => setInputs(DEFAULT_INPUTS)} className="px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-danger transition-colors ml-auto">
+                <RefreshCw size={14} />
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+             
+            {/* General Inputs */}
+             <SectionHeader title="1. General Parameters" isOpen={expandedSections.general} onToggle={() => toggleSection('general')} />
+             {expandedSections.general && <div className="p-5 border-b border-slate-100">
+               <div className="space-y-3">
+                 <div>
+                   <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Use Case Name</label>
+                   <input 
+                    type="text" 
+                    value={inputs.useCaseName} 
+                    onChange={e => updateInput('useCaseName', e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-accent focus:outline-none"
+                   />
+                 </div>
+                 <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Unit Name</label>
+                      <input 
+                        type="text" 
+                        value={inputs.unitName} 
+                        onChange={e => updateInput('unitName', e.target.value)}
+                        className="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-accent focus:outline-none"
+                      />
+                    </div>
+                    <NumberInput label="Monthly Volume" value={inputs.monthlyVolume} onChange={v => updateInput('monthlyVolume', v)} />
+                 </div>
+                 <div className="grid grid-cols-2 gap-4">
+                    <PercentInput label="Success Rate" value={inputs.successRate} onChange={v => updateInput('successRate', v)} tooltip="Percentage of units that are handled successfully by AI" />
+                    <NumberInput label="Analysis Months" value={inputs.analysisHorizonMonths} onChange={v => updateInput('analysisHorizonMonths', v)} />
+                 </div>
+               </div>
+             </div>}
+
+             {/* Layer 1 */}
+             <SectionHeader title="2. Infrastructure (Layer 1)" isOpen={expandedSections.layer1} onToggle={() => toggleSection('layer1')} />
+             {expandedSections.layer1 && <div className="p-5 border-b border-slate-100">
+                {mode === 'advanced' && (
+                   <div className="mb-4 p-3 bg-slate-50 rounded border border-slate-200">
+                      <h4 className="text-xs font-bold text-slate-700 mb-2">Model Routing Strategy</h4>
+                      <div className="flex items-center justify-between mb-2">
+                         <span className="text-xs text-slate-500">Simple Model</span>
+                         <span className="text-xs font-bold text-accent">{inputs.routingSimplePercent}%</span>
+                      </div>
+                      <input 
+                        type="range" min="0" max="100" 
+                        value={inputs.routingSimplePercent}
+                        onChange={(e) => updateInput('routingSimplePercent', parseInt(e.target.value))}
+                        className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
+                      />
+                      <div className="flex justify-between mt-1 text-[10px] text-slate-400">
+                         <span>Cheap / Fast</span>
+                         <span>Expensive / Smart</span>
+                      </div>
+                   </div>
+                )}
+                
+                <div className="space-y-4">
+                    <div className="border-l-2 border-accent pl-3">
+                        <h5 className="text-xs font-bold text-slate-900 mb-2">{mode === 'advanced' ? 'Primary Model (Simple)' : 'Model Parameters'}</h5>
+                        <div className="grid grid-cols-2 gap-3">
+                            <NumberInput label="Avg Input Tokens" value={inputs.primaryModel.avgInputTokensPerUnit} onChange={v => updateModelParam('primaryModel', 'avgInputTokensPerUnit', v)} />
+                            <NumberInput label="Avg Output Tokens" value={inputs.primaryModel.avgOutputTokensPerUnit} onChange={v => updateModelParam('primaryModel', 'avgOutputTokensPerUnit', v)} />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <MoneyInput label="$ / 1M Input" value={inputs.primaryModel.pricePer1MInputTokens} onChange={v => updateModelParam('primaryModel', 'pricePer1MInputTokens', v)} precision={4} />
+                            <MoneyInput label="$ / 1M Output" value={inputs.primaryModel.pricePer1MOutputTokens} onChange={v => updateModelParam('primaryModel', 'pricePer1MOutputTokens', v)} precision={4} />
+                        </div>
+                    </div>
+
+                    {mode === 'advanced' && inputs.routingSimplePercent < 100 && (
+                        <div className="border-l-2 border-purple-500 pl-3 mt-4 pt-4 border-t border-dashed border-slate-200">
+                            <h5 className="text-xs font-bold text-slate-900 mb-2">Secondary Model (Complex)</h5>
+                            <div className="grid grid-cols-2 gap-3">
+                                <NumberInput label="Avg Input Tokens" value={inputs.secondaryModel.avgInputTokensPerUnit} onChange={v => updateModelParam('secondaryModel', 'avgInputTokensPerUnit', v)} />
+                                <NumberInput label="Avg Output Tokens" value={inputs.secondaryModel.avgOutputTokensPerUnit} onChange={v => updateModelParam('secondaryModel', 'avgOutputTokensPerUnit', v)} />
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <MoneyInput label="$ / 1M Input" value={inputs.secondaryModel.pricePer1MInputTokens} onChange={v => updateModelParam('secondaryModel', 'pricePer1MInputTokens', v)} precision={4} />
+                                <MoneyInput label="$ / 1M Output" value={inputs.secondaryModel.pricePer1MOutputTokens} onChange={v => updateModelParam('secondaryModel', 'pricePer1MOutputTokens', v)} precision={4} />
+                            </div>
+                        </div>
+                    )}
+
+                    {mode === 'advanced' && (
+                        <div className="grid grid-cols-2 gap-3 pt-2">
+                             <PercentInput label="Cache Hit Rate" value={inputs.cacheHitRate} onChange={v => updateInput('cacheHitRate', v)} />
+                             <PercentInput label="Cache Discount" value={inputs.cachedTokenDiscount} onChange={v => updateInput('cachedTokenDiscount', v)} />
+                        </div>
+                    )}
+                </div>
+             </div>}
+
+             {/* Layer 2 */}
+             <SectionHeader title="3. Harness (Layer 2)" isOpen={expandedSections.layer2} onToggle={() => toggleSection('layer2')} />
+             {expandedSections.layer2 && <div className="p-5 border-b border-slate-100">
+                <div className="grid grid-cols-2 gap-3">
+                    <MoneyInput label="Orchestration Cost" value={inputs.orchestrationCostPerUnit} onChange={v => updateInput('orchestrationCostPerUnit', v)} precision={4} tooltip="Cost per unit for logic/chains" />
+                    <MoneyInput label="Retrieval / Vector DB" value={inputs.retrievalCostPerUnit} onChange={v => updateInput('retrievalCostPerUnit', v)} precision={4} />
+                </div>
+                {mode === 'advanced' && (
+                    <div className="grid grid-cols-2 gap-3 mt-3">
+                         <MoneyInput label="Tool APIs" value={inputs.toolApiCostPerUnit} onChange={v => updateInput('toolApiCostPerUnit', v)} precision={4} />
+                         <MoneyInput label="Logging / Monitoring" value={inputs.loggingMonitoringCostPerUnit} onChange={v => updateInput('loggingMonitoringCostPerUnit', v)} precision={4} />
+                         <MoneyInput label="Safety / Guardrails" value={inputs.safetyGuardrailsCostPerUnit} onChange={v => updateInput('safetyGuardrailsCostPerUnit', v)} precision={4} />
+                         <MoneyInput label="Storage" value={inputs.storageCostPerUnit} onChange={v => updateInput('storageCostPerUnit', v)} precision={4} />
+                    </div>
+                )}
+                <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-slate-100">
+                    <PercentInput label="Retry Rate" value={inputs.retryRate * 100} onChange={v => updateInput('retryRate', v/100)} tooltip="Percentage of calls that need a retry" />
+                    <NumberInput label="Overhead Multiplier" value={inputs.overheadMultiplier} onChange={v => updateInput('overheadMultiplier', v)} step={0.05} tooltip="Generic multiplier (e.g. 1.1 for 10% misc overhead)" />
+                </div>
+             </div>}
+
+             {/* Layer 3: Value */}
+             <SectionHeader title="4. Value Definition (Layer 3)" isOpen={expandedSections.layer3} onToggle={() => toggleSection('layer3')} />
+             {expandedSections.layer3 && <div className="p-5 border-b border-slate-100">
+                <div className="mb-4">
+                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Value Method</label>
+                    <select 
+                      value={inputs.valueMethod}
+                      onChange={(e) => updateInput('valueMethod', e.target.value as ValueMethod)}
+                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded text-sm focus:ring-2 focus:ring-accent focus:outline-none"
+                    >
+                        {Object.values(ValueMethod).map(m => <option key={m} value={m}>{m}</option>)}
+                    </select>
+                </div>
+
+                {inputs.valueMethod === ValueMethod.COST_DISPLACEMENT && (
+                    <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
+                        <MoneyInput label="Baseline Human Cost" value={inputs.baselineHumanCostPerUnit} onChange={v => updateInput('baselineHumanCostPerUnit', v)} />
+                        <div className="grid grid-cols-2 gap-3">
+                            <PercentInput label="Deflection Rate" value={inputs.deflectionRate} onChange={v => updateInput('deflectionRate', v)} />
+                            <PercentInput label="Residual Review Rate" value={inputs.residualHumanReviewRate} onChange={v => updateInput('residualHumanReviewRate', v)} />
+                        </div>
+                        {inputs.residualHumanReviewRate > 0 && (
+                            <MoneyInput label="Review Cost (Unit)" value={inputs.residualReviewCostPerUnit} onChange={v => updateInput('residualReviewCostPerUnit', v)} />
+                        )}
+                    </div>
+                )}
+
+                {inputs.valueMethod === ValueMethod.REVENUE_UPLIFT && (
+                    <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
+                         <div className="grid grid-cols-2 gap-3">
+                            <PercentInput label="Baseline Conversion" value={inputs.baselineConversionRate} onChange={v => updateInput('baselineConversionRate', v)} />
+                            <PercentInput label="Abs. Uplift (+)" value={inputs.conversionUpliftAbsolute} onChange={v => updateInput('conversionUpliftAbsolute', v)} />
+                        </div>
+                        <MoneyInput label="Average Order Value" value={inputs.averageOrderValue} onChange={v => updateInput('averageOrderValue', v)} />
+                        <PercentInput label="Gross Margin" value={inputs.grossMargin} onChange={v => updateInput('grossMargin', v)} />
+                    </div>
+                )}
+
+                {inputs.valueMethod === ValueMethod.RETENTION && (
+                    <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
+                         <div className="grid grid-cols-2 gap-3">
+                            <PercentInput label="Baseline Churn" value={inputs.baselineChurnRate} onChange={v => updateInput('baselineChurnRate', v)} />
+                            <PercentInput label="Churn Reduction" value={inputs.churnReductionAbsolute} onChange={v => updateInput('churnReductionAbsolute', v)} />
+                        </div>
+                        <MoneyInput label="Annual Value / Customer" value={inputs.annualValuePerCustomer} onChange={v => updateInput('annualValuePerCustomer', v)} />
+                        <NumberInput label="Customers Impacted / Mo" value={inputs.customersImpactedPerMonth} onChange={v => updateInput('customersImpactedPerMonth', v)} />
+                    </div>
+                )}
+
+                {inputs.valueMethod === ValueMethod.PREMIUM_MONETIZATION && (
+                    <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
+                        <MoneyInput label="Price / Sub / Mo" value={inputs.pricePerSubscriberPerMonth} onChange={v => updateInput('pricePerSubscriberPerMonth', v)} />
+                        <NumberInput label="Total Subscribers" value={inputs.subscribers} onChange={v => updateInput('subscribers', v)} />
+                        <MoneyInput label="Non-AI COGS / Sub" value={inputs.nonAiCOGSPerSubscriber} onChange={v => updateInput('nonAiCOGSPerSubscriber', v)} />
+                    </div>
+                )}
+             </div>}
+
+             {/* Fixed Costs */}
+             <SectionHeader title="One-time Costs" isOpen={expandedSections.fixed} onToggle={() => toggleSection('fixed')} />
+             {expandedSections.fixed && <div className="p-5">
+                <div className="grid grid-cols-2 gap-3">
+                     <MoneyInput label="Integration" value={inputs.integrationCost} onChange={v => updateInput('integrationCost', v)} precision={0} />
+                     <MoneyInput label="Training / Tuning" value={inputs.trainingTuningCost} onChange={v => updateInput('trainingTuningCost', v)} precision={0} />
+                </div>
+                <div className="grid grid-cols-2 gap-3 mt-3">
+                     <MoneyInput label="Change Mgmt" value={inputs.changeManagementCost} onChange={v => updateInput('changeManagementCost', v)} precision={0} />
+                     <NumberInput label="Amortization (Mo)" value={inputs.amortizationMonths} onChange={v => updateInput('amortizationMonths', v)} />
+                </div>
+             </div>}
+          </div>
+        </div>
+
+        {/* --- RIGHT COLUMN: RESULTS --- */}
+        <div className="lg:col-span-7 space-y-6">
+            
+            {/* KPI Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <span className="text-xs font-bold text-slate-400 uppercase">ROI</span>
+                    <span className={`text-2xl font-extrabold ${results.roiPercentage >= 0 ? 'text-success' : 'text-danger'}`}>
+                        {results.roiPercentage.toFixed(0)}%
+                    </span>
+                    <span className="text-[10px] text-slate-400">Return on Investment</span>
+                </div>
+                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <span className="text-xs font-bold text-slate-400 uppercase">Net Benefit</span>
+                    <span className={`text-2xl font-extrabold ${results.netMonthlyBenefit >= 0 ? 'text-slate-800' : 'text-danger'}`}>
+                        {formatNumber(results.netMonthlyBenefit / 1000)}k
+                    </span>
+                    <span className="text-[10px] text-slate-400">Monthly</span>
+                </div>
+                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <span className="text-xs font-bold text-slate-400 uppercase">Payback</span>
+                    <span className="text-2xl font-extrabold text-slate-800">
+                        {results.paybackMonths}
+                    </span>
+                    <span className="text-[10px] text-slate-400">Months</span>
+                </div>
+                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                    <span className="text-xs font-bold text-slate-400 uppercase">Unit Cost</span>
+                    <span className="text-2xl font-extrabold text-slate-800">
+                        {formatMoney(results.totalCostPerUnit, 3)}
+                    </span>
+                    <span className="text-[10px] text-slate-400">per {inputs.unitName}</span>
+                </div>
+            </div>
+
+            {/* Main Visuals Container */}
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                <h3 className="text-sm font-bold text-slate-800 uppercase mb-6">Financial Overview</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={chartDataMonthly} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
+                            <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} tickFormatter={(val) => `$${val/1000}k`} />
+                            <RechartsTooltip formatter={(val: number) => formatMoney(val, 0)} cursor={{fill: 'transparent'}} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                            <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                                {chartDataMonthly.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                                ))}
+                            </Bar>
+                        </BarChart>
+                    </ResponsiveContainer>
+
+                    <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                            <Pie
+                                data={pieDataCost}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={60}
+                                outerRadius={80}
+                                paddingAngle={5}
+                                dataKey="value"
+                            >
+                                {pieDataCost.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))}
+                            </Pie>
+                            <RechartsTooltip formatter={(val: number) => formatMoney(val, 2)} />
+                            <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{fontSize: '11px', color: '#64748b'}} />
+                        </PieChart>
+                    </ResponsiveContainer>
+                </div>
+            </div>
+
+            {/* Detailed Breakdown */}
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                    <h3 className="text-sm font-bold text-slate-700 uppercase">Unit Economics</h3>
+                </div>
+                <table className="w-full text-sm text-left">
+                    <thead>
+                        <tr className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+                            <th className="px-6 py-3 font-medium">Category</th>
+                            <th className="px-6 py-3 font-medium text-right">Cost / Unit</th>
+                            <th className="px-6 py-3 font-medium text-right">Monthly</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                        <tr>
+                            <td className="px-6 py-3 text-slate-700 font-medium">Layer 1: Model Inference</td>
+                            <td className="px-6 py-3 text-right text-slate-600 font-mono">{formatMoney(results.layer1CostPerUnit, 4)}</td>
+                            <td className="px-6 py-3 text-right text-slate-600 font-mono">{formatMoney(results.layer1MonthlyCost, 0)}</td>
+                        </tr>
+                        <tr>
+                            <td className="px-6 py-3 text-slate-700 font-medium">Layer 2: Harness & Ops</td>
+                            <td className="px-6 py-3 text-right text-slate-600 font-mono">{formatMoney(results.layer2CostPerUnit - results.layer1CostPerUnit, 4)}</td>
+                            <td className="px-6 py-3 text-right text-slate-600 font-mono">{formatMoney(results.layer2MonthlyCost - results.layer1MonthlyCost, 0)}</td>
+                        </tr>
+                        <tr>
+                            <td className="px-6 py-3 text-slate-700 font-medium">Fixed Cost Amortization</td>
+                            <td className="px-6 py-3 text-right text-slate-600 font-mono">{formatMoney(results.monthlyAmortizedFixedCost / (results.effectiveMonthlyVolume || 1), 4)}</td>
+                            <td className="px-6 py-3 text-right text-slate-600 font-mono">{formatMoney(results.monthlyAmortizedFixedCost, 0)}</td>
+                        </tr>
+                        <tr className="bg-slate-50 font-bold">
+                            <td className="px-6 py-3 text-slate-800">Total Cost</td>
+                            <td className="px-6 py-3 text-right text-slate-800 font-mono">{formatMoney(results.totalCostPerUnit, 4)}</td>
+                            <td className="px-6 py-3 text-right text-slate-800 font-mono">{formatMoney(results.totalMonthlyCost, 0)}</td>
+                        </tr>
+                        <tr className="border-t-2 border-slate-200">
+                            <td className="px-6 py-3 text-success font-medium">Estimated Value</td>
+                            <td className="px-6 py-3 text-right text-success font-mono">{formatMoney(results.netValuePerUnit, 4)}</td>
+                            <td className="px-6 py-3 text-right text-success font-mono">{formatMoney(results.totalMonthlyValue, 0)}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            {/* Sensitivity Analysis */}
+            <div className="bg-slate-800 rounded-xl shadow-lg p-6 text-white">
+                <div className="flex items-center space-x-2 mb-4">
+                    <Settings size={18} className="text-accent" />
+                    <h3 className="text-sm font-bold uppercase tracking-wider">Sensitivity Simulator</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-6">
+                    <div>
+                        <div className="flex justify-between text-xs mb-2">
+                            <span className="text-slate-400">Volume</span>
+                            <span className="font-mono text-accent">x{modifiers.volumeMultiplier}</span>
+                        </div>
+                        <input 
+                            type="range" min="0.5" max="3.0" step="0.1"
+                            value={modifiers.volumeMultiplier}
+                            onChange={(e) => setModifiers({...modifiers, volumeMultiplier: parseFloat(e.target.value)})}
+                            className="w-full h-1.5 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-accent"
+                        />
+                    </div>
+                    <div>
+                        <div className="flex justify-between text-xs mb-2">
+                            <span className="text-slate-400">Success Rate</span>
+                            <span className="font-mono text-accent">x{modifiers.successRateMultiplier}</span>
+                        </div>
+                        <input 
+                            type="range" min="0.5" max="1.5" step="0.1"
+                            value={modifiers.successRateMultiplier}
+                            onChange={(e) => setModifiers({...modifiers, successRateMultiplier: parseFloat(e.target.value)})}
+                            className="w-full h-1.5 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-accent"
+                        />
+                    </div>
+                    <div>
+                        <div className="flex justify-between text-xs mb-2">
+                            <span className="text-slate-400">Cost Factors</span>
+                            <span className="font-mono text-accent">x{modifiers.costMultiplier}</span>
+                        </div>
+                        <input 
+                            type="range" min="0.5" max="2.0" step="0.1"
+                            value={modifiers.costMultiplier}
+                            onChange={(e) => setModifiers({...modifiers, costMultiplier: parseFloat(e.target.value)})}
+                            className="w-full h-1.5 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-accent"
+                        />
+                    </div>
+                    <div>
+                        <div className="flex justify-between text-xs mb-2">
+                            <span className="text-slate-400">Value Factors</span>
+                            <span className="font-mono text-accent">x{modifiers.valueMultiplier}</span>
+                        </div>
+                        <input 
+                            type="range" min="0.5" max="2.0" step="0.1"
+                            value={modifiers.valueMultiplier}
+                            onChange={(e) => setModifiers({...modifiers, valueMultiplier: parseFloat(e.target.value)})}
+                            className="w-full h-1.5 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-accent"
+                        />
+                    </div>
+                </div>
+                <div className="mt-4 pt-4 border-t border-slate-700 flex justify-end">
+                    <button 
+                        onClick={() => setModifiers({ volumeMultiplier: 1, successRateMultiplier: 1, costMultiplier: 1, valueMultiplier: 1})}
+                        className="text-xs text-slate-400 hover:text-white underline"
+                    >
+                        Reset Simulation
+                    </button>
+                </div>
+            </div>
+
+        </div>
+      </main>
+    </div>
+  );
+}
