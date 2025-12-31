@@ -1,12 +1,14 @@
-import React, { useState, useMemo } from 'react';
-import { Download, Copy, RefreshCw, Settings, Calculator, HelpCircle } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Download, Copy, RefreshCw, Settings, Calculator, HelpCircle, FolderOpen } from 'lucide-react';
 
-import { UseCaseInputs, CalculationResults, ValueMethod, SensitivityModifiers, ModelParams } from './types';
+import { UseCaseInputs, CalculationResults, ValueMethod, SensitivityModifiers, ModelParams, Scenario } from './types';
 import { DEFAULT_INPUTS, PRESETS, DEFAULT_MODEL_PARAMS } from './constants';
 import { calculateROI } from './utils/calculations';
 import { MoneyInput, NumberInput, PercentInput, SectionHeader } from './components/InputComponents';
 import { HelpGuide } from './components/HelpGuide';
 import { CostValueChart, CostBreakdownChart } from './components/Charts';
+import { ScenarioManager } from './components/ScenarioManager';
+import { ScenarioComparison } from './components/ScenarioComparison';
 
 const formatMoney = (val: number, decimals = 2) => 
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(val);
@@ -14,10 +16,16 @@ const formatMoney = (val: number, decimals = 2) =>
 const formatNumber = (val: number) => 
   new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 }).format(val);
 
+const SCENARIOS_STORAGE_KEY = 'ai-roi-calculator-scenarios';
+
 export default function App() {
   const [inputs, setInputs] = useState<UseCaseInputs>(DEFAULT_INPUTS);
   const [mode, setMode] = useState<'simple' | 'advanced'>('simple');
   const [showHelp, setShowHelp] = useState<boolean>(false);
+  const [showScenarios, setShowScenarios] = useState<boolean>(false);
+  const [showComparison, setShowComparison] = useState<boolean>(false);
+  const [scenarios, setScenarios] = useState<Scenario[]>([]);
+  const [selectedScenarioIds, setSelectedScenarioIds] = useState<string[]>([]);
   const [modifiers, setModifiers] = useState<SensitivityModifiers>({
     volumeMultiplier: 1,
     successRateMultiplier: 1,
@@ -31,6 +39,27 @@ export default function App() {
     layer3: true,
     fixed: false
   });
+
+  // Load scenarios from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(SCENARIOS_STORAGE_KEY);
+      if (saved) {
+        setScenarios(JSON.parse(saved));
+      }
+    } catch (error) {
+      console.error('Failed to load scenarios from localStorage:', error);
+    }
+  }, []);
+
+  // Save scenarios to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem(SCENARIOS_STORAGE_KEY, JSON.stringify(scenarios));
+    } catch (error) {
+      console.error('Failed to save scenarios to localStorage:', error);
+    }
+  }, [scenarios]);
 
   const toggleSection = (key: string) => setExpandedSections(prev => ({...prev, [key]: !prev[key]}));
 
@@ -83,6 +112,73 @@ export default function App() {
     alert('Summary copied to clipboard!');
   };
 
+  // Scenario Management Handlers
+  const handleSaveScenario = (name: string, description?: string) => {
+    const newScenario: Scenario = {
+      id: `scenario-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      name,
+      description,
+      inputs: { ...inputs },
+      results: { ...results },
+      createdAt: Date.now(),
+      color: `hsl(${(scenarios.length * 137.5) % 360}, 70%, 50%)` // Golden angle for color distribution
+    };
+    setScenarios([...scenarios, newScenario]);
+  };
+
+  const handleLoadScenario = (scenarioId: string) => {
+    const scenario = scenarios.find(s => s.id === scenarioId);
+    if (scenario) {
+      setInputs({ ...scenario.inputs });
+      setShowScenarios(false);
+    }
+  };
+
+  const handleDeleteScenario = (scenarioId: string) => {
+    setScenarios(scenarios.filter(s => s.id !== scenarioId));
+    setSelectedScenarioIds(selectedScenarioIds.filter(id => id !== scenarioId));
+  };
+
+  const handleExportScenarios = () => {
+    const dataStr = JSON.stringify(scenarios, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `ai-roi-scenarios-${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+  };
+
+  const handleImportScenarios = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const imported = JSON.parse(e.target?.result as string) as Scenario[];
+        if (Array.isArray(imported)) {
+          setScenarios([...scenarios, ...imported]);
+          alert(`Imported ${imported.length} scenario(s) successfully!`);
+        }
+      } catch (error) {
+        alert('Failed to import scenarios. Invalid file format.');
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const handleCompareScenarios = () => {
+    if (selectedScenarioIds.length < 2) {
+      alert('Please select at least 2 scenarios to compare.');
+      return;
+    }
+    setShowComparison(true);
+    setShowScenarios(false);
+  };
+
+  const selectedScenarios = scenarios.filter(s => selectedScenarioIds.includes(s.id));
+
   // --- Charts Data Preparation ---
   const chartDataMonthly = [
     { name: 'Cost', value: results.totalMonthlyCost, fill: '#ef4444' },
@@ -100,6 +196,34 @@ export default function App() {
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900">
       {/* Help Guide Modal */}
       <HelpGuide isOpen={showHelp} onClose={() => setShowHelp(false)} />
+
+      {/* Scenario Manager Modal */}
+      <ScenarioManager
+        isOpen={showScenarios}
+        onClose={() => setShowScenarios(false)}
+        scenarios={scenarios}
+        selectedScenarioIds={selectedScenarioIds}
+        onSelectScenario={(id) => {
+          if (selectedScenarioIds.includes(id)) {
+            setSelectedScenarioIds(selectedScenarioIds.filter(sid => sid !== id));
+          } else {
+            setSelectedScenarioIds([...selectedScenarioIds, id]);
+          }
+        }}
+        onSaveScenario={handleSaveScenario}
+        onLoadScenario={handleLoadScenario}
+        onDeleteScenario={handleDeleteScenario}
+        onExportScenarios={handleExportScenarios}
+        onImportScenarios={handleImportScenarios}
+        onCompare={handleCompareScenarios}
+      />
+
+      {/* Scenario Comparison Modal */}
+      <ScenarioComparison
+        isOpen={showComparison}
+        onClose={() => setShowComparison(false)}
+        scenarios={selectedScenarios}
+      />
 
       {/* Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
@@ -141,6 +265,19 @@ export default function App() {
                   Advanced
                 </button>
              </div>
+            <button
+              onClick={() => setShowScenarios(true)}
+              className="p-2 text-slate-500 hover:bg-accent hover:bg-opacity-10 rounded-md transition-colors relative"
+              title="Manage Scenarios"
+              aria-label="Open scenario manager"
+            >
+              <FolderOpen size={20} aria-hidden="true" />
+              {scenarios.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-accent text-charcoal text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                  {scenarios.length}
+                </span>
+              )}
+            </button>
             <button
               onClick={() => setShowHelp(true)}
               className="p-2 text-slate-500 hover:bg-accent hover:bg-opacity-10 rounded-md transition-colors"
@@ -384,7 +521,7 @@ export default function App() {
         <div className="lg:col-span-7 space-y-6" role="region" aria-label="Calculation results">
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4" role="group" aria-label="Key performance indicators">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4" role="group" aria-label="Key performance indicators">
                 <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between" role="article" aria-label="ROI metric">
                     <span className="text-xs font-bold text-slate-400 uppercase" id="roi-label">ROI</span>
                     <span
@@ -421,7 +558,55 @@ export default function App() {
                     </span>
                     <span className="text-[10px] text-slate-400">per {inputs.unitName}</span>
                 </div>
+                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between" role="article" aria-label="Break-even metric">
+                    <span className="text-xs font-bold text-slate-400 uppercase" id="breakeven-label">Break-even</span>
+                    <span className="text-2xl font-extrabold text-slate-800" aria-labelledby="breakeven-label" aria-live="polite">
+                        {results.breakEvenVolume !== undefined
+                          ? formatNumber(results.breakEvenVolume)
+                          : 'N/A'}
+                    </span>
+                    <span className="text-[10px] text-slate-400">
+                      {results.breakEvenVolume !== undefined
+                        ? `${inputs.unitName}s/mo`
+                        : 'Negative margin'}
+                    </span>
+                </div>
             </div>
+
+            {/* Break-even Insight Card */}
+            {results.breakEvenVolume !== undefined && results.netMonthlyBenefit < 0 && (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start space-x-3">
+                <div className="flex-shrink-0 mt-0.5">
+                  <svg className="w-5 h-5 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-sm font-bold text-amber-900">Break-even Analysis</h4>
+                  <p className="text-sm text-amber-800 mt-1">
+                    You need <strong>{formatNumber(results.breakEvenVolume - results.effectiveMonthlyVolume)}</strong> more {inputs.unitName}s per month
+                    ({((results.breakEvenVolume / results.effectiveMonthlyVolume - 1) * 100).toFixed(1)}% increase) to reach break-even.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {results.breakEvenVolume !== undefined && results.netMonthlyBenefit >= 0 && (
+              <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-start space-x-3">
+                <div className="flex-shrink-0 mt-0.5">
+                  <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-sm font-bold text-green-900">Above Break-even</h4>
+                  <p className="text-sm text-green-800 mt-1">
+                    Your current volume of <strong>{formatNumber(results.effectiveMonthlyVolume)}</strong> {inputs.unitName}s is already profitable.
+                    Break-even threshold: <strong>{formatNumber(results.breakEvenVolume)}</strong> {inputs.unitName}s/mo.
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Main Visuals Container */}
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">

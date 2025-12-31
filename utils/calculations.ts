@@ -223,6 +223,45 @@ export const calculateROI = (inputs: UseCaseInputs, modifiers: SensitivityModifi
       }
   }
 
+  // --- Break-even Analysis ---
+  // Calculate the volume needed for totalMonthlyValue to equal totalMonthlyCost
+  let breakEvenVolume: number | undefined = undefined;
+  let breakEvenMonths: number | undefined = undefined;
+
+  // For break-even calculation, we need to solve:
+  // grossValuePerUnit * volume = (layer2CostPerUnit * volume) + monthlyAmortizedFixedCost
+  // Rearranging: volume * (grossValuePerUnit - layer2CostPerUnit) = monthlyAmortizedFixedCost
+  // volume = monthlyAmortizedFixedCost / (grossValuePerUnit - layer2CostPerUnit)
+
+  const unitMargin = grossValuePerUnit - layer2CostPerUnit;
+
+  if (unitMargin > 0) {
+    // If we're already above break-even, set to current volume
+    if (netMonthlyBenefit >= 0) {
+      breakEvenVolume = effectiveVolume;
+      breakEvenMonths = 0; // Already at break-even
+    } else {
+      // Calculate volume needed to break even
+      breakEvenVolume = Math.ceil(monthlyAmortizedFixedCost / unitMargin);
+
+      // Calculate months to reach break-even volume (assuming linear growth from current volume)
+      if (effectiveVolume > 0) {
+        const volumeGap = breakEvenVolume - effectiveVolume;
+        // Assume current growth rate continues (simplified model)
+        // For now, just indicate the volume gap as a percentage
+        breakEvenMonths = volumeGap > 0 ? (volumeGap / effectiveVolume) * 12 : 0;
+      }
+    }
+  } else if (unitMargin < 0) {
+    // Negative unit margin means we lose money on each unit - no break-even possible
+    breakEvenVolume = undefined;
+    breakEvenMonths = undefined;
+  } else {
+    // Zero margin case (edge case)
+    breakEvenVolume = undefined;
+    breakEvenMonths = undefined;
+  }
+
   return {
     effectiveMonthlyVolume: effectiveVolume,
     layer1CostPerUnit,
@@ -239,6 +278,8 @@ export const calculateROI = (inputs: UseCaseInputs, modifiers: SensitivityModifi
     netMonthlyBenefit,
     annualizedNetBenefit,
     roiPercentage,
-    paybackMonths
+    paybackMonths,
+    breakEvenVolume,
+    breakEvenMonths
   };
 };
