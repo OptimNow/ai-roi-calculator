@@ -84,7 +84,7 @@ export interface UseCaseInputs {
 
 export interface CalculationResults {
   effectiveMonthlyVolume: number;
-  
+
   // Layer 1
   layer1CostPerUnit: number;
   layer1MonthlyCost: number;
@@ -111,4 +111,18 @@ export interface CalculationResults {
   annualizedNetBenefit: number;
   roiPercentage: number;
   paybackMonths: number | string;
+
+  // Break-even Analysis (Phase 1)
+  breakEvenVolume?: number;
+  breakEvenMonths?: number;
+}
+
+export interface Scenario {
+  id: string;
+  name: string;
+  description?: string;
+  inputs: UseCaseInputs;
+  results: CalculationResults;
+  createdAt: number;
+  color?: string; // For visual differentiation in comparison view
 }
