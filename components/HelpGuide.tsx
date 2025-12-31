@@ -101,6 +101,19 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                   <li><strong>Experimental:</strong> 50-70%</li>
                 </ul>
               </div>
+
+              <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                <h4 className="font-semibold text-slate-700 mb-2">Analysis Months</h4>
+                <p className="text-sm text-slate-600">
+                  The time horizon for your ROI analysis. This determines the timeframe shown in charts and projections. Typical values:
+                </p>
+                <ul className="mt-2 text-sm text-slate-600 list-disc list-inside ml-3">
+                  <li><strong>12 months:</strong> Standard annual analysis</li>
+                  <li><strong>24-36 months:</strong> Multi-year strategic view</li>
+                  <li><strong>6 months:</strong> Short-term pilot evaluation</li>
+                </ul>
+                <p className="text-xs text-slate-500 mt-1">💡 Tip: This doesn't affect break-even or payback calculations, only visualization scope.</p>
+              </div>
             </div>
           </section>
 
@@ -240,7 +253,7 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                   <p><strong>Review Cost:</strong> Cost per unit for that human review (typically lower than full cost)</p>
                 </div>
                 <p className="text-xs text-slate-500 mt-2">
-                  Example: Support agent costs $5/ticket, AI deflects 40%, review needed on 10% → saves ~$2/ticket
+                  Example: Support agent costs $0.5/ticket, AI deflects 40%, review needed on 10% → saves ~$0.2/ticket
                 </p>
               </div>
 

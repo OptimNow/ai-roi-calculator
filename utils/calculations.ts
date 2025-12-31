@@ -225,39 +225,40 @@ export const calculateROI = (inputs: UseCaseInputs, modifiers: SensitivityModifi
 
   // --- Break-even Analysis ---
   // Calculate the volume needed for totalMonthlyValue to equal totalMonthlyCost
-  let breakEvenVolume: number | undefined = undefined;
-  let breakEvenMonths: number | undefined = undefined;
-
-  // For break-even calculation, we need to solve:
-  // grossValuePerUnit * volume = (layer2CostPerUnit * volume) + monthlyAmortizedFixedCost
+  // Formula: grossValuePerUnit * volume = (layer2CostPerUnit * volume) + monthlyAmortizedFixedCost
   // Rearranging: volume * (grossValuePerUnit - layer2CostPerUnit) = monthlyAmortizedFixedCost
   // volume = monthlyAmortizedFixedCost / (grossValuePerUnit - layer2CostPerUnit)
 
+  let breakEvenVolume: number | undefined = undefined;
+  let breakEvenMonths: number | undefined = undefined;
+
   const unitMargin = grossValuePerUnit - layer2CostPerUnit;
 
-  if (unitMargin > 0) {
-    // If we're already above break-even, set to current volume
-    if (netMonthlyBenefit >= 0) {
-      breakEvenVolume = effectiveVolume;
-      breakEvenMonths = 0; // Already at break-even
-    } else {
-      // Calculate volume needed to break even
-      breakEvenVolume = Math.ceil(monthlyAmortizedFixedCost / unitMargin);
+  if (unitMargin > 0 && monthlyAmortizedFixedCost > 0) {
+    // Calculate the exact volume where net benefit = 0
+    breakEvenVolume = Math.ceil(monthlyAmortizedFixedCost / unitMargin);
 
-      // Calculate months to reach break-even volume (assuming linear growth from current volume)
-      if (effectiveVolume > 0) {
-        const volumeGap = breakEvenVolume - effectiveVolume;
-        // Assume current growth rate continues (simplified model)
-        // For now, just indicate the volume gap as a percentage
-        breakEvenMonths = volumeGap > 0 ? (volumeGap / effectiveVolume) * 12 : 0;
-      }
+    // If current volume exceeds break-even, we're already profitable
+    if (effectiveVolume >= breakEvenVolume) {
+      breakEvenMonths = 0; // Already at or above break-even
+    } else {
+      // Calculate months to reach break-even volume (assuming linear growth)
+      const volumeGap = breakEvenVolume - effectiveVolume;
+      // This is a simplified estimate - assumes you can grow volume
+      breakEvenMonths = volumeGap > 0 ? (volumeGap / effectiveVolume) * 12 : 0;
     }
-  } else if (unitMargin < 0) {
-    // Negative unit margin means we lose money on each unit - no break-even possible
-    breakEvenVolume = undefined;
-    breakEvenMonths = undefined;
+  } else if (monthlyAmortizedFixedCost === 0) {
+    // No fixed costs - break-even is immediate if unit margin > 0
+    if (unitMargin > 0) {
+      breakEvenVolume = 0;
+      breakEvenMonths = 0;
+    } else {
+      // Negative or zero margin with no fixed costs - no break-even
+      breakEvenVolume = undefined;
+      breakEvenMonths = undefined;
+    }
   } else {
-    // Zero margin case (edge case)
+    // Negative or zero unit margin - no break-even possible
     breakEvenVolume = undefined;
     breakEvenMonths = undefined;
   }

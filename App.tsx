@@ -126,12 +126,9 @@ export default function App() {
     setScenarios([...scenarios, newScenario]);
   };
 
-  const handleLoadScenario = (scenarioId: string) => {
-    const scenario = scenarios.find(s => s.id === scenarioId);
-    if (scenario) {
-      setInputs({ ...scenario.inputs });
-      setShowScenarios(false);
-    }
+  const handleLoadScenario = (scenario: Scenario) => {
+    setInputs({ ...scenario.inputs });
+    setShowScenarios(false);
   };
 
   const handleDeleteScenario = (scenarioId: string) => {
@@ -149,30 +146,17 @@ export default function App() {
     link.click();
   };
 
-  const handleImportScenarios = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const imported = JSON.parse(e.target?.result as string) as Scenario[];
-        if (Array.isArray(imported)) {
-          setScenarios([...scenarios, ...imported]);
-          alert(`Imported ${imported.length} scenario(s) successfully!`);
-        }
-      } catch (error) {
-        alert('Failed to import scenarios. Invalid file format.');
-      }
-    };
-    reader.readAsText(file);
+  const handleImportScenarios = (importedScenarios: Scenario[]) => {
+    setScenarios([...scenarios, ...importedScenarios]);
+    alert(`Imported ${importedScenarios.length} scenario(s) successfully!`);
   };
 
-  const handleCompareScenarios = () => {
-    if (selectedScenarioIds.length < 2) {
+  const handleCompareScenarios = (scenarioIds: string[]) => {
+    if (scenarioIds.length < 2) {
       alert('Please select at least 2 scenarios to compare.');
       return;
     }
+    setSelectedScenarioIds(scenarioIds);
     setShowComparison(true);
     setShowScenarios(false);
   };
@@ -201,21 +185,15 @@ export default function App() {
       <ScenarioManager
         isOpen={showScenarios}
         onClose={() => setShowScenarios(false)}
+        currentInputs={inputs}
+        currentResults={results}
         scenarios={scenarios}
-        selectedScenarioIds={selectedScenarioIds}
-        onSelectScenario={(id) => {
-          if (selectedScenarioIds.includes(id)) {
-            setSelectedScenarioIds(selectedScenarioIds.filter(sid => sid !== id));
-          } else {
-            setSelectedScenarioIds([...selectedScenarioIds, id]);
-          }
-        }}
         onSaveScenario={handleSaveScenario}
         onLoadScenario={handleLoadScenario}
         onDeleteScenario={handleDeleteScenario}
         onExportScenarios={handleExportScenarios}
         onImportScenarios={handleImportScenarios}
-        onCompare={handleCompareScenarios}
+        onCompareScenarios={handleCompareScenarios}
       />
 
       {/* Scenario Comparison Modal */}
