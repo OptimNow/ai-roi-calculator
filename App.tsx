@@ -1,14 +1,12 @@
 import React, { useState, useMemo } from 'react';
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell
-} from 'recharts';
-import { Download, Copy, RefreshCw, ChevronDown, ChevronUp, Settings, Calculator, HelpCircle } from 'lucide-react';
+import { Download, Copy, RefreshCw, Settings, Calculator, HelpCircle } from 'lucide-react';
 
 import { UseCaseInputs, CalculationResults, ValueMethod, SensitivityModifiers, ModelParams } from './types';
 import { DEFAULT_INPUTS, PRESETS, DEFAULT_MODEL_PARAMS } from './constants';
 import { calculateROI } from './utils/calculations';
 import { MoneyInput, NumberInput, PercentInput, SectionHeader } from './components/InputComponents';
 import { HelpGuide } from './components/HelpGuide';
+import { CostValueChart, CostBreakdownChart } from './components/Charts';
 
 const formatMoney = (val: number, decimals = 2) => 
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(val);
@@ -124,17 +122,21 @@ export default function App() {
           </div>
 
           {/* Right: Controls */}
-          <div className="flex items-center space-x-3">
-             <div className="flex bg-slate-100 rounded-lg p-1">
+          <div className="flex items-center space-x-3" role="toolbar" aria-label="Calculator controls">
+             <div className="flex bg-slate-100 rounded-lg p-1" role="group" aria-label="Display mode toggle">
                 <button
                   onClick={() => setMode('simple')}
                   className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${mode === 'simple' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
+                  aria-pressed={mode === 'simple'}
+                  aria-label="Switch to simple mode"
                 >
                   Simple
                 </button>
                 <button
                   onClick={() => setMode('advanced')}
                   className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${mode === 'advanced' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
+                  aria-pressed={mode === 'advanced'}
+                  aria-label="Switch to advanced mode"
                 >
                   Advanced
                 </button>
@@ -143,14 +145,25 @@ export default function App() {
               onClick={() => setShowHelp(true)}
               className="p-2 text-slate-500 hover:bg-accent hover:bg-opacity-10 rounded-md transition-colors"
               title="How to Fill the Calculator"
+              aria-label="Open help guide"
             >
-              <HelpCircle size={20} />
+              <HelpCircle size={20} aria-hidden="true" />
             </button>
-            <button onClick={handleCopyMarkdown} className="p-2 text-slate-500 hover:bg-slate-100 rounded-md" title="Copy Summary">
-              <Copy size={18} />
+            <button
+              onClick={handleCopyMarkdown}
+              className="p-2 text-slate-500 hover:bg-slate-100 rounded-md"
+              title="Copy Summary"
+              aria-label="Copy summary to clipboard"
+            >
+              <Copy size={18} aria-hidden="true" />
             </button>
-            <button onClick={handleExportJSON} className="p-2 text-slate-500 hover:bg-slate-100 rounded-md" title="Download JSON">
-              <Download size={18} />
+            <button
+              onClick={handleExportJSON}
+              className="p-2 text-slate-500 hover:bg-slate-100 rounded-md"
+              title="Download JSON"
+              aria-label="Download results as JSON"
+            >
+              <Download size={18} aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -368,34 +381,42 @@ export default function App() {
         </div>
 
         {/* --- RIGHT COLUMN: RESULTS --- */}
-        <div className="lg:col-span-7 space-y-6">
-            
+        <div className="lg:col-span-7 space-y-6" role="region" aria-label="Calculation results">
+
             {/* KPI Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
-                    <span className="text-xs font-bold text-slate-400 uppercase">ROI</span>
-                    <span className={`text-2xl font-extrabold ${results.roiPercentage >= 0 ? 'text-success' : 'text-danger'}`}>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4" role="group" aria-label="Key performance indicators">
+                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between" role="article" aria-label="ROI metric">
+                    <span className="text-xs font-bold text-slate-400 uppercase" id="roi-label">ROI</span>
+                    <span
+                      className={`text-2xl font-extrabold ${results.roiPercentage >= 0 ? 'text-success' : 'text-danger'}`}
+                      aria-labelledby="roi-label"
+                      aria-live="polite"
+                    >
                         {results.roiPercentage.toFixed(0)}%
                     </span>
                     <span className="text-[10px] text-slate-400">Return on Investment</span>
                 </div>
-                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
-                    <span className="text-xs font-bold text-slate-400 uppercase">Net Benefit</span>
-                    <span className={`text-2xl font-extrabold ${results.netMonthlyBenefit >= 0 ? 'text-slate-800' : 'text-danger'}`}>
+                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between" role="article" aria-label="Net benefit metric">
+                    <span className="text-xs font-bold text-slate-400 uppercase" id="netbenefit-label">Net Benefit</span>
+                    <span
+                      className={`text-2xl font-extrabold ${results.netMonthlyBenefit >= 0 ? 'text-slate-800' : 'text-danger'}`}
+                      aria-labelledby="netbenefit-label"
+                      aria-live="polite"
+                    >
                         {formatNumber(results.netMonthlyBenefit / 1000)}k
                     </span>
                     <span className="text-[10px] text-slate-400">Monthly</span>
                 </div>
-                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
-                    <span className="text-xs font-bold text-slate-400 uppercase">Payback</span>
-                    <span className="text-2xl font-extrabold text-slate-800">
+                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between" role="article" aria-label="Payback period metric">
+                    <span className="text-xs font-bold text-slate-400 uppercase" id="payback-label">Payback</span>
+                    <span className="text-2xl font-extrabold text-slate-800" aria-labelledby="payback-label" aria-live="polite">
                         {results.paybackMonths}
                     </span>
                     <span className="text-[10px] text-slate-400">Months</span>
                 </div>
-                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
-                    <span className="text-xs font-bold text-slate-400 uppercase">Unit Cost</span>
-                    <span className="text-2xl font-extrabold text-slate-800">
+                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between" role="article" aria-label="Unit cost metric">
+                    <span className="text-xs font-bold text-slate-400 uppercase" id="unitcost-label">Unit Cost</span>
+                    <span className="text-2xl font-extrabold text-slate-800" aria-labelledby="unitcost-label" aria-live="polite">
                         {formatMoney(results.totalCostPerUnit, 3)}
                     </span>
                     <span className="text-[10px] text-slate-400">per {inputs.unitName}</span>
@@ -406,39 +427,8 @@ export default function App() {
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
                 <h3 className="text-sm font-bold text-slate-800 uppercase mb-6">Financial Overview</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={chartDataMonthly} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
-                            <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} tickFormatter={(val) => `$${val/1000}k`} />
-                            <RechartsTooltip formatter={(val: number) => formatMoney(val, 0)} cursor={{fill: 'transparent'}} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                            <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                                {chartDataMonthly.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                                ))}
-                            </Bar>
-                        </BarChart>
-                    </ResponsiveContainer>
-
-                    <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                            <Pie
-                                data={pieDataCost}
-                                cx="50%"
-                                cy="50%"
-                                innerRadius={60}
-                                outerRadius={80}
-                                paddingAngle={5}
-                                dataKey="value"
-                            >
-                                {pieDataCost.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                ))}
-                            </Pie>
-                            <RechartsTooltip formatter={(val: number) => formatMoney(val, 2)} />
-                            <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{fontSize: '11px', color: '#64748b'}} />
-                        </PieChart>
-                    </ResponsiveContainer>
+                    <CostValueChart data={chartDataMonthly} formatMoney={formatMoney} />
+                    <CostBreakdownChart data={pieDataCost} colors={COLORS} />
                 </div>
             </div>
 

@@ -1,5 +1,24 @@
 import { UseCaseInputs, CalculationResults, SensitivityModifiers, ValueMethod, ModelParams } from '../types';
 
+/**
+ * Calculates the cost per unit for a single model (token-based or call-based pricing).
+ *
+ * @param params - Model parameters including token counts and pricing
+ * @param modifiers - Sensitivity modifiers to apply to costs
+ * @returns Cost per unit in USD
+ *
+ * @example
+ * ```ts
+ * const cost = calculateModelCost({
+ *   avgInputTokensPerUnit: 1000,
+ *   avgOutputTokensPerUnit: 500,
+ *   pricePer1MInputTokens: 0.15,
+ *   pricePer1MOutputTokens: 0.60,
+ *   useCallPricing: false
+ * }, { costMultiplier: 1.5, ... });
+ * // Returns: 0.000675 (with 1.5x multiplier)
+ * ```
+ */
 const calculateModelCost = (params: ModelParams, modifiers: SensitivityModifiers): number => {
   if (params.useCallPricing) {
     return params.costPerCall * modifiers.costMultiplier;
@@ -9,6 +28,48 @@ const calculateModelCost = (params: ModelParams, modifiers: SensitivityModifiers
   return (inputCost + outputCost) * modifiers.costMultiplier;
 };
 
+/**
+ * Calculates comprehensive ROI metrics for an AI project using a 3-layer framework.
+ *
+ * ## Framework Layers:
+ * - **Layer 1**: Infrastructure costs (model inference, tokens)
+ * - **Layer 2**: Harness costs (orchestration, retrieval, monitoring, etc.)
+ * - **Layer 3**: Business value (cost displacement, revenue, retention, or premium monetization)
+ *
+ * ## Calculation Flow:
+ * 1. Computes Layer 1 costs with model routing, caching, and retries
+ * 2. Adds Layer 2 harness costs with overhead multiplier
+ * 3. Calculates business value based on selected value method
+ * 4. Derives ROI metrics: percentage, payback period, net benefit
+ *
+ * @param inputs - All calculator inputs (costs, volumes, value parameters)
+ * @param modifiers - Optional sensitivity modifiers for scenario analysis (default: all 1x)
+ * @returns Comprehensive calculation results including costs, value, and ROI metrics
+ *
+ * @example
+ * ```ts
+ * const results = calculateROI({
+ *   monthlyVolume: 10000,
+ *   successRate: 90,
+ *   valueMethod: ValueMethod.COST_DISPLACEMENT,
+ *   baselineHumanCostPerUnit: 5.00,
+ *   deflectionRate: 40,
+ *   // ... other inputs
+ * });
+ *
+ * console.log(results.roiPercentage); // e.g., 320.5
+ * console.log(results.paybackMonths); // e.g., "3.2"
+ * ```
+ *
+ * @remarks
+ * - Cache savings apply only to input tokens, not output tokens
+ * - Retry rate multiplies Layer 1 costs only, not harness costs
+ * - Success rate affects value realization but not base costs
+ * - Payback calculation uses one-time fixed costs / net monthly benefit
+ *
+ * @see {@link UseCaseInputs} for complete input schema
+ * @see {@link CalculationResults} for output schema
+ */
 export const calculateROI = (inputs: UseCaseInputs, modifiers: SensitivityModifiers = { volumeMultiplier: 1, successRateMultiplier: 1, costMultiplier: 1, valueMultiplier: 1 }): CalculationResults => {
   const {
     monthlyVolume,
