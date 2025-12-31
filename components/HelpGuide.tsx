@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Info, DollarSign, Zap, TrendingUp, Calculator } from 'lucide-react';
+import { X, Info, DollarSign, Zap, TrendingUp, Calculator, Settings } from 'lucide-react';
 
 interface HelpGuideProps {
   isOpen: boolean;

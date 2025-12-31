@@ -208,15 +208,23 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           {/* Left: Logo */}
           <div className="flex items-center">
-            <img
-              src="/images/Logo.png"
-              alt="AI ROI Calculator Logo"
-              className="h-10 w-auto object-contain max-w-[180px]"
-              onError={(e) => {
-                console.error('Logo failed to load');
-                e.currentTarget.style.display = 'none';
-              }}
-            />
+            <a
+              href="https://www.optimnow.io"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:opacity-80 transition-opacity"
+              aria-label="Visit OptimNow website"
+            >
+              <img
+                src="/images/Logo.png"
+                alt="OptimNow Logo"
+                className="h-10 w-auto object-contain max-w-[180px]"
+                onError={(e) => {
+                  console.error('Logo failed to load from:', e.currentTarget.src);
+                  e.currentTarget.style.display = 'none';
+                }}
+              />
+            </a>
           </div>
 
           {/* Center: Title */}
