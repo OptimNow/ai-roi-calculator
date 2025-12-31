@@ -210,8 +210,12 @@ export default function App() {
           <div className="flex items-center">
             <img
               src="/images/Logo.png"
-              alt="Logo"
-              className="h-12 w-auto object-contain"
+              alt="AI ROI Calculator Logo"
+              className="h-10 w-auto object-contain max-w-[180px]"
+              onError={(e) => {
+                console.error('Logo failed to load');
+                e.currentTarget.style.display = 'none';
+              }}
             />
           </div>
 

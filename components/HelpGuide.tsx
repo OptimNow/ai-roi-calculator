@@ -127,6 +127,20 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
             </div>
 
             <div className="space-y-4 ml-7">
+              <div className="bg-amber-50 p-4 rounded-lg border border-amber-300">
+                <h4 className="font-semibold text-amber-900 mb-2">⚠️ Pricing Model Assumption</h4>
+                <p className="text-sm text-amber-800 mb-2">
+                  This calculator currently assumes <strong>API-based pricing</strong> (pay-per-token) from cloud providers like OpenAI, Anthropic, Google, etc.
+                </p>
+                <p className="text-sm text-amber-800 mb-2">
+                  <strong>NOT currently supported:</strong> Self-hosted or open-source models on your own GPUs (e.g., Llama, Mistral, or custom models).
+                  Self-hosted costs involve hardware amortization, electricity, and DevOps overhead instead of per-token charges.
+                </p>
+                <p className="text-xs text-amber-700 mt-2">
+                  📋 Self-hosted pricing support is planned for a future release (see roadmap).
+                </p>
+              </div>
+
               <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                 <h4 className="font-semibold text-slate-700 mb-2">Token Counts</h4>
                 <p className="text-sm text-slate-600 mb-2">
@@ -323,6 +337,98 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                 <h4 className="font-semibold text-slate-700 mb-2">Amortization Period</h4>
                 <p className="text-sm text-slate-600">
                   Number of months to spread one-time costs over (default: 12 months). Used for payback calculation.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <hr className="border-slate-200" />
+
+          {/* Advanced Features */}
+          <section>
+            <div className="flex items-center space-x-2 mb-4">
+              <Settings className="text-purple-500" size={20} />
+              <h3 className="text-lg font-bold text-slate-800">6. Advanced Features</h3>
+            </div>
+
+            <div className="space-y-4 ml-7">
+              {/* Advanced Mode */}
+              <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                <h4 className="font-semibold text-purple-700 mb-2">🔧 Advanced Mode</h4>
+                <p className="text-sm text-slate-600 mb-3">
+                  Toggle to "Advanced" in the header to unlock additional cost parameters:
+                </p>
+                <ul className="text-sm text-slate-600 list-disc list-inside ml-3 space-y-1">
+                  <li><strong>Model Routing Strategy:</strong> Use a slider to split traffic between two models</li>
+                  <li><strong>Cache Settings:</strong> Cache hit rate and discount percentage</li>
+                  <li><strong>Extended Harness Costs:</strong> Tool APIs, logging, safety guardrails, storage</li>
+                </ul>
+              </div>
+
+              {/* Model Routing */}
+              <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                <h4 className="font-semibold text-purple-700 mb-2">🔀 Model Routing Strategy (Advanced Mode)</h4>
+                <p className="text-sm text-slate-600 mb-2">
+                  <strong>Concept:</strong> Route simple requests to a cheap, fast model (e.g., GPT-4o-mini) and complex requests to an expensive, smart model (e.g., GPT-4o).
+                </p>
+                <p className="text-sm text-slate-600 mb-2">
+                  <strong>How it works:</strong>
+                </p>
+                <ul className="text-sm text-slate-600 list-decimal list-inside ml-3 space-y-1">
+                  <li>In Advanced Mode, you'll see a slider: "Simple Model" percentage</li>
+                  <li>Move the slider left (0%) = All traffic goes to Secondary Model (expensive/complex)</li>
+                  <li>Move the slider right (100%) = All traffic goes to Primary Model (cheap/simple)</li>
+                  <li>Middle positions (e.g., 70%) = 70% to Primary, 30% to Secondary</li>
+                  <li>When slider is &lt;100%, the "Secondary Model" section appears below</li>
+                  <li>Enter token counts and pricing for BOTH models</li>
+                  <li>The calculator blends costs: (Primary cost × 70%) + (Secondary cost × 30%)</li>
+                </ul>
+                <p className="text-xs text-slate-500 mt-2">
+                  💡 Tip: This models an intelligent routing system that classifies request complexity before choosing a model.
+                </p>
+              </div>
+
+              {/* Sensitivity Simulator */}
+              <div className="bg-slate-800 text-white p-4 rounded-lg border border-slate-600">
+                <h4 className="font-semibold text-accent mb-2">⚙️ Sensitivity Simulator</h4>
+                <p className="text-sm text-slate-300 mb-3">
+                  Found at the bottom of the results column, this lets you test "what-if" scenarios by multiplying key inputs:
+                </p>
+                <ul className="text-sm text-slate-300 list-disc list-inside ml-3 space-y-2">
+                  <li><strong>Volume Multiplier (0.5x - 3.0x):</strong> Simulate lower or higher traffic (e.g., 2x = double your volume)</li>
+                  <li><strong>Success Rate Multiplier (0.5x - 1.5x):</strong> Test if AI performs worse/better than expected</li>
+                  <li><strong>Cost Multiplier (0.5x - 2.0x):</strong> Model price changes (e.g., 1.5x = 50% cost increase)</li>
+                  <li><strong>Value Multiplier (0.5x - 2.0x):</strong> Adjust business value estimates up or down</li>
+                </ul>
+                <p className="text-sm text-slate-300 mt-3 mb-2">
+                  <strong>How to use:</strong>
+                </p>
+                <ol className="text-sm text-slate-300 list-decimal list-inside ml-3 space-y-1">
+                  <li>Enter your best-guess inputs in the left column</li>
+                  <li>Check the initial ROI results on the right</li>
+                  <li>Move sensitivity sliders to see live updates to metrics</li>
+                  <li>Example: Set Volume to 2x to see ROI if you doubled traffic</li>
+                  <li>Click "Reset Simulation" to return to 1x multipliers</li>
+                </ol>
+                <p className="text-xs text-accent mt-2">
+                  💡 Tip: This does NOT change your base inputs—only multiplies them temporarily for analysis.
+                </p>
+              </div>
+
+              {/* Scenario Manager */}
+              <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                <h4 className="font-semibold text-purple-700 mb-2">📁 Scenario Manager</h4>
+                <p className="text-sm text-slate-600 mb-2">
+                  Save and compare multiple calculation scenarios (click folder icon in header):
+                </p>
+                <ul className="text-sm text-slate-600 list-disc list-inside ml-3 space-y-1">
+                  <li><strong>Save:</strong> Enter a name/description, click "Save Scenario"</li>
+                  <li><strong>Load:</strong> Click any saved scenario to restore those inputs</li>
+                  <li><strong>Compare:</strong> Select 2+ scenarios, click "Compare" to see side-by-side charts</li>
+                  <li><strong>Export/Import:</strong> Download scenarios as JSON files for backup or sharing</li>
+                </ul>
+                <p className="text-xs text-slate-500 mt-2">
+                  💡 Tip: Create "Conservative", "Realistic", and "Optimistic" scenarios to present a range to stakeholders.
                 </p>
               </div>
             </div>

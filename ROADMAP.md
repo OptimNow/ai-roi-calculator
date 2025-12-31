@@ -92,9 +92,45 @@ Built with React + TypeScript, implementing a 3-layer ROI framework for AI proje
 
 ---
 
-### 📊 Phase 2: Advanced Projections (Q2)
+### 📊 Phase 2: Advanced Projections (Q2 2025)
 
-#### 3. Confidence Intervals
+#### 3. Self-Hosted Model Pricing Support
+**Priority: High**
+**Status:** Planned for Q2 2025
+
+Currently, the calculator only supports API-based pricing (pay-per-token). This feature will add support for self-hosted/on-premise deployments.
+
+**Features:**
+- Toggle between "API-based" and "Self-hosted" deployment modes
+- Self-hosted inputs:
+  - GPU hardware cost (one-time capital expenditure)
+  - Monthly cloud compute cost (if using cloud GPUs like AWS p4d, Azure NCv4)
+  - Electricity cost per kWh
+  - Estimated throughput (tokens/sec per GPU)
+  - Number of GPUs
+  - Hardware depreciation period (24-36 months typical)
+- Calculate effective cost per token based on:
+  - Amortized hardware costs
+  - Operational expenses (electricity, cooling, maintenance)
+  - DevOps overhead
+- Comparison view: "Should I use API or self-host?"
+
+**Use Cases:**
+- Open-source models (Llama, Mistral, custom fine-tuned models)
+- High-volume workloads where self-hosting becomes cheaper
+- Data sovereignty/privacy requirements
+- Custom hardware optimization (Apple Silicon, custom ASICs)
+
+**Technical Approach:**
+- Add `deploymentMode` field to UseCaseInputs: 'api' | 'self-hosted'
+- Create SelfHostedParams interface with GPU hardware/ops costs
+- Modify calculateModelCost() to handle both pricing models
+- Add conditional UI for self-hosted inputs in Infrastructure section
+- Update help guide with self-hosted cost estimation best practices
+
+---
+
+#### 4. Confidence Intervals
 **Priority: Medium**
 - Add optimistic/pessimistic/realistic projections
 - User-defined variance ranges for key inputs
@@ -109,7 +145,7 @@ Built with React + TypeScript, implementing a 3-layer ROI framework for AI proje
 
 ---
 
-#### 4. Export to Excel
+#### 5. Export to Excel
 **Priority: Medium**
 - Enhanced export with full calculation formulas
 - Multi-sheet workbook: Summary, Inputs, Calculations, Charts
@@ -126,7 +162,7 @@ Built with React + TypeScript, implementing a 3-layer ROI framework for AI proje
 
 ### 🎨 Phase 3: User Experience Enhancements (Q2-Q3)
 
-#### 5. Preset Customization
+#### 6. Preset Customization
 **Priority: Medium**
 - Allow users to save custom presets to localStorage
 - Edit existing presets
@@ -141,7 +177,7 @@ Built with React + TypeScript, implementing a 3-layer ROI framework for AI proje
 
 ---
 
-#### 6. Dark Mode
+#### 7. Dark Mode
 **Priority: Low**
 - Theme toggle in header
 - Dark mode optimized for professional audience
@@ -156,7 +192,7 @@ Built with React + TypeScript, implementing a 3-layer ROI framework for AI proje
 
 ---
 
-#### 7. Print-Friendly View
+#### 8. Print-Friendly View
 **Priority: Low**
 - CSS optimizations for printing reports
 - Hide interactive elements (sliders, buttons)
@@ -225,6 +261,7 @@ Built with React + TypeScript, implementing a 3-layer ROI framework for AI proje
 - ✅ Performance optimizations (React.memo)
 
 **v1.2** (Q2 2025)
+- Self-Hosted Model Pricing Support
 - Confidence Intervals
 - Export to Excel
 - Preset Customization
