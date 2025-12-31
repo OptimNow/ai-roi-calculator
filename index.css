@@ -1,0 +1,97 @@
+/* AI ROI Calculator - Brand Styles */
+
+:root {
+  /* Brand Colors */
+  --color-primary: #ACE849;        /* Chartreuse */
+  --color-secondary: #F4F4F4;      /* Light Grey */
+  --color-white: #FFFFFF;          /* White */
+  --color-charcoal: #2C2C2C;       /* Charcoal Black */
+  --color-dark-grey: #C1C1C1;      /* Dark Grey */
+
+  /* Typography */
+  --font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Override Tailwind with brand colors */
+.bg-accent {
+  background-color: var(--color-primary) !important;
+}
+
+.text-accent {
+  color: var(--color-primary) !important;
+}
+
+.border-accent {
+  border-color: var(--color-primary) !important;
+}
+
+.focus\:ring-accent:focus {
+  --tw-ring-color: var(--color-primary) !important;
+}
+
+.accent-accent {
+  accent-color: var(--color-primary) !important;
+}
+
+/* Button hover states with brand color */
+button:hover .text-accent {
+  filter: brightness(0.9);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-dark-grey);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-charcoal);
+}
+
+/* Print styles */
+@media print {
+  header {
+    position: static !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+  }
+
+  .bg-slate-800 {
+    background: white !important;
+    color: black !important;
+    border: 1px solid #ccc !important;
+  }
+}

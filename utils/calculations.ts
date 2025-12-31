@@ -38,10 +38,21 @@ export const calculateROI = (inputs: UseCaseInputs, modifiers: SensitivityModifi
   const secondaryShare = 1 - primaryShare;
   let blendedBaseCost = (primaryCost * primaryShare) + (secondaryCost * secondaryShare);
 
-  // Apply Cache Savings (Simple approximation: applied to the blended base)
-  // Logic: Hit Rate % of calls get Discount % off.
+  // Apply Cache Savings (only to input tokens, not output)
+  // Calculate input and output costs separately for proper cache handling
+  const primaryInputCost = (primaryModel.avgInputTokensPerUnit / 1_000_000) * primaryModel.pricePer1MInputTokens * modifiers.costMultiplier;
+  const primaryOutputCost = (primaryModel.avgOutputTokensPerUnit / 1_000_000) * primaryModel.pricePer1MOutputTokens * modifiers.costMultiplier;
+  const secondaryInputCost = (secondaryModel.avgInputTokensPerUnit / 1_000_000) * secondaryModel.pricePer1MInputTokens * modifiers.costMultiplier;
+  const secondaryOutputCost = (secondaryModel.avgOutputTokensPerUnit / 1_000_000) * secondaryModel.pricePer1MOutputTokens * modifiers.costMultiplier;
+
+  // Blend by routing
+  const blendedInputCost = (primaryInputCost * primaryShare) + (secondaryInputCost * secondaryShare);
+  const blendedOutputCost = (primaryOutputCost * primaryShare) + (secondaryOutputCost * secondaryShare);
+
+  // Apply cache savings only to input tokens
   const cacheSavingsFactor = (cacheHitRate / 100) * (cachedTokenDiscount / 100);
-  const layer1CostPerUnit = blendedBaseCost * (1 - cacheSavingsFactor);
+  const cachedInputCost = blendedInputCost * (1 - cacheSavingsFactor);
+  const layer1CostPerUnit = cachedInputCost + blendedOutputCost;
 
   // --- Layer 2: Harness Cost ---
   const harnessSum = (
@@ -54,13 +65,12 @@ export const calculateROI = (inputs: UseCaseInputs, modifiers: SensitivityModifi
     inputs.storageCostPerUnit
   ) * modifiers.costMultiplier;
 
-  // Apply Retries to (L1 + Harness)
-  // Assuming retries duplicate both compute and harness work for that specific attempt
-  const subTotalPerUnit = layer1CostPerUnit + harnessSum;
-  const withRetries = subTotalPerUnit * (1 + inputs.retryRate); // e.g., 1.1x
+  // Apply Retries only to Layer 1 (model inference), not harness costs
+  // Retries duplicate model calls but not necessarily storage, logging, etc.
+  const layer1WithRetries = layer1CostPerUnit * (1 + inputs.retryRate);
 
-  // Apply Overhead Multiplier
-  const layer2CostPerUnit = withRetries * inputs.overheadMultiplier;
+  // Apply Overhead Multiplier to combined cost
+  const layer2CostPerUnit = (layer1WithRetries + harnessSum) * inputs.overheadMultiplier;
 
   // Fixed Costs
   const totalFixedOneTime = integrationCost + trainingTuningCost + changeManagementCost;
