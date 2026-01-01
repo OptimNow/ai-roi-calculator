@@ -745,7 +745,7 @@ Our methodology aligns with standard practices:
 - Documented all four value methods with worked examples
 - Clarified break-even analysis formulas
 
-### v1.0 (December 2024)
+### v1.0 (December 2025)
 - Core 3-layer framework implementation
 - Basic ROI percentage and payback period calculations
 
@@ -862,7 +862,7 @@ V_breakeven = 666.67 / 2.56080007 = 260 tickets/month
 For questions, corrections, or suggestions regarding this methodology:
 
 - **GitHub Issues:** [ai-roi-calculator/issues](https://github.com/OptimNow/ai-roi-calculator/issues)
-- **Email:** hello@optimnow.io
+- **Email:** contact@optimnow.io
 - **Website:** [www.optimnow.io](https://www.optimnow.io)
 
 ---
