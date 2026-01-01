@@ -386,7 +386,12 @@ export default function App() {
                     <NumberInput label="Monthly Volume" value={inputs.monthlyVolume} onChange={v => updateInput('monthlyVolume', v)} />
                  </div>
                  <div className="grid grid-cols-2 gap-4">
-                    <PercentInput label="Success Rate" value={inputs.successRate} onChange={v => updateInput('successRate', v)} tooltip="Percentage of units that are handled successfully by AI" />
+                    <PercentInput
+                      label="Success Rate"
+                      value={inputs.successRate}
+                      onChange={v => updateInput('successRate', v)}
+                      tooltip="Percentage of AI attempts that produce usable output (not quality of output). Example: 90% means 9/10 attempts work, 1/10 fails completely. This is INDEPENDENT of deflection/review rates - an AI can successfully generate output that still needs human review."
+                    />
                     <NumberInput
                       label="Analysis Months"
                       value={inputs.analysisHorizonMonths}

@@ -70,9 +70,10 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
     trainingTuningCost: 1000,
     changeManagementCost: 500,
     valueMethod: ValueMethod.COST_DISPLACEMENT,
-    baselineHumanCostPerUnit: 8.50,
+    baselineHumanCostPerUnit: 1.00,
     deflectionRate: 35,
     residualHumanReviewRate: 5,
+    residualReviewCostPerUnit: 0.20,
     retryRate: 0.1,
     primaryModel: {
         ...DEFAULT_MODEL_PARAMS,
