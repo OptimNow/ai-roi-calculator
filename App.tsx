@@ -401,7 +401,6 @@ export default function App() {
       <main className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* --- LEFT COLUMN: INPUTS --- */}
         <div className="lg:col-span-5 space-y-6 overflow-y-auto h-full p-6 rounded-xl" style={{ backgroundColor: 'var(--color-secondary)' }}>
-
           {/* Preset Loader */}
           <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
             <h3 className="text-xs font-bold text-slate-500 uppercase mb-3">Load Example Profile</h3>
