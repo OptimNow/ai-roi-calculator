@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI ROI Calculator</title>
+    <link rel="icon" type="image/x-icon" href="/images/favicon.jpg" />
+    <link rel="apple-touch-icon" href="/images/Logo.png" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: '#ACE849', // Chartreuse
+              secondary: '#F4F4F4', // Light Grey
+              accent: '#ACE849', // Chartreuse (brand primary)
+              success: '#ACE849', // Use brand color
+              warning: '#C1C1C1', // Dark Grey
+              danger: '#dc2626', // Red (keep for errors)
+              charcoal: '#2C2C2C', // Charcoal Black
+            }
+          }
+        }
+      }
+    </script>
+    <link rel="stylesheet" href="/index.css">
+  <script type="importmap">
+{
+  "imports": {
+    "recharts": "https://esm.sh/recharts@^3.6.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0"
+  }
+}
+</script>
+
+</head>
+  <body class="bg-slate-50 text-slate-900 antialiased">
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
