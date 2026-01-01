@@ -161,7 +161,7 @@ export const ROICurveChart = memo<ROICurveChartProps>(({ data, breakEvenMonth, f
           label={{ value: 'Cumulative Profit', angle: -90, position: 'insideLeft', style: { fill: '#64748b', fontSize: 12 } }}
         />
         <RechartsTooltip
-          formatter={(val: number) => [formatMoney(val, 0), 'Cumulative Profit']}
+          formatter={(val: number) => formatMoney(val, 0)}
           labelFormatter={(month) => `Month ${month}`}
           cursor={{ stroke: '#ACE849', strokeWidth: 2, strokeDasharray: '5 5' }}
           contentStyle={{
