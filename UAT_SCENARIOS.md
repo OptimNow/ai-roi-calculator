@@ -143,12 +143,12 @@ Make a subtle chartreuse accent for the refresh button, because i had to go look
 
 | Step | Action | Expected Result | Status | Notes |
 |------|--------|----------------|---------|-------|
-| 1 | Ensure in "Simple" mode | Only basic inputs visible | | |
-| 2 | Count input fields in Layer 1 | Should see: Token counts, pricing (4-6 fields) | | |
-| 3 | Click "Advanced" button in header | Mode switches | | |
-| 4 | Check Layer 1 | "Model Routing Strategy" slider appears | | |
-| 5 | Check Layer 2 | Extended harness costs appear (Tool APIs, Logging, etc.) | | |
-| 6 | Check Layer 1 again | "Cache Hit Rate" and "Cache Discount" fields visible | | |
+| 1 | Ensure in "Simple" mode | Only basic inputs visible |✅ | |
+| 2 | Count input fields in Layer 1 | Should see: Token counts, pricing (4-6 fields) |✅ | |
+| 3 | Click "Advanced" button in header | Mode switches |✅ | |
+| 4 | Check Layer 1 | "Model Routing Strategy" slider appears |✅ | |
+| 5 | Check Layer 2 | Extended harness costs appear (Tool APIs, Logging, etc.) |✅ | |
+| 6 | Check Layer 1 again | "Cache Hit Rate" and "Cache Discount" fields visible |✅ | |
 
 **Acceptance Criteria:**
 ✅ Simple mode hides advanced inputs
@@ -162,12 +162,12 @@ Make a subtle chartreuse accent for the refresh button, because i had to go look
 
 | Step | Action | Expected Result | Status | Notes |
 |------|--------|----------------|---------|-------|
-| 1 | Switch to Advanced mode | Routing slider visible | | |
-| 2 | Note routing slider at 100% | Only "Primary Model" section visible | | |
-| 3 | Move slider to 70% | "Secondary Model (Complex)" section appears below | | |
-| 4 | Note label shows "70%" | Percentage updates next to "Simple Model" | | |
-| 5 | Enter different token counts in Secondary Model | Input accepts values | | |
-| 6 | Check "Unit Cost" KPI | Cost should reflect 70% primary + 30% secondary blend | | |
+| 1 | Switch to Advanced mode | Routing slider visible |✅ | |
+| 2 | Note routing slider at 100% | Only "Primary Model" section visible |✅ | |
+| 3 | Move slider to 70% | "Secondary Model (Complex)" section appears below |✅ | |
+| 4 | Note label shows "70%" | Percentage updates next to "Simple Model" |❌ |nothing shows up next to simple model |
+| 5 | Enter different token counts in Secondary Model | Input accepts values |✅ | |
+| 6 | Check "Unit Cost" KPI | Cost should reflect 70% primary + 30% secondary blend |✅ | |
 | 7 | Move slider to 0% | All traffic to secondary (most expensive) | | |
 | 8 | Check "Unit Cost" | Cost should be highest | | |
 
