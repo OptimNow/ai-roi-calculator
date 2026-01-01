@@ -248,11 +248,14 @@ export default function App() {
       const lowROI = variable.calculate(1 - testRange);
       const highROI = variable.calculate(1 + testRange);
 
+      const lowDeviation = lowROI - baselineROI;   // Will be negative
+      const highDeviation = highROI - baselineROI; // Will be positive
+
       return {
         variable: variable.name,
-        // Tornado chart shows deviation from baseline (centered at zero)
-        low: lowROI - baselineROI,  // Negative deviation (downside)
-        high: highROI - baselineROI, // Positive deviation (upside)
+        // Tornado chart: low extends LEFT (negative), high extends RIGHT (positive)
+        low: lowDeviation,   // Keep as negative for leftward extension
+        high: highDeviation, // Keep as positive for rightward extension
         baseline: baselineROI,
         lowAbsolute: lowROI,
         highAbsolute: highROI

@@ -263,6 +263,7 @@ export const TornadoChart = memo<TornadoChartProps>(({ data }) => {
           tickLine={false}
           tick={{ fill: '#64748b', fontSize: 11 }}
           tickFormatter={(val) => `${val > 0 ? '+' : ''}${val.toFixed(0)}%`}
+          domain={['dataMin', 'dataMax']}
         />
         <YAxis
           type="category"
@@ -307,9 +308,9 @@ export const TornadoChart = memo<TornadoChartProps>(({ data }) => {
           }}
           cursor={{ fill: 'transparent' }}
         />
-        <ReferenceLine x={0} stroke="#94a3b8" strokeWidth={1} />
-        <Bar dataKey="low" stackId="a" fill="#ef4444" />
-        <Bar dataKey="high" stackId="a" fill="#22c55e" />
+        <ReferenceLine x={0} stroke="#94a3b8" strokeWidth={2} />
+        <Bar dataKey="low" fill="#ef4444" />
+        <Bar dataKey="high" fill="#22c55e" />
       </BarChart>
     </ResponsiveContainer>
   );
