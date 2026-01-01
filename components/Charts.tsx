@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend,
+  LineChart, Line, Area, ComposedChart, ReferenceLine
 } from 'recharts';
 
 interface CostValueChartData {
@@ -114,3 +115,100 @@ export const CostBreakdownChart = memo<CostBreakdownChartProps>(({ data, colors 
 });
 
 CostBreakdownChart.displayName = 'CostBreakdownChart';
+
+interface ROICurveData {
+  month: number;
+  cumulativeProfit: number;
+}
+
+interface ROICurveChartProps {
+  data: ROICurveData[];
+  breakEvenMonth: number | undefined;
+  formatMoney: (val: number, decimals?: number) => string;
+}
+
+/**
+ * Memoized ROI Curve Chart - Shows cumulative profit over time
+ * Visualizes break-even point and profit trajectory
+ */
+export const ROICurveChart = memo<ROICurveChartProps>(({ data, breakEvenMonth, formatMoney }) => {
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <ComposedChart data={data} margin={{ top: 10, right: 30, left: 20, bottom: 20 }}>
+        <defs>
+          <linearGradient id="profitGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3}/>
+            <stop offset="95%" stopColor="#22c55e" stopOpacity={0.05}/>
+          </linearGradient>
+          <linearGradient id="lossGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="#ef4444" stopOpacity={0.05}/>
+            <stop offset="95%" stopColor="#ef4444" stopOpacity={0.3}/>
+          </linearGradient>
+        </defs>
+        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+        <XAxis
+          dataKey="month"
+          axisLine={false}
+          tickLine={false}
+          tick={{ fill: '#64748b', fontSize: 12 }}
+          label={{ value: 'Months', position: 'insideBottom', offset: -10, style: { fill: '#64748b', fontSize: 12 } }}
+        />
+        <YAxis
+          axisLine={false}
+          tickLine={false}
+          tick={{ fill: '#64748b', fontSize: 12 }}
+          tickFormatter={(val) => `$${(val / 1000).toFixed(0)}k`}
+          label={{ value: 'Cumulative Profit', angle: -90, position: 'insideLeft', style: { fill: '#64748b', fontSize: 12 } }}
+        />
+        <RechartsTooltip
+          formatter={(val: number) => [formatMoney(val, 0), 'Cumulative Profit']}
+          labelFormatter={(month) => `Month ${month}`}
+          cursor={{ stroke: '#ACE849', strokeWidth: 2, strokeDasharray: '5 5' }}
+          contentStyle={{
+            borderRadius: '8px',
+            border: 'none',
+            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+            backgroundColor: 'white'
+          }}
+        />
+        <ReferenceLine
+          y={0}
+          stroke="#94a3b8"
+          strokeWidth={2}
+          strokeDasharray="3 3"
+          label={{ value: 'Break-even Line', position: 'right', fill: '#64748b', fontSize: 11 }}
+        />
+        {breakEvenMonth !== undefined && breakEvenMonth > 0 && (
+          <ReferenceLine
+            x={breakEvenMonth}
+            stroke="#ACE849"
+            strokeWidth={2}
+            label={{ value: `Month ${breakEvenMonth}`, position: 'top', fill: '#ACE849', fontSize: 11, fontWeight: 'bold' }}
+          />
+        )}
+        <Area
+          type="monotone"
+          dataKey="cumulativeProfit"
+          fill="url(#profitGradient)"
+          stroke="none"
+        />
+        <Line
+          type="monotone"
+          dataKey="cumulativeProfit"
+          stroke="#22c55e"
+          strokeWidth={3}
+          dot={false}
+          activeDot={{ r: 6, fill: '#22c55e', stroke: 'white', strokeWidth: 2 }}
+        />
+      </ComposedChart>
+    </ResponsiveContainer>
+  );
+}, (prevProps, nextProps) => {
+  return (
+    JSON.stringify(prevProps.data) === JSON.stringify(nextProps.data) &&
+    prevProps.breakEvenMonth === nextProps.breakEvenMonth &&
+    prevProps.formatMoney === nextProps.formatMoney
+  );
+});
+
+ROICurveChart.displayName = 'ROICurveChart';

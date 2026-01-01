@@ -6,7 +6,7 @@ import { DEFAULT_INPUTS, PRESETS, DEFAULT_MODEL_PARAMS } from './constants';
 import { calculateROI } from './utils/calculations';
 import { MoneyInput, NumberInput, PercentInput, SectionHeader } from './components/InputComponents';
 import { HelpGuide } from './components/HelpGuide';
-import { CostValueChart, CostBreakdownChart } from './components/Charts';
+import { CostValueChart, CostBreakdownChart, ROICurveChart } from './components/Charts';
 import { ScenarioManager } from './components/ScenarioManager';
 import { ScenarioComparison } from './components/ScenarioComparison';
 
@@ -175,6 +175,39 @@ export default function App() {
     { name: 'Fixed (Amort)', value: results.monthlyAmortizedFixedCost },
   ];
   const COLORS = ['#3b82f6', '#8b5cf6', '#64748b'];
+
+  // ROI Curve Data - Calculate cumulative profit over analysis period
+  const roiCurveData = useMemo(() => {
+    const data = [];
+    const totalFixedCosts = inputs.integrationCost + inputs.trainingTuningCost + inputs.changeManagementCost;
+    const monthlyVariableCost = results.layer2MonthlyCost; // Total monthly operating cost
+    const monthlyValue = results.totalMonthlyValue;
+    const netMonthlyBenefit = monthlyValue - monthlyVariableCost;
+
+    for (let month = 0; month <= inputs.analysisHorizonMonths; month++) {
+      let cumulativeProfit;
+      if (month === 0) {
+        // At month 0, we've only incurred fixed costs
+        cumulativeProfit = -totalFixedCosts;
+      } else {
+        // Each month adds net monthly benefit (value - variable costs)
+        cumulativeProfit = -totalFixedCosts + (netMonthlyBenefit * month);
+      }
+      data.push({
+        month,
+        cumulativeProfit
+      });
+    }
+    return data;
+  }, [inputs, results]);
+
+  // Calculate break-even month for chart marker
+  const breakEvenMonthForChart = useMemo(() => {
+    if (results.breakEvenMonths === undefined || results.breakEvenMonths === 0) {
+      return undefined;
+    }
+    return Math.ceil(results.breakEvenMonths);
+  }, [results.breakEvenMonths]);
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900">
@@ -657,6 +690,27 @@ export default function App() {
                 </div>
               </div>
             )}
+
+            {/* ROI Curve - Profit Over Time */}
+            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-bold text-slate-800 uppercase">ROI Curve: Cumulative Profit Over Time</h3>
+                  <button
+                    className="text-slate-300 hover:text-accent transition-colors"
+                    title="ROI Curve: Shows how cumulative profit evolves over your analysis period. The vertical chartreuse line marks when you break even (cumulative profit = $0)."
+                    aria-label="ROI curve explanation"
+                  >
+                    <Info size={14} />
+                  </button>
+                </div>
+                <div className="h-64">
+                  <ROICurveChart
+                    data={roiCurveData}
+                    breakEvenMonth={breakEvenMonthForChart}
+                    formatMoney={formatMoney}
+                  />
+                </div>
+            </div>
 
             {/* Main Visuals Container */}
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
