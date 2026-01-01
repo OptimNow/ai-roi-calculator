@@ -254,7 +254,7 @@ export const TornadoChart = memo<TornadoChartProps>(({ data }) => {
       <BarChart
         data={sortedData}
         layout="vertical"
-        margin={{ top: 20, right: 40, left: 120, bottom: 20 }}
+        margin={{ top: 20, right: 40, left: 100, bottom: 20 }}
       >
         <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
         <XAxis

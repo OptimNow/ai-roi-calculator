@@ -394,10 +394,9 @@ export default function App() {
       </header>
 
       <main className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
         {/* --- LEFT COLUMN: INPUTS --- */}
-        <div className="lg:col-span-5 space-y-6 overflow-y-auto h-full pr-2 p-6 rounded-xl" style={{ backgroundColor: 'var(--color-secondary)' }}>
-          
+        <div className="lg:col-span-5 space-y-6 overflow-y-auto h-full p-6 rounded-xl" style={{ backgroundColor: 'var(--color-secondary)' }}>
+
           {/* Preset Loader */}
           <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
             <h3 className="text-xs font-bold text-slate-500 uppercase mb-3">Load Example Profile</h3>
@@ -946,8 +945,10 @@ export default function App() {
                             <Info size={14} />
                         </button>
                     </div>
-                    <div className="h-64 bg-slate-900 rounded-lg p-4">
-                        <TornadoChart data={tornadoData} />
+                    <div className="h-64 bg-slate-900 rounded-lg p-4 flex items-center justify-center">
+                        <div className="w-full max-w-2xl">
+                            <TornadoChart data={tornadoData} />
+                        </div>
                     </div>
                 </div>
 
