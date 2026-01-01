@@ -173,11 +173,33 @@ ai-roi-calculator/
 ├── constants.ts                   # Presets and default values
 ├── tests/                         # Unit and integration tests
 ├── public/images/                 # Brand assets (logo, favicon)
+├── METHODOLOGY.md                 # Mathematical specification & theory
 ├── ROADMAP.md                     # Product development plan
 ├── UAT_SCENARIOS.md               # User acceptance testing guide
 ├── DEPLOYMENT.md                  # Vercel deployment instructions
 └── README.md                      # This file
 ```
+
+---
+
+## Methodology & Transparency
+
+For complete transparency and academic rigor, we provide detailed documentation of all calculation methodologies:
+
+**[METHODOLOGY.md](METHODOLOGY.md)** - Comprehensive mathematical specification including:
+- 3-layer framework architecture and design philosophy
+- Complete formulas for all ROI calculations with derivations
+- Worked examples for each of the 4 value methods
+- Break-even analysis mathematics
+- Sensitivity analysis methodology
+- Assumptions, limitations, and validation
+- Industry references and citations
+
+This document enables:
+- **Auditability** for stakeholders and finance teams
+- **Reproducibility** for researchers and academics
+- **Trust** through complete transparency of calculation logic
+- **Verification** that formulas align with industry standards
 
 ---
 
