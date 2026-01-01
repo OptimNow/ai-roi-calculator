@@ -168,8 +168,8 @@ Make a subtle chartreuse accent for the refresh button, because i had to go look
 | 4 | Note label shows "70%" | Percentage updates next to "Simple Model" |❌ |nothing shows up next to simple model |
 | 5 | Enter different token counts in Secondary Model | Input accepts values |✅ | |
 | 6 | Check "Unit Cost" KPI | Cost should reflect 70% primary + 30% secondary blend |✅ | |
-| 7 | Move slider to 0% | All traffic to secondary (most expensive) | | |
-| 8 | Check "Unit Cost" | Cost should be highest | | |
+| 7 | Move slider to 0% | All traffic to secondary (most expensive) |⚠️ |perhaps, i have no way to know |
+| 8 | Check "Unit Cost" | Cost should be highest ||✅ | |
 
 **Acceptance Criteria:**
 ✅ Slider at 100% = only Primary Model visible
