@@ -64,8 +64,11 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
   support: {
     useCaseName: 'Customer Support Bot',
     unitName: 'ticket',
-    monthlyVolume: 50000,
+    monthlyVolume: 500,
     successRate: 90,
+    integrationCost: 2000,
+    trainingTuningCost: 1000,
+    changeManagementCost: 500,
     valueMethod: ValueMethod.COST_DISPLACEMENT,
     baselineHumanCostPerUnit: 8.50,
     deflectionRate: 35,
@@ -117,5 +120,51 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
         pricePer1MOutputTokens: 0.60
     },
     retrievalCostPerUnit: 0.001
+  },
+  retention: {
+    useCaseName: 'Customer Retention AI',
+    unitName: 'customer',
+    monthlyVolume: 10000,
+    successRate: 85,
+    integrationCost: 8000,
+    trainingTuningCost: 5000,
+    changeManagementCost: 2000,
+    valueMethod: ValueMethod.RETENTION_UPLIFT,
+    baselineChurnRate: 2.5,
+    churnReductionAbsolute: 0.5,
+    annualValuePerCustomer: 1200,
+    customersImpactedPerMonth: 10000,
+    primaryModel: {
+        ...DEFAULT_MODEL_PARAMS,
+        avgInputTokensPerUnit: 1200,
+        avgOutputTokensPerUnit: 400,
+        pricePer1MInputTokens: 0.15,
+        pricePer1MOutputTokens: 0.60
+    },
+    orchestrationCostPerUnit: 0.002,
+    retrievalCostPerUnit: 0.003
+  },
+  premium: {
+    useCaseName: 'AI Premium Features',
+    unitName: 'subscriber',
+    monthlyVolume: 5000,
+    successRate: 100,
+    integrationCost: 15000,
+    trainingTuningCost: 8000,
+    changeManagementCost: 3000,
+    valueMethod: ValueMethod.PREMIUM_MONETIZATION,
+    pricePerSubscriberPerMonth: 15,
+    subscribers: 5000,
+    nonAiCOGSPerSubscriber: 3,
+    primaryModel: {
+        ...DEFAULT_MODEL_PARAMS,
+        avgInputTokensPerUnit: 2000,
+        avgOutputTokensPerUnit: 800,
+        pricePer1MInputTokens: 0.50,
+        pricePer1MOutputTokens: 1.50
+    },
+    orchestrationCostPerUnit: 0.005,
+    retrievalCostPerUnit: 0.01,
+    loggingMonitoringCostPerUnit: 0.002
   }
 };

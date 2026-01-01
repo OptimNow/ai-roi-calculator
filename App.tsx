@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Download, Copy, RefreshCw, Settings, Calculator, HelpCircle, FolderOpen } from 'lucide-react';
+import { Download, Copy, RefreshCw, Settings, Calculator, HelpCircle, FolderOpen, Info } from 'lucide-react';
 
 import { UseCaseInputs, CalculationResults, ValueMethod, SensitivityModifiers, ModelParams, Scenario } from './types';
 import { DEFAULT_INPUTS, PRESETS, DEFAULT_MODEL_PARAMS } from './constants';
@@ -314,7 +314,12 @@ export default function App() {
                   {PRESETS[key].useCaseName}
                 </button>
               ))}
-              <button onClick={() => setInputs(DEFAULT_INPUTS)} className="px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-danger transition-colors ml-auto">
+              <button
+                onClick={() => setInputs(DEFAULT_INPUTS)}
+                className="px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-accent hover:bg-accent hover:bg-opacity-10 transition-colors ml-auto rounded-md"
+                title="Reset to defaults"
+                aria-label="Reset calculator to default values"
+              >
                 <RefreshCw size={14} />
               </button>
             </div>
@@ -513,7 +518,16 @@ export default function App() {
             {/* KPI Cards */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4" role="group" aria-label="Key performance indicators">
                 <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between" role="article" aria-label="ROI metric">
-                    <span className="text-xs font-bold text-slate-400 uppercase" id="roi-label">ROI</span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-400 uppercase" id="roi-label">ROI</span>
+                      <button
+                        className="text-slate-300 hover:text-accent transition-colors"
+                        title="Return on Investment: Calculated over your Analysis Months period. Shows total value minus total costs, divided by total costs."
+                        aria-label="ROI explanation"
+                      >
+                        <Info size={12} />
+                      </button>
+                    </div>
                     <span
                       className={`text-2xl font-extrabold ${results.roiPercentage >= 0 ? 'text-success' : 'text-danger'}`}
                       aria-labelledby="roi-label"
@@ -521,10 +535,19 @@ export default function App() {
                     >
                         {results.roiPercentage.toFixed(0)}%
                     </span>
-                    <span className="text-[10px] text-slate-400">Return on Investment</span>
+                    <span className="text-[10px] text-slate-400">Over {inputs.analysisHorizonMonths} months</span>
                 </div>
                 <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between" role="article" aria-label="Net benefit metric">
-                    <span className="text-xs font-bold text-slate-400 uppercase" id="netbenefit-label">Net Benefit</span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-400 uppercase" id="netbenefit-label">Net Benefit</span>
+                      <button
+                        className="text-slate-300 hover:text-accent transition-colors"
+                        title="Net Monthly Benefit: Total monthly value generated minus total monthly costs. This is your profit per month."
+                        aria-label="Net benefit explanation"
+                      >
+                        <Info size={12} />
+                      </button>
+                    </div>
                     <span
                       className={`text-2xl font-extrabold ${results.netMonthlyBenefit >= 0 ? 'text-slate-800' : 'text-danger'}`}
                       aria-labelledby="netbenefit-label"
@@ -532,24 +555,51 @@ export default function App() {
                     >
                         {formatNumber(results.netMonthlyBenefit / 1000)}k
                     </span>
-                    <span className="text-[10px] text-slate-400">Monthly</span>
+                    <span className="text-[10px] text-slate-400">Per month</span>
                 </div>
                 <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between" role="article" aria-label="Payback period metric">
-                    <span className="text-xs font-bold text-slate-400 uppercase" id="payback-label">Payback</span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-400 uppercase" id="payback-label">Payback</span>
+                      <button
+                        className="text-slate-300 hover:text-accent transition-colors"
+                        title="Payback Period: How many months until cumulative profits cover your fixed costs (integration, training, change management)."
+                        aria-label="Payback period explanation"
+                      >
+                        <Info size={12} />
+                      </button>
+                    </div>
                     <span className="text-2xl font-extrabold text-slate-800" aria-labelledby="payback-label" aria-live="polite">
                         {results.paybackMonths}
                     </span>
-                    <span className="text-[10px] text-slate-400">Months</span>
+                    <span className="text-[10px] text-slate-400">Months to recover costs</span>
                 </div>
                 <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between" role="article" aria-label="Unit cost metric">
-                    <span className="text-xs font-bold text-slate-400 uppercase" id="unitcost-label">Unit Cost</span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-400 uppercase" id="unitcost-label">Unit Cost</span>
+                      <button
+                        className="text-slate-300 hover:text-accent transition-colors"
+                        title="Cost per Unit: Average total cost per transaction, including model inference, harness costs, and amortized fixed costs."
+                        aria-label="Unit cost explanation"
+                      >
+                        <Info size={12} />
+                      </button>
+                    </div>
                     <span className="text-2xl font-extrabold text-slate-800" aria-labelledby="unitcost-label" aria-live="polite">
                         {formatMoney(results.totalCostPerUnit, 3)}
                     </span>
                     <span className="text-[10px] text-slate-400">per {inputs.unitName}</span>
                 </div>
                 <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between" role="article" aria-label="Break-even metric">
-                    <span className="text-xs font-bold text-slate-400 uppercase" id="breakeven-label">Break-even</span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-400 uppercase" id="breakeven-label">Break-even</span>
+                      <button
+                        className="text-slate-300 hover:text-accent transition-colors"
+                        title="Break-even Volume: The monthly volume needed for your net benefit to reach $0 (where value equals total costs). This threshold is constant regardless of current volume."
+                        aria-label="Break-even explanation"
+                      >
+                        <Info size={12} />
+                      </button>
+                    </div>
                     <span className="text-2xl font-extrabold text-slate-800" aria-labelledby="breakeven-label" aria-live="polite">
                         {results.breakEvenVolume !== undefined
                           ? formatNumber(results.breakEvenVolume)
@@ -557,7 +607,7 @@ export default function App() {
                     </span>
                     <span className="text-[10px] text-slate-400">
                       {results.breakEvenVolume !== undefined
-                        ? `${inputs.unitName}s/mo`
+                        ? `${inputs.unitName}s/mo needed`
                         : 'Negative margin'}
                     </span>
                 </div>
@@ -642,7 +692,16 @@ export default function App() {
                             <td className="px-6 py-3 text-right text-slate-800 font-mono">{formatMoney(results.totalMonthlyCost, 0)}</td>
                         </tr>
                         <tr className="border-t-2 border-slate-200">
-                            <td className="px-6 py-3 text-success font-medium">Estimated Value</td>
+                            <td className="px-6 py-3 text-success font-medium flex items-center space-x-2">
+                              <span>Total Monthly Value</span>
+                              <button
+                                className="text-success opacity-50 hover:opacity-100 transition-opacity"
+                                title="Total Monthly Value: The gross business value generated per month from your selected Value Method (before subtracting costs)."
+                                aria-label="Total monthly value explanation"
+                              >
+                                <Info size={14} />
+                              </button>
+                            </td>
                             <td className="px-6 py-3 text-right text-success font-mono">{formatMoney(results.netValuePerUnit, 4)}</td>
                             <td className="px-6 py-3 text-right text-success font-mono">{formatMoney(results.totalMonthlyValue, 0)}</td>
                         </tr>
