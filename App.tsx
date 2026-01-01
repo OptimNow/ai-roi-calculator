@@ -368,8 +368,43 @@ export default function App() {
             </div>
           </div>
 
+          {/* Sensitivity Simulation Active Banner */}
+          {(modifiers.volumeMultiplier !== 1 || modifiers.successRateMultiplier !== 1 || modifiers.costMultiplier !== 1 || modifiers.valueMultiplier !== 1) && (
+            <div className="bg-accent bg-opacity-10 border border-accent rounded-xl p-4">
+              <div className="flex items-start">
+                <Info size={18} className="text-accent mr-2 mt-0.5 flex-shrink-0" />
+                <div className="flex-1">
+                  <h4 className="text-sm font-bold text-slate-800 mb-2">Sensitivity Simulation Active</h4>
+                  <p className="text-xs text-slate-600 mb-2">Results shown are based on modified values below. Base inputs remain unchanged.</p>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    {modifiers.volumeMultiplier !== 1 && (
+                      <div className="bg-white bg-opacity-50 rounded px-2 py-1">
+                        <span className="font-semibold text-slate-700">Volume:</span> <span className="font-mono text-accent">{formatNumber(inputs.monthlyVolume)} × {modifiers.volumeMultiplier} = {formatNumber(inputs.monthlyVolume * modifiers.volumeMultiplier)}</span>
+                      </div>
+                    )}
+                    {modifiers.successRateMultiplier !== 1 && (
+                      <div className="bg-white bg-opacity-50 rounded px-2 py-1">
+                        <span className="font-semibold text-slate-700">Success Rate:</span> <span className="font-mono text-accent">{inputs.successRate}% × {modifiers.successRateMultiplier} = {(inputs.successRate * modifiers.successRateMultiplier).toFixed(1)}%</span>
+                      </div>
+                    )}
+                    {modifiers.costMultiplier !== 1 && (
+                      <div className="bg-white bg-opacity-50 rounded px-2 py-1">
+                        <span className="font-semibold text-slate-700">Costs:</span> <span className="font-mono text-accent">×{modifiers.costMultiplier}</span>
+                      </div>
+                    )}
+                    {modifiers.valueMultiplier !== 1 && (
+                      <div className="bg-white bg-opacity-50 rounded px-2 py-1">
+                        <span className="font-semibold text-slate-700">Value:</span> <span className="font-mono text-accent">×{modifiers.valueMultiplier}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-             
+
             {/* General Inputs */}
              <SectionHeader title="1. General Parameters" isOpen={expandedSections.general} onToggle={() => toggleSection('general')} />
              {expandedSections.general && <div className="p-5 border-b border-slate-100">
