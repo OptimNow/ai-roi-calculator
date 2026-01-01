@@ -950,7 +950,7 @@ export default function App() {
                         </button>
                     </div>
                     <div className="h-64 bg-slate-900 rounded-lg p-4 flex items-center justify-center">
-                        <div className="w-full max-w-2xl">
+                        <div className="w-full max-w-2xl h-full">
                             <TornadoChart data={tornadoData} />
                         </div>
                     </div>
