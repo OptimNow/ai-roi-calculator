@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Download, Copy, RefreshCw, Settings, Calculator, HelpCircle, FolderOpen, Info } from 'lucide-react';
+import { Download, Copy, RefreshCw, Settings, Calculator, HelpCircle, FolderOpen, Info, BookOpen } from 'lucide-react';
 
 import { UseCaseInputs, CalculationResults, ValueMethod, SensitivityModifiers, ModelParams, Scenario } from './types';
 import { DEFAULT_INPUTS, PRESETS, DEFAULT_MODEL_PARAMS } from './constants';
@@ -309,6 +309,16 @@ export default function App() {
             >
               <HelpCircle size={20} aria-hidden="true" />
             </button>
+            <a
+              href="https://github.com/OptimNow/ai-roi-calculator/blob/main/METHODOLOGY.md"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2 text-slate-500 hover:bg-accent hover:bg-opacity-10 rounded-md transition-colors"
+              title="View Calculation Methodology"
+              aria-label="Open methodology documentation in new tab"
+            >
+              <BookOpen size={20} aria-hidden="true" />
+            </a>
             <button
               onClick={handleCopyMarkdown}
               className="p-2 text-slate-500 hover:bg-slate-100 rounded-md"

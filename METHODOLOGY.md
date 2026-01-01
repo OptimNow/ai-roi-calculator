@@ -272,21 +272,29 @@ GV = [(Bh × Dr) - (Rrc × Rr)] × (S / 100) × M_value
 **Example Calculation:**
 
 **Inputs:**
-- Baseline human cost: $8.50/ticket
+- Baseline human cost: $1.00/ticket
 - Deflection rate: 35% (AI resolves without human)
 - Residual review rate: 5% (AI draft requires human review)
-- Residual review cost: $2.50/ticket
+- Residual review cost: $0.20/ticket
 - Success rate: 90%
 
 **Math:**
 ```
-GV = [(8.50 × 0.35) - (2.50 × 0.05)] × 0.90
-   = [2.975 - 0.125] × 0.90
-   = 2.850 × 0.90
-   = $2.565 per ticket
+GV = [(1.00 × 0.35) - (0.20 × 0.05)] × 0.90
+   = [0.35 - 0.01] × 0.90
+   = 0.34 × 0.90
+   = $0.306 per ticket
 ```
 
-**Interpretation:** Each AI-handled ticket saves $2.57 compared to pure human handling.
+**Interpretation:** Each AI-handled ticket saves $0.31 compared to pure human handling.
+
+**Success Rate Explanation (90%):**
+- **What it means:** Technical success rate - 90% of AI attempts produce usable output, 10% fail completely (timeouts, errors, no response)
+- **Why 90% for this scenario:** Customer support systems face real-world variability (unclear questions, edge cases, system integrations). 90% is realistic for production chatbots.
+- **Independence from deflection/review rates:** Success rate is orthogonal to quality metrics. An AI can successfully generate output (counted in the 90%) that still requires human review (the 5% residual review rate). These are separate dimensions:
+  - **Success rate:** Did the AI produce output at all?
+  - **Deflection rate:** Of successful outputs, how many fully resolve the issue?
+  - **Review rate:** Of successful outputs, how many need human editing before use?
 
 ---
 
@@ -330,6 +338,11 @@ Total Value = 0.0765 × 500,000 = $38,250/month
 - **Absolute:** +0.2 percentage points ✓ (enter this)
 - **Relative:** +6.67% ✗ (do NOT enter this)
 
+**Success Rate Explanation (100%):**
+- **What it means:** 100% of sessions receive AI-generated recommendations without technical failures
+- **Why 100% for this scenario:** E-commerce recommendation engines are typically stateless, pre-computed systems with high reliability. Unlike interactive chatbots, they serve cached/pre-generated recommendations, so technical failure rates approach zero in production.
+- **No quality dependency:** Success rate measures technical delivery, not recommendation quality. A poorly-targeted recommendation still counts as "successful" if delivered. The conversion uplift metric captures quality - if recommendations are bad, uplift will be low/zero.
+
 ---
 
 ### Method 3: Retention Uplift
@@ -364,6 +377,15 @@ Total Value = 42.5 × 100 = $4,250/month
 
 **Interpretation:** Preventing 42.5 customers from churning each month generates $4,250 in retained revenue.
 
+**Success Rate Explanation (85%):**
+- **What it means:** 85% of AI retention interventions execute successfully (personalized emails sent, proactive support tickets created, loyalty rewards delivered)
+- **Why 85% for this scenario:** Retention systems integrate with multiple services (email platforms, CRM, support ticketing, payment systems). Integration complexity and external dependencies reduce reliability compared to standalone systems. 85% accounts for:
+  - Email delivery failures
+  - API timeouts with external services
+  - Data availability issues (incomplete customer profiles)
+  - Rate limiting on third-party platforms
+- **Impact on value:** Only successful interventions contribute to churn reduction. If AI fails to reach a customer, no retention impact occurs for that customer.
+
 ---
 
 ### Method 4: Premium Monetization
@@ -394,7 +416,19 @@ Margin per subscriber = 15 - 3 = $12
 Total Value = 12 × 5,000 × 1.00 = $60,000/month
 ```
 
-**Note:** Success rate models satisfaction/retention quality. If AI degrades (lower `S`), subscribers churn faster.
+**Success Rate Explanation (100%):**
+- **What it means:** 100% of premium AI features are available and functional for paying subscribers
+- **Why 100% for this scenario:** Premium features have high uptime requirements. Subscribers paying specifically for AI capabilities expect near-perfect availability. Production systems typically achieve 99.9%+ uptime, modeled as 100% for monthly calculations.
+- **Revenue model - Marginal vs Total:**
+  - **Subscription price ($15/month):** This is the **marginal revenue** directly attributed to the AI premium feature, NOT the total subscription price
+  - **Example:** If your base plan is $50/month and AI Premium tier is $65/month, enter $15 (the incremental revenue from AI)
+  - **Rationale:** We only calculate ROI on the AI-specific revenue. If users would pay $50 regardless, that's not AI-attributable value
+- **Non-AI COGS ($3/month):** Incremental costs to serve premium subscribers, EXCLUDING AI costs (which are in Layers 1 & 2):
+  - **Hosting/infrastructure:** Additional database storage, CDN bandwidth, server capacity for premium users
+  - **Customer support:** Premium support tiers, priority handling
+  - **Payment processing:** Credit card fees on the premium increment
+  - **Compliance/security:** Enhanced data protection for premium features
+  - **Do NOT include:** AI model costs (already in Layer 1), orchestration (Layer 2), or fixed costs (amortized separately)
 
 ---
 
