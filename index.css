@@ -1,9 +1,5 @@
 /* AI ROI Calculator - Brand Styles */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 :root {
   /* Brand Colors */
   --color-primary: #ACE849;        /* Chartreuse */
