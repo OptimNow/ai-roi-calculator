@@ -248,14 +248,19 @@ export default function App() {
       const lowROI = variable.calculate(1 - testRange);
       const highROI = variable.calculate(1 + testRange);
 
-      const lowDeviation = lowROI - baselineROI;   // Will be negative
-      const highDeviation = highROI - baselineROI; // Will be positive
+      const lowDeviation = lowROI - baselineROI;
+      const highDeviation = highROI - baselineROI;
+
+      // Determine which scenario is worse (lower ROI = red) and better (higher ROI = green)
+      // This handles inverse relationships (e.g., costs where lower = better)
+      const worseDeviation = Math.min(lowDeviation, highDeviation);
+      const betterDeviation = Math.max(lowDeviation, highDeviation);
 
       return {
         variable: variable.name,
-        // Tornado chart: low extends LEFT (negative), high extends RIGHT (positive)
-        low: lowDeviation,   // Keep as negative for leftward extension
-        high: highDeviation, // Keep as positive for rightward extension
+        // Tornado chart: worse (red) extends LEFT (negative), better (green) extends RIGHT (positive)
+        low: worseDeviation,   // Always the more negative deviation (red bar)
+        high: betterDeviation, // Always the more positive deviation (green bar)
         baseline: baselineROI,
         lowAbsolute: lowROI,
         highAbsolute: highROI
