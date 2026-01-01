@@ -161,15 +161,28 @@ export const ROICurveChart = memo<ROICurveChartProps>(({ data, breakEvenMonth, f
           label={{ value: 'Cumulative Profit', angle: -90, position: 'insideLeft', style: { fill: '#64748b', fontSize: 12 } }}
         />
         <RechartsTooltip
-          formatter={(val: number) => formatMoney(val, 0)}
-          labelFormatter={(month) => `Month ${month}`}
-          cursor={{ stroke: '#ACE849', strokeWidth: 2, strokeDasharray: '5 5' }}
-          contentStyle={{
-            borderRadius: '8px',
-            border: 'none',
-            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-            backgroundColor: 'white'
+          content={({ active, payload, label }) => {
+            if (active && payload && payload.length) {
+              return (
+                <div style={{
+                  borderRadius: '8px',
+                  border: 'none',
+                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                  backgroundColor: 'white',
+                  padding: '8px 12px'
+                }}>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#64748b', marginBottom: '4px' }}>
+                    Month {label}
+                  </p>
+                  <p style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', color: '#1e293b' }}>
+                    {formatMoney(payload[0].value as number, 0)}
+                  </p>
+                </div>
+              );
+            }
+            return null;
           }}
+          cursor={{ stroke: '#ACE849', strokeWidth: 2, strokeDasharray: '5 5' }}
         />
         <ReferenceLine
           y={0}
@@ -212,3 +225,91 @@ export const ROICurveChart = memo<ROICurveChartProps>(({ data, breakEvenMonth, f
 });
 
 ROICurveChart.displayName = 'ROICurveChart';
+
+interface TornadoChartData {
+  variable: string;
+  low: number;
+  high: number;
+  baseline: number;
+}
+
+interface TornadoChartProps {
+  data: TornadoChartData[];
+}
+
+/**
+ * Tornado Chart - Shows sensitivity analysis impact ranking
+ * Variables sorted by impact magnitude (largest range at top)
+ */
+export const TornadoChart = memo<TornadoChartProps>(({ data }) => {
+  // Sort by impact magnitude (high - low)
+  const sortedData = [...data].sort((a, b) =>
+    Math.abs(b.high - b.low) - Math.abs(a.high - a.low)
+  );
+
+  return (
+    <ResponsiveContainer width="100%" height="100%">
+      <BarChart
+        data={sortedData}
+        layout="vertical"
+        margin={{ top: 20, right: 40, left: 120, bottom: 20 }}
+      >
+        <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
+        <XAxis
+          type="number"
+          axisLine={false}
+          tickLine={false}
+          tick={{ fill: '#64748b', fontSize: 11 }}
+          tickFormatter={(val) => `${val > 0 ? '+' : ''}${val.toFixed(0)}%`}
+        />
+        <YAxis
+          type="category"
+          dataKey="variable"
+          axisLine={false}
+          tickLine={false}
+          tick={{ fill: '#64748b', fontSize: 11 }}
+          width={110}
+        />
+        <RechartsTooltip
+          content={({ active, payload }) => {
+            if (active && payload && payload.length) {
+              const data = payload[0].payload as TornadoChartData;
+              const range = Math.abs(data.high - data.low);
+              return (
+                <div style={{
+                  borderRadius: '8px',
+                  border: 'none',
+                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                  backgroundColor: 'white',
+                  padding: '8px 12px'
+                }}>
+                  <p style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: '#1e293b', marginBottom: '4px' }}>
+                    {data.variable}
+                  </p>
+                  <p style={{ margin: 0, fontSize: '11px', color: '#64748b' }}>
+                    Low (-20%): {data.low.toFixed(1)}% ROI
+                  </p>
+                  <p style={{ margin: 0, fontSize: '11px', color: '#64748b' }}>
+                    High (+20%): {data.high.toFixed(1)}% ROI
+                  </p>
+                  <p style={{ margin: 0, fontSize: '11px', color: '#ACE849', marginTop: '4px', fontWeight: 'bold' }}>
+                    Impact Range: {range.toFixed(1)}%
+                  </p>
+                </div>
+              );
+            }
+            return null;
+          }}
+          cursor={{ fill: 'transparent' }}
+        />
+        <ReferenceLine x={0} stroke="#94a3b8" strokeWidth={1} />
+        <Bar dataKey="low" stackId="a" fill="#ef4444" />
+        <Bar dataKey="high" stackId="a" fill="#22c55e" />
+      </BarChart>
+    </ResponsiveContainer>
+  );
+}, (prevProps, nextProps) => {
+  return JSON.stringify(prevProps.data) === JSON.stringify(nextProps.data);
+});
+
+TornadoChart.displayName = 'TornadoChart';

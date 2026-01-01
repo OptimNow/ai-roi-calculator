@@ -6,7 +6,7 @@ import { DEFAULT_INPUTS, PRESETS, DEFAULT_MODEL_PARAMS } from './constants';
 import { calculateROI } from './utils/calculations';
 import { MoneyInput, NumberInput, PercentInput, SectionHeader } from './components/InputComponents';
 import { HelpGuide } from './components/HelpGuide';
-import { CostValueChart, CostBreakdownChart, ROICurveChart } from './components/Charts';
+import { CostValueChart, CostBreakdownChart, ROICurveChart, TornadoChart } from './components/Charts';
 import { ScenarioManager } from './components/ScenarioManager';
 import { ScenarioComparison } from './components/ScenarioComparison';
 
@@ -208,6 +208,38 @@ export default function App() {
     }
     return Math.ceil(results.breakEvenMonths);
   }, [results.breakEvenMonths]);
+
+  // Tornado Chart Data - Calculate sensitivity impact for each variable
+  const tornadoData = useMemo(() => {
+    const baselineROI = results.roiPercentage;
+    const testRange = 0.2; // ±20% variation
+
+    const variables = [
+      {
+        name: 'Volume',
+        calculate: (multiplier: number) => calculateROI(inputs, { ...modifiers, volumeMultiplier: multiplier }).roiPercentage
+      },
+      {
+        name: 'Success Rate',
+        calculate: (multiplier: number) => calculateROI(inputs, { ...modifiers, successRateMultiplier: multiplier }).roiPercentage
+      },
+      {
+        name: 'Costs',
+        calculate: (multiplier: number) => calculateROI(inputs, { ...modifiers, costMultiplier: multiplier }).roiPercentage
+      },
+      {
+        name: 'Value',
+        calculate: (multiplier: number) => calculateROI(inputs, { ...modifiers, valueMultiplier: multiplier }).roiPercentage
+      }
+    ];
+
+    return variables.map(variable => ({
+      variable: variable.name,
+      low: variable.calculate(1 - testRange),
+      high: variable.calculate(1 + testRange),
+      baseline: baselineROI
+    }));
+  }, [inputs, modifiers, results.roiPercentage]);
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900">
@@ -879,8 +911,26 @@ export default function App() {
                         />
                     </div>
                 </div>
+
+                {/* Tornado Chart - Impact Ranking */}
+                <div className="mt-6">
+                    <div className="flex items-center justify-between mb-3">
+                        <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Impact Ranking (±20% Variation)</h4>
+                        <button
+                            className="text-slate-400 hover:text-white transition-colors"
+                            title="Tornado chart shows which variables have the most impact on ROI when varied by ±20%. Variables are sorted by impact magnitude (largest at top)."
+                            aria-label="Tornado chart explanation"
+                        >
+                            <Info size={14} />
+                        </button>
+                    </div>
+                    <div className="h-64 bg-slate-900 rounded-lg p-4">
+                        <TornadoChart data={tornadoData} />
+                    </div>
+                </div>
+
                 <div className="mt-4 pt-4 border-t border-slate-700 flex justify-end">
-                    <button 
+                    <button
                         onClick={() => setModifiers({ volumeMultiplier: 1, successRateMultiplier: 1, costMultiplier: 1, valueMultiplier: 1})}
                         className="text-xs text-slate-400 hover:text-white underline"
                     >
