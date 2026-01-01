@@ -210,26 +210,37 @@ export default function App() {
   }, [results.breakEvenMonths]);
 
   // Tornado Chart Data - Calculate sensitivity impact for each variable
+  // IMPORTANT: Always test against baseline (no modifiers) to show true sensitivity
   const tornadoData = useMemo(() => {
-    const baselineROI = results.roiPercentage;
     const testRange = 0.2; // ±20% variation
+
+    // Baseline modifiers (all at 1.0)
+    const baselineModifiers = {
+      volumeMultiplier: 1,
+      successRateMultiplier: 1,
+      costMultiplier: 1,
+      valueMultiplier: 1
+    };
+
+    // Calculate baseline ROI with no modifiers
+    const baselineROI = calculateROI(inputs, baselineModifiers).roiPercentage;
 
     const variables = [
       {
         name: 'Volume',
-        calculate: (multiplier: number) => calculateROI(inputs, { ...modifiers, volumeMultiplier: multiplier }).roiPercentage
+        calculate: (multiplier: number) => calculateROI(inputs, { ...baselineModifiers, volumeMultiplier: multiplier }).roiPercentage
       },
       {
         name: 'Success Rate',
-        calculate: (multiplier: number) => calculateROI(inputs, { ...modifiers, successRateMultiplier: multiplier }).roiPercentage
+        calculate: (multiplier: number) => calculateROI(inputs, { ...baselineModifiers, successRateMultiplier: multiplier }).roiPercentage
       },
       {
         name: 'Costs',
-        calculate: (multiplier: number) => calculateROI(inputs, { ...modifiers, costMultiplier: multiplier }).roiPercentage
+        calculate: (multiplier: number) => calculateROI(inputs, { ...baselineModifiers, costMultiplier: multiplier }).roiPercentage
       },
       {
         name: 'Value',
-        calculate: (multiplier: number) => calculateROI(inputs, { ...modifiers, valueMultiplier: multiplier }).roiPercentage
+        calculate: (multiplier: number) => calculateROI(inputs, { ...baselineModifiers, valueMultiplier: multiplier }).roiPercentage
       }
     ];
 
@@ -247,7 +258,7 @@ export default function App() {
         highAbsolute: highROI
       };
     });
-  }, [inputs, modifiers, results.roiPercentage]);
+  }, [inputs]);
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900">
