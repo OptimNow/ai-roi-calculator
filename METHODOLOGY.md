@@ -211,12 +211,17 @@ H_sum = Co + Cr + Ct + Cl + Cg + Cn + Cs
 
 ---
 
-### Layer 2 Aggregation
+### Combined Layer 1 + Layer 2 Cost Per Unit
 
 **Formula:**
 ```
 C₂ = (C₁_with_retries + H_sum) × Oh × M_cost
 ```
+
+**Important Note:** Despite the notation `C₂`, this represents the **total variable cost per unit** combining:
+- Layer 1 (infrastructure/model inference with retries)
+- Layer 2 (harness components)
+- Overhead multiplier applied to the sum
 
 **Where:**
 - `Oh` = Overhead multiplier (1.0 - 1.5)
@@ -238,6 +243,8 @@ C₂ = (C₁_with_retries + H_sum) × Oh × M_cost
 ```
 C_monthly_var = C₂ × V × M_volume
 ```
+
+**Note:** `C₂` already includes both Layer 1 and Layer 2 costs, so this gives total monthly variable operating costs.
 
 ---
 
