@@ -461,7 +461,6 @@ export default function App() {
           )}
 
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-
             {/* General Inputs */}
              <SectionHeader title="1. General Parameters" isOpen={expandedSections.general} onToggle={() => toggleSection('general')} />
              {expandedSections.general && <div className="p-5 border-b border-slate-100">
