@@ -115,7 +115,7 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
     primaryModel: {
         ...DEFAULT_MODEL_PARAMS,
         avgInputTokensPerUnit: 400,
-        avgOutputTokensPerUnit: 50,
+        avgOutputTokensPerUnit: 200,
         pricePer1MInputTokens: 0.15,
         pricePer1MOutputTokens: 0.60
     },
