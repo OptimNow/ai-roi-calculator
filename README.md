@@ -26,15 +26,17 @@ The AI ROI Calculator provides a sophisticated yet user-friendly interface for e
 
 - **Advanced Analysis Tools (Phase 1 Complete):**
   - **What-If Scenarios:** Save, compare, and export unlimited calculation scenarios
-  - **Break-even Analysis:** Determine the volume needed to achieve positive ROI
-  - **Sensitivity Simulator:** Test how changes in volume, success rate, costs, and value impact ROI
+  - **Break-even Analysis:** ROI curve visualization showing cumulative profit over time
+  - **Sensitivity Analysis:** Tornado chart ranking variable impact on ROI (±20% variation)
   - **Scenario Comparison:** Side-by-side visual comparison with percentage differences
 
 - **Professional UI/UX:**
   - Responsive design optimized for desktop and mobile
+  - Visual hierarchy: grey input column, white results column
   - WCAG 2.1 AA accessibility compliance
   - Interactive charts and visualizations powered by Recharts
   - Comprehensive help guide with step-by-step instructions
+  - OptimNow brand colors (Chartreuse #ACE849 accent)
 
 ---
 
@@ -157,6 +159,7 @@ npm test
 ai-roi-calculator/
 ├── components/
 │   ├── App.tsx                    # Main application component
+│   ├── Charts.tsx                 # Memoized chart components (ROI curve, tornado)
 │   ├── FixedCostsSection.tsx      # Fixed costs input form
 │   ├── GeneralInputsSection.tsx   # General settings form
 │   ├── HarnessSection.tsx         # Layer 2 harness costs form
@@ -261,8 +264,9 @@ The app is configured for seamless Vercel deployment. See [DEPLOYMENT.md](DEPLOY
 **Completed Features:**
 - Core 3-layer ROI calculator with 4 value methods
 - What-If Scenarios with unlimited comparisons
-- Break-even analysis with insight cards
-- Sensitivity simulator
+- Break-even analysis with ROI curve visualization
+- Sensitivity analysis with tornado chart
+- Visual UI hierarchy (grey inputs, white results)
 - 30+ unit tests and WCAG 2.1 AA accessibility
 - Comprehensive help guide
 

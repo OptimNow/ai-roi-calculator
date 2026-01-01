@@ -3,8 +3,11 @@
 ## Current Version: v1.1
 Built with React + TypeScript, implementing a 3-layer ROI framework for AI projects.
 
-**Latest Release:** December 31, 2024
+**Latest Release:** January 1, 2026
 - ✅ Core 3-layer ROI calculator with 4 value methods
+- ✅ ROI curve visualization showing cumulative profit over time
+- ✅ Tornado chart for sensitivity analysis (±20% variable impact)
+- ✅ Visual UI hierarchy (grey inputs, white results)
 - ✅ Brand guidelines applied (Chartreuse #ACE849, professional UI)
 - ✅ Comprehensive testing (30+ unit & integration tests)
 - ✅ Error boundary for graceful error handling
@@ -40,6 +43,7 @@ Built with React + TypeScript, implementing a 3-layer ROI framework for AI proje
 
 ### UI/UX Enhancements
 - [x] **Brand Colors**: Chartreuse (#ACE849) primary, professional palette
+- [x] **Visual Hierarchy**: Grey background for inputs, white for results
 - [x] **Logo & Favicon**: Brand assets integrated
 - [x] **Help Modal**: Comprehensive "How to Fill" guide with examples
 - [x] **Responsive Design**: Mobile-friendly layout
@@ -70,21 +74,40 @@ Built with React + TypeScript, implementing a 3-layer ROI framework for AI proje
 
 ---
 
-#### 2. Break-even Analysis ✅
+#### 2. Break-even Analysis & ROI Curve ✅
 **Status: Complete**
 - ✅ Calculate volume needed to achieve positive ROI
 - ✅ Break-even KPI card in main dashboard
+- ✅ ROI curve chart showing cumulative profit over 12 months
+- ✅ Visual break-even point marker on curve
 - ✅ Conditional insight cards (warning when below, success when above)
 - ✅ Display percentage increase needed: "Need X more units (Y% increase)"
-- ✅ Break-even fields added to CalculationResults interface
 
 **Implementation:**
 - Added breakEvenVolume and breakEvenMonths to calculations.ts
+- Created ROICurveChart component in Charts.tsx with ComposedChart
 - Formula: volume = monthlyAmortizedFixedCost / (grossValuePerUnit - layer2CostPerUnit)
 - Handles edge cases: negative margin, zero margin, already profitable
-- New 5th KPI card in results dashboard
-- Amber warning card when below break-even
-- Green success card when above break-even
+- Gradient fill for profit/loss visualization
+- Chartreuse accent for break-even reference line
+
+---
+
+#### 3. Sensitivity Analysis & Tornado Chart ✅
+**Status: Complete**
+- ✅ Tornado chart visualizing ±20% variable impact on ROI
+- ✅ Variables ranked by impact magnitude (highest at top)
+- ✅ Red bars for downside risk, green bars for upside potential
+- ✅ Fixed inverse relationship color bug (costs variable)
+- ✅ Detailed tooltips showing baseline, low, high, and impact range
+- ✅ Centered layout with proper chart dimensions
+
+**Implementation:**
+- Created TornadoChart component in Charts.tsx with vertical BarChart
+- Variables tested: Volume, Success Rate, Costs, Value
+- Math.min/max logic to handle inverse relationships correctly
+- Sorting by `Math.abs(high - low)` for impact ranking
+- ResponsiveContainer with h-full for proper rendering
 
 ---
 
@@ -94,7 +117,7 @@ Built with React + TypeScript, implementing a 3-layer ROI framework for AI proje
 
 ### 📊 Phase 2: Advanced Projections (Q1 2026)
 
-#### 3. Self-Hosted Model Pricing Support
+#### 4. Self-Hosted Model Pricing Support
 **Priority: High**
 **Status:** Planned for Q2 2025
 
@@ -130,7 +153,7 @@ Currently, the calculator only supports API-based pricing (pay-per-token). This 
 
 ---
 
-#### 4. Confidence Intervals
+#### 5. Confidence Intervals
 **Priority: Medium**
 - Add optimistic/pessimistic/realistic projections
 - User-defined variance ranges for key inputs
@@ -145,7 +168,7 @@ Currently, the calculator only supports API-based pricing (pay-per-token). This 
 
 ---
 
-#### 5. Export to Excel
+#### 6. Export to Excel
 **Priority: Medium**
 - Enhanced export with full calculation formulas
 - Multi-sheet workbook: Summary, Inputs, Calculations, Charts
@@ -162,7 +185,7 @@ Currently, the calculator only supports API-based pricing (pay-per-token). This 
 
 ### 🎨 Phase 3: User Experience Enhancements (Q2-Q3 26)
 
-#### 6. Preset Customization
+#### 7. Preset Customization
 **Priority: Medium**
 - Allow users to save custom presets to localStorage
 - Edit existing presets
@@ -177,7 +200,7 @@ Currently, the calculator only supports API-based pricing (pay-per-token). This 
 
 ---
 
-#### 7. Dark Mode
+#### 8. Dark Mode
 **Priority: Low**
 - Theme toggle in header
 - Dark mode optimized for professional audience
@@ -192,7 +215,7 @@ Currently, the calculator only supports API-based pricing (pay-per-token). This 
 
 ---
 
-#### 8. Print-Friendly View
+#### 9. Print-Friendly View
 **Priority: Low**
 - CSS optimizations for printing reports
 - Hide interactive elements (sliders, buttons)
@@ -253,7 +276,9 @@ Currently, the calculator only supports API-based pricing (pay-per-token). This 
 
 **v1.1** ✅ (January 2026)
 - ✅ What-If Scenarios with comparison view
-- ✅ Break-even Analysis with insights
+- ✅ Break-even Analysis with ROI curve visualization
+- ✅ Sensitivity Analysis with tornado chart
+- ✅ Visual UI hierarchy (grey inputs, white results)
 - ✅ Input validation improvements
 - ✅ Unit tests (30+ test cases)
 - ✅ Error boundary implementation
@@ -310,9 +335,9 @@ To suggest new features or report issues:
 ---
 
 ## 🎯 Current Status
-**Latest Release:** v1.1 with Phase 1 Complete (January 2025)
-**Next Focus:** Phase 2 - Advanced Projections (Q2 2025)
+**Latest Release:** v1.1 with Phase 1 Complete (January 2026)
+**Next Focus:** Phase 2 - Advanced Projections (Q2 2026)
 
 ---
 
-*Last Updated: January 1, 2025*
+*Last Updated: January 1, 2026*
