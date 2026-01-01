@@ -396,7 +396,7 @@ export default function App() {
       <main className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* --- LEFT COLUMN: INPUTS --- */}
-        <div className="lg:col-span-5 space-y-6 overflow-y-auto h-full pr-2">
+        <div className="lg:col-span-5 space-y-6 overflow-y-auto h-full pr-2 p-6 rounded-xl" style={{ backgroundColor: 'var(--color-secondary)' }}>
           
           {/* Preset Loader */}
           <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
@@ -660,7 +660,7 @@ export default function App() {
         </div>
 
         {/* --- RIGHT COLUMN: RESULTS --- */}
-        <div className="lg:col-span-7 space-y-6" role="region" aria-label="Calculation results">
+        <div className="lg:col-span-7 space-y-6 bg-white p-6 rounded-xl" role="region" aria-label="Calculation results">
 
             {/* KPI Cards */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4" role="group" aria-label="Key performance indicators">
