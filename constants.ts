@@ -130,7 +130,7 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
     integrationCost: 8000,
     trainingTuningCost: 5000,
     changeManagementCost: 2000,
-    valueMethod: ValueMethod.RETENTION_UPLIFT,
+    valueMethod: ValueMethod.RETENTION,
     baselineChurnRate: 2.5,
     churnReductionAbsolute: 0.5,
     annualValuePerCustomer: 1200,

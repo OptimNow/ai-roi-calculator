@@ -415,6 +415,37 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                 </p>
               </div>
 
+              {/* Tornado Chart Interpretation */}
+              <div className="bg-slate-800 text-white p-4 rounded-lg border border-slate-600">
+                <h4 className="font-semibold text-accent mb-2">🌪️ Tornado Chart - Impact Ranking</h4>
+                <p className="text-sm text-slate-300 mb-3">
+                  The tornado chart visualizes which variables have the most impact on your ROI when varied by ±20%:
+                </p>
+
+                <div className="mb-3">
+                  <p className="text-sm text-slate-300 mb-2"><strong>How to read it:</strong></p>
+                  <ul className="text-sm text-slate-300 list-disc list-inside ml-3 space-y-1">
+                    <li><strong className="text-red-400">Red bars (left):</strong> ROI impact when variable decreases by 20% (downside risk)</li>
+                    <li><strong className="text-green-400">Green bars (right):</strong> ROI impact when variable increases by 20% (upside potential)</li>
+                    <li><strong>Vertical position:</strong> Variables ranked by total impact (most impactful at top)</li>
+                    <li><strong>Impact Range:</strong> Total ROI swing between -20% and +20% scenarios</li>
+                  </ul>
+                </div>
+
+                <div className="mb-3">
+                  <p className="text-sm text-slate-300 mb-2"><strong>Key insights:</strong></p>
+                  <ul className="text-sm text-slate-300 list-disc list-inside ml-3 space-y-1">
+                    <li><strong>Focus on top bars:</strong> These variables have the most impact on ROI. Small changes create large ROI swings.</li>
+                    <li><strong>Asymmetric bars matter:</strong> If green bar is much longer than red (or vice versa), upside and downside risks are unequal.</li>
+                    <li><strong>Prioritize monitoring:</strong> The top 1-2 variables are your critical metrics to track and optimize.</li>
+                  </ul>
+                </div>
+
+                <p className="text-xs text-accent mt-2">
+                  💡 Key takeaway: Rank variables by impact range, then focus optimization efforts on the top 1-2 variables.
+                </p>
+              </div>
+
               {/* Scenario Manager */}
               <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
                 <h4 className="font-semibold text-purple-700 mb-2">📁 Scenario Manager</h4>

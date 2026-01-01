@@ -233,12 +233,20 @@ export default function App() {
       }
     ];
 
-    return variables.map(variable => ({
-      variable: variable.name,
-      low: variable.calculate(1 - testRange),
-      high: variable.calculate(1 + testRange),
-      baseline: baselineROI
-    }));
+    return variables.map(variable => {
+      const lowROI = variable.calculate(1 - testRange);
+      const highROI = variable.calculate(1 + testRange);
+
+      return {
+        variable: variable.name,
+        // Tornado chart shows deviation from baseline (centered at zero)
+        low: lowROI - baselineROI,  // Negative deviation (downside)
+        high: highROI - baselineROI, // Positive deviation (upside)
+        baseline: baselineROI,
+        lowAbsolute: lowROI,
+        highAbsolute: highROI
+      };
+    });
   }, [inputs, modifiers, results.roiPercentage]);
 
   return (

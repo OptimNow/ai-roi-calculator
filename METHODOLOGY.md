@@ -630,19 +630,59 @@ GV_effective = GV × M_value
 
 ---
 
-### Tornado Diagram (Not Yet Implemented)
+### Tornado Chart - Impact Ranking
 
-A planned feature (Phase 2) will show which variables have the largest impact on ROI:
+**Purpose:** Visualize which variables have the most impact on ROI when varied by ±20%.
 
-```
-Impact on ROI (% change):
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Success Rate    ██████████████████ 45%
-Volume          ███████████████ 38%
-Value (Margin)  ██████████ 25%
-Layer 1 Cost    ████ 12%
-Layer 2 Cost    ██ 8%
-```
+**Methodology:**
+
+For each variable (Volume, Success Rate, Costs, Value):
+1. Calculate ROI at baseline (current inputs)
+2. Calculate ROI at -20% (variable decreased by 20%)
+3. Calculate ROI at +20% (variable increased by 20%)
+4. Compute deviation from baseline: `Δ_low = ROI_low - ROI_baseline` and `Δ_high = ROI_high - ROI_baseline`
+5. Compute impact range: `Range = |Δ_high - Δ_low|`
+6. Sort variables by impact range (descending)
+
+**Visualization:**
+
+The tornado chart displays variables as horizontal bars:
+- **Red bars (left):** Extend left from zero, showing ROI decrease when variable drops 20% (downside risk)
+- **Green bars (right):** Extend right from zero, showing ROI increase when variable rises 20% (upside potential)
+- **Vertical ranking:** Most impactful variables appear at the top
+- **Symmetric center:** All bars pivot from zero baseline
+
+**Example:**
+
+If baseline ROI is 150%:
+- Volume at -20%: ROI = 120% → `Δ_low = -30%`
+- Volume at +20%: ROI = 180% → `Δ_high = +30%`
+- Impact Range = 60%
+
+---
+
+### How to Interpret Tornado Charts
+
+**Key Insights:**
+
+1. **Focus on the top bars** - These variables have the most impact on your ROI. Small changes in these variables create large ROI swings.
+
+2. **Asymmetric bars matter** - If the green bar is much longer than the red bar (or vice versa), it means upside and downside risks are unequal. This indicates non-linear relationships or threshold effects.
+
+3. **Prioritize monitoring** - The top 1-2 variables in the tornado chart are your critical metrics to track and optimize in production.
+
+**Key Takeaway:** Rank variables by impact range, then focus optimization efforts on the top 1-2 variables.
+
+**Example Decision Making:**
+
+If "Value" has the highest impact range (63%):
+- **Action:** Invest in maximizing value delivered per unit (better AI quality, higher conversion rates)
+- **Risk:** Even small degradation in value delivery will significantly reduce ROI
+- **Opportunity:** Small improvements in value can dramatically boost ROI
+
+If "Costs" has a smaller impact range (15%):
+- **Insight:** Cost optimization is important but not as critical as value delivery
+- **Strategy:** Don't obsess over minor cost reductions—focus resources on value enhancement instead
 
 ---
 

@@ -228,9 +228,11 @@ ROICurveChart.displayName = 'ROICurveChart';
 
 interface TornadoChartData {
   variable: string;
-  low: number;
-  high: number;
+  low: number;  // Deviation from baseline (negative)
+  high: number; // Deviation from baseline (positive)
   baseline: number;
+  lowAbsolute: number;  // Absolute ROI at -20%
+  highAbsolute: number; // Absolute ROI at +20%
 }
 
 interface TornadoChartProps {
@@ -286,11 +288,14 @@ export const TornadoChart = memo<TornadoChartProps>(({ data }) => {
                   <p style={{ margin: 0, fontSize: '12px', fontWeight: 'bold', color: '#1e293b', marginBottom: '4px' }}>
                     {data.variable}
                   </p>
-                  <p style={{ margin: 0, fontSize: '11px', color: '#64748b' }}>
-                    Low (-20%): {data.low.toFixed(1)}% ROI
+                  <p style={{ margin: 0, fontSize: '11px', color: '#64748b', marginBottom: '2px' }}>
+                    Baseline: {data.baseline.toFixed(1)}% ROI
                   </p>
-                  <p style={{ margin: 0, fontSize: '11px', color: '#64748b' }}>
-                    High (+20%): {data.high.toFixed(1)}% ROI
+                  <p style={{ margin: 0, fontSize: '11px', color: '#ef4444' }}>
+                    Low (-20%): {data.lowAbsolute.toFixed(1)}% ({data.low > 0 ? '+' : ''}{data.low.toFixed(1)}%)
+                  </p>
+                  <p style={{ margin: 0, fontSize: '11px', color: '#22c55e' }}>
+                    High (+20%): {data.highAbsolute.toFixed(1)}% ({data.high > 0 ? '+' : ''}{data.high.toFixed(1)}%)
                   </p>
                   <p style={{ margin: 0, fontSize: '11px', color: '#ACE849', marginTop: '4px', fontWeight: 'bold' }}>
                     Impact Range: {range.toFixed(1)}%
