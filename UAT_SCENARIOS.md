@@ -76,7 +76,7 @@
 |------|--------|----------------|---------|-------|
 | 1 | Note initial "Total Monthly Value" in table | Record baseline |✅| |
 | 2 | Change "Success Rate" from 90% to 70% | Input accepts change |✅| |
-| 3 | Check "Total Monthly Value" | Should decrease (~22% drop) | |What is Total Monthly value?|
+| 3 | Check "Total Monthly Value" | Should decrease (~22% drop) |❌ |What is Total Monthly value?|
 | 4 | Check ROI % | Should decrease |✅  | |
 
 **Acceptance Criteria:**
@@ -123,7 +123,7 @@
 
 | Step | Action | Expected Result | Status | Notes |
 |------|--------|----------------|---------|-------|
-| 1 | Load "Sales Assistant" preset | Inputs change |x |There is no Sales Assistant preset |
+| 1 | Load "Sales Assistant" preset | Inputs change |❌ |There is no Sales Assistant preset |
 | 2 | Manually change "Monthly Volume" to 99999 | Input updates |✅ | |
 | 3 | Click refresh/reset icon (circular arrow) | All inputs return to DEFAULT (Customer Support) |✅ | |
 
