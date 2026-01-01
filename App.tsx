@@ -354,7 +354,12 @@ export default function App() {
                  </div>
                  <div className="grid grid-cols-2 gap-4">
                     <PercentInput label="Success Rate" value={inputs.successRate} onChange={v => updateInput('successRate', v)} tooltip="Percentage of units that are handled successfully by AI" />
-                    <NumberInput label="Analysis Months" value={inputs.analysisHorizonMonths} onChange={v => updateInput('analysisHorizonMonths', v)} />
+                    <NumberInput
+                      label="Analysis Months"
+                      value={inputs.analysisHorizonMonths}
+                      onChange={v => updateInput('analysisHorizonMonths', v)}
+                      tooltip="Analysis horizon for ROI calculation and fixed cost amortization. Longer periods reduce monthly amortized costs, improving ROI. Does NOT affect monthly metrics like Net Benefit."
+                    />
                  </div>
                </div>
              </div>}
@@ -470,7 +475,12 @@ export default function App() {
                     <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
                          <div className="grid grid-cols-2 gap-3">
                             <PercentInput label="Baseline Conversion" value={inputs.baselineConversionRate} onChange={v => updateInput('baselineConversionRate', v)} />
-                            <PercentInput label="Abs. Uplift (+)" value={inputs.conversionUpliftAbsolute} onChange={v => updateInput('conversionUpliftAbsolute', v)} />
+                            <PercentInput
+                              label="Abs. Uplift (+)"
+                              value={inputs.conversionUpliftAbsolute}
+                              onChange={v => updateInput('conversionUpliftAbsolute', v)}
+                              tooltip="Absolute Uplift: Enter percentage POINTS increase (not relative %). Example: if conversion goes from 2% to 2.5%, enter 0.5 (not 25%)."
+                            />
                         </div>
                         <MoneyInput label="Average Order Value" value={inputs.averageOrderValue} onChange={v => updateInput('averageOrderValue', v)} />
                         <PercentInput label="Gross Margin" value={inputs.grossMargin} onChange={v => updateInput('grossMargin', v)} />
