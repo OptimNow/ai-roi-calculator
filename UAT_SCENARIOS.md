@@ -24,10 +24,10 @@
 
 | Step | Action | Expected Result | Status | Notes |
 |------|--------|----------------|---------|-------|
-| 1 | Open calculator URL | Page loads without errors | | |
-| 2 | Check left column | Default inputs visible (Customer Support use case) | | |
-| 3 | Check right column | ROI metrics displayed (ROI %, Net Benefit, etc.) | | |
-| 4 | Check charts | 2 charts visible (Cost vs Value, Cost Breakdown pie) | | |
+| 1 | Open calculator URL | Page loads without errors |✅ Pass |a bit slow to load |
+| 2 | Check left column | Default inputs visible (Customer Support use case) |✅ Pass | |
+| 3 | Check right column | ROI metrics displayed (ROI %, Net Benefit, etc.) |✅ Pass | |
+| 4 | Check charts | 2 charts visible (Cost vs Value, Cost Breakdown pie) |✅ Pass | |
 
 **Acceptance Criteria:**
 ✅ All inputs have values
@@ -42,16 +42,30 @@
 
 | Step | Action | Expected Result | Status | Notes |
 |------|--------|----------------|---------|-------|
-| 1 | Note initial ROI % | Record baseline (e.g., 150%) | | |
-| 2 | Change "Monthly Volume" from 1000 to 5000 | Input accepts change | | |
-| 3 | Check ROI % | ROI should increase (more volume = better ROI) | | |
-| 4 | Check "Break-even" KPI card | Break-even volume stays constant | | |
-| 5 | Check "Net Benefit" | Should increase proportionally | | |
+| 1 | Note initial ROI % | Record baseline (e.g., 150%) |✅ | |
+| 2 | Change "Monthly Volume" from 1000 to 5000 | Input accepts change |✅ | |
+| 3 | Check ROI % | ROI should increase (more volume = better ROI) |✅ | |
+| 4 | Check "Break-even" KPI card | Break-even volume stays constant |✅ | |
+| 5 | Check "Net Benefit" | Should increase proportionally |✅ | |
+
+
 
 **Acceptance Criteria:**
 ✅ Volume changes are reflected immediately
 ✅ Break-even volume is FIXED (doesn't change with volume)
 ✅ Charts update automatically
+
+**Testers feedback:** 
+
+1.Break-even card: better show a graph showing the profit aover time , a ROI curve
+
+2.The cards on the right and financial overview, you need to explain: are those results after 12 months? You need to explain each card.
+
+3.when i change something in the "Analysis Month", nothing changes, it is normal?
+
+
+
+
 
 ---
 
@@ -60,14 +74,19 @@
 
 | Step | Action | Expected Result | Status | Notes |
 |------|--------|----------------|---------|-------|
-| 1 | Note initial "Total Monthly Value" in table | Record baseline | | |
-| 2 | Change "Success Rate" from 90% to 70% | Input accepts change | | |
-| 3 | Check "Total Monthly Value" | Should decrease (~22% drop) | | |
-| 4 | Check ROI % | Should decrease | | |
+| 1 | Note initial "Total Monthly Value" in table | Record baseline |✅| |
+| 2 | Change "Success Rate" from 90% to 70% | Input accepts change |✅| |
+| 3 | Check "Total Monthly Value" | Should decrease (~22% drop) | |What is Total Monthly value?|
+| 4 | Check ROI % | Should decrease |✅  | |
 
 **Acceptance Criteria:**
 ✅ Lower success rate = lower value = lower ROI
 ✅ Input validation prevents > 100% or < 0%
+
+**Testers feedback:** 
+
+1. When i try to change the number in the cell, it keeps a leading zero on the left, no big deal but does not look fine, even if it does not impact the calculation: example: 060
+
 
 ---
 
@@ -78,16 +97,25 @@
 
 | Step | Action | Expected Result | Status | Notes |
 |------|--------|----------------|---------|-------|
-| 1 | Click "Customer Support" preset button | Inputs populate with preset values | | |
-| 2 | Click "Chatbot" preset | All inputs change to chatbot values | | |
-| 3 | Check Value Method dropdown | Should show "Cost Displacement" for Support, check for Chatbot | | |
-| 4 | Check ROI results | Different ROI for each preset | | |
+| 1 | Click "Customer Support" preset button | Inputs populate with preset values |✅ | |
+| 2 | Click "Chatbot" preset | All inputs change to chatbot values |✅ | |
+| 3 | Check Value Method dropdown | Should show "Cost Displacement" for Support, check for Chatbot |✅ | |
+| 4 | Check ROI results | Different ROI for each preset |✅ | |
 
 **Acceptance Criteria:**
 ✅ All presets load without errors
 ✅ Each preset has unique input values
 ✅ Results update immediately
 
+
+**Testers feedback:** 
+1.Customer Support bot scenario: 
+- The fixed amount looks too big in the calcculation
+- put set the default monthly volume to 500
+
+2. what are the preset assumption for input tokens and output tokens based on? For the e-ccommerce reco, i find it quite low
+3. What is ABS Uplift in the value ddefintion layer? Explain what is it. I understood but i would liked to see an zxplanation
+4. You need 2 more pre-sets to illustrate the retention uplift scenario, and the premium monetization scenario.
 ---
 
 ### Test 2.2: Reset to Defaults
@@ -95,14 +123,17 @@
 
 | Step | Action | Expected Result | Status | Notes |
 |------|--------|----------------|---------|-------|
-| 1 | Load "Sales Assistant" preset | Inputs change | | |
-| 2 | Manually change "Monthly Volume" to 99999 | Input updates | | |
-| 3 | Click refresh/reset icon (circular arrow) | All inputs return to DEFAULT (Customer Support) | | |
+| 1 | Load "Sales Assistant" preset | Inputs change |x |There is no Sales Assistant preset |
+| 2 | Manually change "Monthly Volume" to 99999 | Input updates |✅ | |
+| 3 | Click refresh/reset icon (circular arrow) | All inputs return to DEFAULT (Customer Support) |✅ | |
 
 **Acceptance Criteria:**
 ✅ Reset button clears custom changes
 ✅ Returns to default preset (not last preset)
 
+**Testers feedback:**
+
+Make a subtle chartreuse accent for the refresh button, because i had to go look for it in the page, i did not see at first
 ---
 
 ## Scenario 3: Advanced Mode
