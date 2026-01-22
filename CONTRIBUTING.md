@@ -99,9 +99,6 @@ npm run build
 
 # Lancer les tests
 npm test
-
-# Lancer le type checking TypeScript
-npm run type-check
 ```
 
 ---
@@ -145,12 +142,6 @@ npm test
 
 # Le build fonctionne
 npm run build
-
-# Pas d'erreurs TypeScript
-npm run type-check
-
-# Pas d'erreurs de linting (si configuré)
-npm run lint
 ```
 
 ### 4. Committez vos Changements
@@ -198,7 +189,7 @@ git push origin fix/description-du-bug
 
 ### 8. Fusion
 
-Une fois approuvée et que tous les tests passent, votre PR sera fusionnée ! 🎉
+Une fois approuvée par les mainteneurs, votre PR sera fusionnée ! 🎉
 
 ---
 
@@ -349,7 +340,6 @@ Avant d'ouvrir votre PR, vérifiez que :
 
 - [ ] Mon code compile sans erreur (`npm run build`)
 - [ ] Les tests passent (`npm test`)
-- [ ] Pas d'erreurs TypeScript (`npm run type-check`)
 - [ ] J'ai testé mes changements manuellement
 - [ ] J'ai ajouté des tests si nécessaire
 - [ ] J'ai mis à jour la documentation si nécessaire
