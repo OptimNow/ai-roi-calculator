@@ -15,6 +15,8 @@ Built with React + TypeScript, implementing a 3-layer ROI framework for AI proje
 - ✅ Performance optimizations (React.memo for charts)
 - ✅ Comprehensive help guide modal
 - ✅ JSDoc documentation
+- ✅ Streamlined 2-section input layout (Value & Scope + Cost Model)
+- ✅ "Success Rate" renamed to "Realization Rate" for clarity
 
 ---
 
@@ -47,6 +49,8 @@ Built with React + TypeScript, implementing a 3-layer ROI framework for AI proje
 - [x] **Logo & Favicon**: Brand assets integrated
 - [x] **Help Modal**: Comprehensive "How to Fill" guide with examples
 - [x] **Responsive Design**: Mobile-friendly layout
+- [x] **Streamlined Layout**: Consolidated from 5 input sections to 2 (Value & Scope + Cost Model)
+- [x] **Realization Rate**: Renamed "Success Rate" to better describe business value realization
 
 ---
 
@@ -104,7 +108,7 @@ Built with React + TypeScript, implementing a 3-layer ROI framework for AI proje
 
 **Implementation:**
 - Created TornadoChart component in Charts.tsx with vertical BarChart
-- Variables tested: Volume, Success Rate, Costs, Value
+- Variables tested: Volume, Realization Rate, Costs, Value
 - Math.min/max logic to handle inverse relationships correctly
 - Sorting by `Math.abs(high - low)` for impact ranking
 - ResponsiveContainer with h-full for proper rendering
@@ -279,6 +283,8 @@ Currently, the calculator only supports API-based pricing (pay-per-token). This 
 - ✅ Break-even Analysis with ROI curve visualization
 - ✅ Sensitivity Analysis with tornado chart
 - ✅ Visual UI hierarchy (grey inputs, white results)
+- ✅ Streamlined 2-section input layout (Value & Scope + Cost Model)
+- ✅ "Success Rate" renamed to "Realization Rate"
 - ✅ Input validation improvements
 - ✅ Unit tests (30+ test cases)
 - ✅ Error boundary implementation

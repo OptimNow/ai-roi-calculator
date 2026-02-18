@@ -100,38 +100,23 @@ npm test
 
 1. **Select a Preset:** Choose from predefined use cases (Customer Support, Content Generation, Data Extraction, etc.) or use "Custom" to start from scratch.
 
-2. **Configure General Settings:**
-   - Enter your use case name and unit of measurement (e.g., "tickets", "conversations", "documents")
-   - Set monthly volume and expected success rate
-   - Choose analysis horizon (months)
+2. **Define Value & Scope (Section 1):**
+   - Set project context: use case name, unit of measurement (e.g., "tickets", "documents"), monthly volume, and analysis horizon
+   - Choose a Value Archetype: Cost Displacement, Revenue Uplift, Retention Uplift, or Premium Monetization
+   - Define value drivers for your chosen method (e.g., baseline costs, conversion rates, churn rates)
+   - Set Realization Rate — the % of AI outputs that translate to real business impact
 
-3. **Enter Fixed Costs:**
-   - Integration & development costs
-   - Training & tuning expenses
-   - Change management overhead
-   - Amortization period
+3. **Configure Cost Model (Section 2):**
+   - **Infrastructure (Layer 1):** Primary model token usage and pricing, optional multi-model routing, cache settings
+   - **Harness (Layer 2):** Orchestration, retrieval, tool APIs, logging, monitoring, safety guardrails, retry rate, and overhead multiplier
+   - **One-time Costs:** Integration & development, training & tuning, change management, and amortization period
 
-4. **Configure Infrastructure (Layer 1):**
-   - Primary model token usage and pricing
-   - Optional: Toggle Advanced Mode for multi-model routing
-   - Set cache hit rate and discount for optimization
-
-5. **Configure Harness Costs (Layer 2):**
-   - Orchestration, retrieval, and tool API costs per unit
-   - Logging, monitoring, and safety guardrails
-   - Network egress and storage costs
-   - Retry rate and overhead multiplier
-
-6. **Select Value Method (Layer 3):**
-   - Choose how your AI solution generates business value
-   - Enter method-specific parameters (e.g., baseline costs, conversion rates, churn rates)
-
-7. **Analyze Results:**
+4. **Analyze Results:**
    - View 5 key metrics: ROI %, Monthly Benefit, Payback Period, Cost/Unit, and Break-even Volume
    - Review detailed cost breakdown by layer
    - Check insight cards for warnings and recommendations
 
-8. **Use Advanced Features:**
+5. **Use Advanced Features:**
    - **Sensitivity Simulator:** Test different scenarios with multipliers
    - **Scenario Manager:** Save current calculation for later comparison
    - **Scenario Comparison:** Compare multiple scenarios side-by-side
@@ -140,7 +125,7 @@ npm test
 
 **Customer Support Automation:**
 - Monthly volume: 10,000 tickets
-- Success rate: 80% (AI successfully resolves 8,000 tickets)
+- Realization rate: 80% (AI successfully resolves 8,000 tickets)
 - Value method: Cost Displacement
 - Baseline human cost: $5 per ticket
 - Deflection rate: 70% (AI prevents escalation for 5,600 tickets)

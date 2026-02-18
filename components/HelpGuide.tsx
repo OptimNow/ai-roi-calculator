@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Info, DollarSign, Zap, TrendingUp, Calculator, Settings } from 'lucide-react';
+import { X, Info, DollarSign, TrendingUp, Calculator, Settings } from 'lucide-react';
 
 interface HelpGuideProps {
   isOpen: boolean;
@@ -56,14 +56,17 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
 
           <hr className="border-slate-200" />
 
-          {/* Section 1: General Parameters */}
+          {/* Section 1: Value & Scope */}
           <section>
             <div className="flex items-center space-x-2 mb-4">
-              <Calculator className="text-accent" size={20} />
-              <h3 className="text-lg font-bold text-slate-800">1. General Parameters</h3>
+              <TrendingUp className="text-green-600" size={20} />
+              <h3 className="text-lg font-bold text-slate-800">1. Value & Scope</h3>
             </div>
+            <p className="text-sm text-slate-600 mb-4 ml-7">Define your AI project, its scale, and how it creates business value.</p>
 
             <div className="space-y-4 ml-7">
+              <h4 className="font-bold text-slate-700 text-sm border-b border-slate-200 pb-1">Project Context</h4>
+
               <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
                 <h4 className="font-semibold text-slate-700 mb-2">Use Case Name</h4>
                 <p className="text-sm text-slate-600">A descriptive name for your AI project (e.g., "Customer Support Bot", "Invoice Processing").</p>
@@ -91,18 +94,6 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
               </div>
 
               <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                <h4 className="font-semibold text-slate-700 mb-2">Success Rate (%)</h4>
-                <p className="text-sm text-slate-600">
-                  Percentage of units successfully handled by AI without errors or escalation to humans. Typical ranges:
-                </p>
-                <ul className="mt-2 text-sm text-slate-600 list-disc list-inside ml-3">
-                  <li><strong>Simple tasks:</strong> 90-98%</li>
-                  <li><strong>Complex tasks:</strong> 70-85%</li>
-                  <li><strong>Experimental:</strong> 50-70%</li>
-                </ul>
-              </div>
-
-              <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
                 <h4 className="font-semibold text-slate-700 mb-2">Analysis Months</h4>
                 <p className="text-sm text-slate-600">
                   The time horizon for your ROI analysis. This determines the timeframe shown in charts and projections. Typical values:
@@ -114,144 +105,34 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                 </ul>
                 <p className="text-xs text-slate-500 mt-1">💡 Tip: This doesn't affect break-even or payback calculations, only visualization scope.</p>
               </div>
-            </div>
-          </section>
 
-          <hr className="border-slate-200" />
+              <h4 className="font-bold text-slate-700 text-sm border-b border-slate-200 pb-1 mt-4">Value Definition</h4>
 
-          {/* Section 2: Infrastructure (Layer 1) */}
-          <section>
-            <div className="flex items-center space-x-2 mb-4">
-              <Zap className="text-blue-500" size={20} />
-              <h3 className="text-lg font-bold text-slate-800">2. Infrastructure (Layer 1)</h3>
-            </div>
-
-            <div className="space-y-4 ml-7">
-              <div className="bg-amber-50 p-4 rounded-lg border border-amber-300">
-                <h4 className="font-semibold text-amber-900 mb-2">⚠️ Pricing Model Assumption</h4>
-                <p className="text-sm text-amber-800 mb-2">
-                  This calculator currently assumes <strong>API-based pricing</strong> (pay-per-token) from cloud providers like OpenAI, Anthropic, Google, etc.
+              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                <h4 className="font-semibold text-slate-700 mb-2">3-Step Value Definition</h4>
+                <p className="text-sm text-slate-600 mb-3">
+                  The Value Model section guides you through three steps:
                 </p>
-                <p className="text-sm text-amber-800 mb-2">
-                  <strong>NOT currently supported:</strong> Self-hosted or open-source models on your own GPUs (e.g., Llama, Mistral, or custom models).
-                  Self-hosted costs involve hardware amortization, electricity, and DevOps overhead instead of per-token charges.
-                </p>
-                <p className="text-xs text-amber-700 mt-2">
-                  📋 Self-hosted pricing support is planned for a future release (see roadmap).
-                </p>
-              </div>
-
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <h4 className="font-semibold text-slate-700 mb-2">Token Counts</h4>
-                <p className="text-sm text-slate-600 mb-2">
-                  <strong>Input Tokens:</strong> Prompt + context sent to the model (e.g., user question, retrieved documents)<br />
-                  <strong>Output Tokens:</strong> Model's response
-                </p>
+                <ol className="text-sm text-slate-600 list-decimal list-inside ml-3 space-y-1">
+                  <li><strong>Choose Value Archetype:</strong> Select how your AI creates business value</li>
+                  <li><strong>Define Value Drivers:</strong> Enter the specific metrics for your chosen method</li>
+                  <li><strong>Set Realization Rate:</strong> What % of AI outputs translate to real business impact</li>
+                </ol>
                 <p className="text-xs text-slate-500 mt-2">
-                  💡 Tip: Test your prompts in the model playground to get accurate token counts. 1 token ≈ 4 characters.
+                  💡 An equation preview below Step 3 shows how your inputs combine into the final value per unit.
                 </p>
               </div>
 
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <h4 className="font-semibold text-slate-700 mb-2">Token Pricing</h4>
+              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                <h4 className="font-semibold text-green-700 mb-2">Realization Rate (%)</h4>
                 <p className="text-sm text-slate-600">
-                  Enter the cost per 1 million tokens from your model provider's pricing page:
+                  Percentage of AI outputs that actually realize business value. This accounts for outputs that are technically successful but don't translate to business impact. Typical ranges:
                 </p>
                 <ul className="mt-2 text-sm text-slate-600 list-disc list-inside ml-3">
-                  <li><strong>GPT-4o:</strong> $2.50 / 1M input, $10.00 / 1M output</li>
-                  <li><strong>GPT-4o-mini:</strong> $0.15 / 1M input, $0.60 / 1M output</li>
-                  <li><strong>Claude Sonnet 4:</strong> $3.00 / 1M input, $15.00 / 1M output</li>
-                  <li><strong>Claude Haiku:</strong> $0.25 / 1M input, $1.25 / 1M output</li>
+                  <li><strong>Simple tasks:</strong> 90-98%</li>
+                  <li><strong>Complex tasks:</strong> 70-85%</li>
+                  <li><strong>Experimental:</strong> 50-70%</li>
                 </ul>
-              </div>
-
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <h4 className="font-semibold text-slate-700 mb-2">Model Routing (Advanced Mode)</h4>
-                <p className="text-sm text-slate-600">
-                  Use a small, cheap model for simple requests and a large, expensive model for complex ones.
-                  Adjust the slider to set what percentage goes to the "simple" model.
-                </p>
-                <p className="text-xs text-slate-500 mt-2">
-                  Example: 70% to GPT-4o-mini ($0.15 input), 30% to GPT-4o ($2.50 input) = blended cost of $0.855 per 1M input tokens.
-                </p>
-              </div>
-
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <h4 className="font-semibold text-slate-700 mb-2">Cache Settings (Advanced)</h4>
-                <p className="text-sm text-slate-600">
-                  <strong>Cache Hit Rate:</strong> % of requests that can reuse cached prompts<br />
-                  <strong>Cache Discount:</strong> % discount on input tokens when cached (e.g., 90% = 10x cheaper)
-                </p>
-                <p className="text-xs text-slate-500 mt-2">
-                  💡 Only applies to input tokens. Leave at 0% if not using prompt caching.
-                </p>
-              </div>
-            </div>
-          </section>
-
-          <hr className="border-slate-200" />
-
-          {/* Section 3: Harness (Layer 2) */}
-          <section>
-            <div className="flex items-center space-x-2 mb-4">
-              <DollarSign className="text-purple-500" size={20} />
-              <h3 className="text-lg font-bold text-slate-800">3. Harness (Layer 2)</h3>
-            </div>
-
-            <div className="space-y-4 ml-7">
-              <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                <h4 className="font-semibold text-slate-700 mb-2">What is the "Harness"?</h4>
-                <p className="text-sm text-slate-600">
-                  The infrastructure and services needed to run your AI in production, beyond just the model itself.
-                </p>
-              </div>
-
-              <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                <h4 className="font-semibold text-slate-700 mb-2">Key Cost Components (per unit)</h4>
-                <ul className="space-y-2 text-sm text-slate-600">
-                  <li><strong>Orchestration:</strong> LangChain, agent frameworks, workflow engines (~$0.001/unit)</li>
-                  <li><strong>Retrieval / Vector DB:</strong> Pinecone, Weaviate, embedding searches (~$0.002/unit)</li>
-                  <li><strong>Tool APIs:</strong> External APIs called by your AI (varies by API)</li>
-                  <li><strong>Logging / Monitoring:</strong> LangSmith, Helicone, DataDog (~$0.0005/unit)</li>
-                  <li><strong>Safety / Guardrails:</strong> Content moderation, PII detection (~$0.0005/unit)</li>
-                  <li><strong>Storage:</strong> Conversation history, documents (~$0.0001/unit)</li>
-                </ul>
-                <p className="text-xs text-slate-500 mt-3">
-                  💡 Start with estimates, refine after testing. Simple mode hides optional fields.
-                </p>
-              </div>
-
-              <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                <h4 className="font-semibold text-slate-700 mb-2">Retry Rate</h4>
-                <p className="text-sm text-slate-600">
-                  Percentage of requests that fail and need to be retried (e.g., 0.1 = 10% retry rate adds 10% to Layer 1 costs).
-                </p>
-              </div>
-
-              <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                <h4 className="font-semibold text-slate-700 mb-2">Overhead Multiplier</h4>
-                <p className="text-sm text-slate-600">
-                  Generic buffer for miscellaneous costs (e.g., 1.1 = 10% overhead for networking, staff time, etc.).
-                </p>
-              </div>
-            </div>
-          </section>
-
-          <hr className="border-slate-200" />
-
-          {/* Section 4: Value (Layer 3) */}
-          <section>
-            <div className="flex items-center space-x-2 mb-4">
-              <TrendingUp className="text-green-600" size={20} />
-              <h3 className="text-lg font-bold text-slate-800">4. Value Definition (Layer 3)</h3>
-            </div>
-
-            <div className="space-y-4 ml-7">
-              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                <h4 className="font-semibold text-slate-700 mb-2">Choose Your Value Method</h4>
-                <p className="text-sm text-slate-600 mb-3">
-                  How does your AI create business value? Pick the method that best fits your use case:
-                </p>
               </div>
 
               {/* Cost Displacement */}
@@ -319,11 +200,114 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
 
           <hr className="border-slate-200" />
 
-          {/* One-time Costs */}
+          {/* Section 2: Cost Model */}
           <section>
-            <h3 className="text-lg font-bold text-slate-800 mb-4">5. One-time Fixed Costs</h3>
+            <div className="flex items-center space-x-2 mb-4">
+              <DollarSign className="text-blue-500" size={20} />
+              <h3 className="text-lg font-bold text-slate-800">2. Cost Model</h3>
+            </div>
+            <p className="text-sm text-slate-600 mb-4 ml-7">All costs associated with running your AI — model inference, supporting infrastructure, and one-time implementation costs.</p>
 
             <div className="space-y-4 ml-7">
+              {/* Infrastructure (Layer 1) */}
+              <h4 className="font-bold text-slate-700 text-sm border-b border-slate-200 pb-1">Infrastructure (Layer 1)</h4>
+
+              <div className="bg-amber-50 p-4 rounded-lg border border-amber-300">
+                <h4 className="font-semibold text-amber-900 mb-2">Pricing Model Assumption</h4>
+                <p className="text-sm text-amber-800 mb-2">
+                  This calculator currently assumes <strong>API-based pricing</strong> (pay-per-token) from cloud providers like OpenAI, Anthropic, Google, etc.
+                </p>
+                <p className="text-sm text-amber-800 mb-2">
+                  <strong>NOT currently supported:</strong> Self-hosted or open-source models on your own GPUs (e.g., Llama, Mistral, or custom models).
+                  Self-hosted costs involve hardware amortization, electricity, and DevOps overhead instead of per-token charges.
+                </p>
+                <p className="text-xs text-amber-700 mt-2">
+                  Self-hosted pricing support is planned for a future release (see roadmap).
+                </p>
+              </div>
+
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <h4 className="font-semibold text-slate-700 mb-2">Token Counts</h4>
+                <p className="text-sm text-slate-600 mb-2">
+                  <strong>Input Tokens:</strong> Prompt + context sent to the model (e.g., user question, retrieved documents)<br />
+                  <strong>Output Tokens:</strong> Model's response
+                </p>
+                <p className="text-xs text-slate-500 mt-2">
+                  💡 Tip: Test your prompts in the model playground to get accurate token counts. 1 token ≈ 4 characters.
+                </p>
+              </div>
+
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <h4 className="font-semibold text-slate-700 mb-2">Token Pricing</h4>
+                <p className="text-sm text-slate-600">
+                  Enter the cost per 1 million tokens from your model provider's pricing page:
+                </p>
+                <ul className="mt-2 text-sm text-slate-600 list-disc list-inside ml-3">
+                  <li><strong>GPT-4o:</strong> $2.50 / 1M input, $10.00 / 1M output</li>
+                  <li><strong>GPT-4o-mini:</strong> $0.15 / 1M input, $0.60 / 1M output</li>
+                  <li><strong>Claude Sonnet 4:</strong> $3.00 / 1M input, $15.00 / 1M output</li>
+                  <li><strong>Claude Haiku:</strong> $0.25 / 1M input, $1.25 / 1M output</li>
+                </ul>
+              </div>
+
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <h4 className="font-semibold text-slate-700 mb-2">Model Routing (Advanced Mode)</h4>
+                <p className="text-sm text-slate-600">
+                  Use a small, cheap model for simple requests and a large, expensive model for complex ones.
+                  Adjust the slider to set what percentage goes to the "simple" model.
+                </p>
+                <p className="text-xs text-slate-500 mt-2">
+                  Example: 70% to GPT-4o-mini ($0.15 input), 30% to GPT-4o ($2.50 input) = blended cost of $0.855 per 1M input tokens.
+                </p>
+              </div>
+
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <h4 className="font-semibold text-slate-700 mb-2">Cache Settings (Advanced)</h4>
+                <p className="text-sm text-slate-600">
+                  <strong>Cache Hit Rate:</strong> % of requests that can reuse cached prompts<br />
+                  <strong>Cache Discount:</strong> % discount on input tokens when cached (e.g., 90% = 10x cheaper)
+                </p>
+                <p className="text-xs text-slate-500 mt-2">
+                  💡 Only applies to input tokens. Leave at 0% if not using prompt caching.
+                </p>
+              </div>
+
+              {/* Harness (Layer 2) */}
+              <h4 className="font-bold text-slate-700 text-sm border-b border-slate-200 pb-1 mt-6">Harness (Layer 2)</h4>
+
+              <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                <h4 className="font-semibold text-slate-700 mb-2">What is the "Harness"?</h4>
+                <p className="text-sm text-slate-600">
+                  The infrastructure and services needed to run your AI in production, beyond just the model itself.
+                </p>
+              </div>
+
+              <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                <h4 className="font-semibold text-slate-700 mb-2">Key Cost Components (per unit)</h4>
+                <ul className="space-y-2 text-sm text-slate-600">
+                  <li><strong>Orchestration:</strong> LangChain, agent frameworks, workflow engines (~$0.001/unit)</li>
+                  <li><strong>Retrieval / Vector DB:</strong> Pinecone, Weaviate, embedding searches (~$0.002/unit)</li>
+                  <li><strong>Tool APIs:</strong> External APIs called by your AI (varies by API)</li>
+                  <li><strong>Logging / Monitoring:</strong> LangSmith, Helicone, DataDog (~$0.0005/unit)</li>
+                  <li><strong>Safety / Guardrails:</strong> Content moderation, PII detection (~$0.0005/unit)</li>
+                  <li><strong>Storage:</strong> Conversation history, documents (~$0.0001/unit)</li>
+                </ul>
+                <p className="text-xs text-slate-500 mt-3">
+                  💡 Start with estimates, refine after testing. Simple mode hides optional fields.
+                </p>
+              </div>
+
+              <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                <h4 className="font-semibold text-slate-700 mb-2">Retry Rate & Overhead</h4>
+                <p className="text-sm text-slate-600">
+                  <strong>Retry Rate:</strong> Percentage of requests that fail and need to be retried (e.g., 0.1 = 10% retry rate adds 10% to Layer 1 costs).<br />
+                  <strong>Overhead Multiplier:</strong> Generic buffer for miscellaneous costs (e.g., 1.1 = 10% overhead for networking, staff time, etc.).
+                </p>
+              </div>
+
+              {/* One-time Costs */}
+              <h4 className="font-bold text-slate-700 text-sm border-b border-slate-200 pb-1 mt-6">One-time Costs</h4>
+
               <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
                 <h4 className="font-semibold text-slate-700 mb-2">Implementation Costs</h4>
                 <ul className="space-y-2 text-sm text-slate-600">
@@ -348,7 +332,7 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
           <section>
             <div className="flex items-center space-x-2 mb-4">
               <Settings className="text-purple-500" size={20} />
-              <h3 className="text-lg font-bold text-slate-800">6. Advanced Features</h3>
+              <h3 className="text-lg font-bold text-slate-800">3. Advanced Features</h3>
             </div>
 
             <div className="space-y-4 ml-7">
@@ -396,7 +380,7 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                 </p>
                 <ul className="text-sm text-slate-300 list-disc list-inside ml-3 space-y-2">
                   <li><strong>Volume Multiplier (0.5x - 3.0x):</strong> Simulate lower or higher traffic (e.g., 2x = double your volume)</li>
-                  <li><strong>Success Rate Multiplier (0.5x - 1.5x):</strong> Test if AI performs worse/better than expected</li>
+                  <li><strong>Realization Rate Multiplier (0.5x - 1.5x):</strong> Test if AI performs worse/better than expected</li>
                   <li><strong>Cost Multiplier (0.5x - 2.0x):</strong> Model price changes (e.g., 1.5x = 50% cost increase)</li>
                   <li><strong>Value Multiplier (0.5x - 2.0x):</strong> Adjust business value estimates up or down</li>
                 </ul>
@@ -473,7 +457,7 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
             <ul className="space-y-2 text-sm text-slate-700">
               <li className="flex items-start">
                 <span className="text-accent mr-2">✓</span>
-                <span><strong>Start conservative:</strong> Use lower success rates and deflection rates initially</span>
+                <span><strong>Start conservative:</strong> Use lower realization rates and deflection rates initially</span>
               </li>
               <li className="flex items-start">
                 <span className="text-accent mr-2">✓</span>
@@ -493,7 +477,7 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
               </li>
               <li className="flex items-start">
                 <span className="text-accent mr-2">✓</span>
-                <span><strong>Validate assumptions:</strong> Run small pilots to verify success rates and costs before scaling</span>
+                <span><strong>Validate assumptions:</strong> Run small pilots to verify realization rates and costs before scaling</span>
               </li>
             </ul>
           </section>
