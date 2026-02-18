@@ -62,20 +62,20 @@ The 3-layer architecture prevents common pitfalls in AI cost estimation:
 | Symbol | Description | Units |
 |--------|-------------|-------|
 | `V` | Monthly volume (units processed) | units/month |
-| `S` | Success rate | % (0-100) |
+| `S` | Realization rate | % (0-100) |
 | `C₁` | Layer 1 cost per unit | $/unit |
 | `C₂` | Layer 2 cost per unit | $/unit |
 | `Cf` | Fixed costs (one-time) | $ |
 | `A` | Amortization period | months |
 | `GV` | Gross value per unit | $/unit |
-| `NV` | Net value per unit (after success rate) | $/unit |
+| `NV` | Net value per unit (after realization rate) | $/unit |
 | `ROI` | Return on Investment | % |
 | `M` | Sensitivity multiplier | scalar (1.0 = baseline) |
 
 ### Key Principles
 
 1. **Additive Costs**: All cost components sum linearly
-2. **Multiplicative Success**: Value scales by success rate (`S/100`)
+2. **Multiplicative Success**: Value scales by realization rate (`S/100`)
 3. **Amortization**: Fixed costs spread across analysis horizon
 4. **Conservative Estimation**: When uncertain, favor higher costs / lower value
 
@@ -276,7 +276,7 @@ GV = [(Bh × Dr) - (Rrc × Rr)] × (S / 100) × M_value
 - Deflection rate: 35% (AI resolves without human)
 - Residual review rate: 5% (AI draft requires human review)
 - Residual review cost: $0.20/ticket
-- Success rate: 90%
+- Realization rate: 90%
 
 **Math:**
 ```
@@ -288,11 +288,11 @@ GV = [(1.00 × 0.35) - (0.20 × 0.05)] × 0.90
 
 **Interpretation:** Each AI-handled ticket saves $0.31 compared to pure human handling.
 
-**Success Rate Explanation (90%):**
-- **What it means:** Technical success rate - 90% of AI attempts produce usable output, 10% fail completely (timeouts, errors, no response)
+**Realization Rate Explanation (90%):**
+- **What it means:** Technical realization rate - 90% of AI attempts produce usable output, 10% fail completely (timeouts, errors, no response)
 - **Why 90% for this scenario:** Customer support systems face real-world variability (unclear questions, edge cases, system integrations). 90% is realistic for production chatbots.
-- **Independence from deflection/review rates:** Success rate is orthogonal to quality metrics. An AI can successfully generate output (counted in the 90%) that still requires human review (the 5% residual review rate). These are separate dimensions:
-  - **Success rate:** Did the AI produce output at all?
+- **Independence from deflection/review rates:** Realization rate is orthogonal to quality metrics. An AI can successfully generate output (counted in the 90%) that still requires human review (the 5% residual review rate). These are separate dimensions:
+  - **Realization rate:** Did the AI produce output at all?
   - **Deflection rate:** Of successful outputs, how many fully resolve the issue?
   - **Review rate:** Of successful outputs, how many need human editing before use?
 
@@ -319,7 +319,7 @@ GV = AOV × ΔConv × Gm × (S / 100) × M_value
 - Baseline conversion: 3.0%
 - Absolute uplift: +0.2 percentage points (3.0% → 3.2%)
 - Gross margin: 45%
-- Success rate: 100% (all users see recommendations)
+- Realization rate: 100% (all users see recommendations)
 
 **Math:**
 ```
@@ -338,10 +338,10 @@ Total Value = 0.0765 × 500,000 = $38,250/month
 - **Absolute:** +0.2 percentage points ✓ (enter this)
 - **Relative:** +6.67% ✗ (do NOT enter this)
 
-**Success Rate Explanation (100%):**
+**Realization Rate Explanation (100%):**
 - **What it means:** 100% of sessions receive AI-generated recommendations without technical failures
 - **Why 100% for this scenario:** E-commerce recommendation engines are typically stateless, pre-computed systems with high reliability. Unlike interactive chatbots, they serve cached/pre-generated recommendations, so technical failure rates approach zero in production.
-- **No quality dependency:** Success rate measures technical delivery, not recommendation quality. A poorly-targeted recommendation still counts as "successful" if delivered. The conversion uplift metric captures quality - if recommendations are bad, uplift will be low/zero.
+- **No quality dependency:** Realization rate measures technical delivery, not recommendation quality. A poorly-targeted recommendation still counts as "successful" if delivered. The conversion uplift metric captures quality - if recommendations are bad, uplift will be low/zero.
 
 ---
 
@@ -366,7 +366,7 @@ Total_Value = (Ci × Cra × (S / 100) × M_value) × (Av / 12)
 - Baseline churn: 2.5%/month
 - Churn reduction: 0.5 percentage points absolute
 - Annual customer value: $1,200
-- Success rate: 85%
+- Realization rate: 85%
 
 **Math:**
 ```
@@ -377,7 +377,7 @@ Total Value = 42.5 × 100 = $4,250/month
 
 **Interpretation:** Preventing 42.5 customers from churning each month generates $4,250 in retained revenue.
 
-**Success Rate Explanation (85%):**
+**Realization Rate Explanation (85%):**
 - **What it means:** 85% of AI retention interventions execute successfully (personalized emails sent, proactive support tickets created, loyalty rewards delivered)
 - **Why 85% for this scenario:** Retention systems integrate with multiple services (email platforms, CRM, support ticketing, payment systems). Integration complexity and external dependencies reduce reliability compared to standalone systems. 85% accounts for:
   - Email delivery failures
@@ -408,7 +408,7 @@ Total_Value = (Ps - Cn) × Ns × (S / 100) × M_value
 - Subscription price: $15/month
 - Non-AI COGS (hosting, support): $3/month
 - Subscribers: 5,000
-- Success rate: 100%
+- Realization rate: 100%
 
 **Math:**
 ```
@@ -416,7 +416,7 @@ Margin per subscriber = 15 - 3 = $12
 Total Value = 12 × 5,000 × 1.00 = $60,000/month
 ```
 
-**Success Rate Explanation (100%):**
+**Realization Rate Explanation (100%):**
 - **What it means:** 100% of premium AI features are available and functional for paying subscribers
 - **Why 100% for this scenario:** Premium features have high uptime requirements. Subscribers paying specifically for AI capabilities expect near-perfect availability. Production systems typically achieve 99.9%+ uptime, modeled as 100% for monthly calculations.
 - **Revenue model - Marginal vs Total:**
@@ -601,7 +601,7 @@ Four independent multipliers modify baseline assumptions:
 | Multiplier | Symbol | Affects | Range |
 |------------|--------|---------|-------|
 | Volume | `M_volume` | Monthly volume | 0.5x - 3.0x |
-| Success Rate | `M_success` | AI quality/accuracy | 0.5x - 1.5x |
+| Realization Rate | `M_realization` | AI quality/accuracy | 0.5x - 1.5x |
 | Cost | `M_cost` | All Layer 1+2 costs | 0.5x - 2.0x |
 | Value | `M_value` | All Layer 3 value drivers | 0.5x - 2.0x |
 
@@ -612,7 +612,7 @@ Four independent multipliers modify baseline assumptions:
 **Modified Calculations:**
 ```
 V_effective = V × M_volume
-S_effective = min(100, S × M_success)
+S_effective = min(100, S × M_realization)
 C₁_effective = C₁ × M_cost
 C₂_effective = C₂ × M_cost
 GV_effective = GV × M_value
@@ -622,7 +622,7 @@ GV_effective = GV × M_value
 
 **Conservative Case:**
 - Volume: 0.8x (80% of expected)
-- Success Rate: 0.9x (90% of expected)
+- Realization Rate: 0.9x (90% of expected)
 - Costs: 1.2x (20% higher than expected)
 - Value: 0.9x (10% lower than expected)
 
@@ -636,7 +636,7 @@ GV_effective = GV × M_value
 
 **Methodology:**
 
-For each variable (Volume, Success Rate, Costs, Value):
+For each variable (Volume, Realization Rate, Costs, Value):
 1. Calculate ROI at baseline (current inputs)
 2. Calculate ROI at -20% (variable decreased by 20%)
 3. Calculate ROI at +20% (variable increased by 20%)
@@ -691,7 +691,7 @@ If "Costs" has a smaller impact range (15%):
 ### Key Assumptions
 
 1. **Linear Scaling:** Costs and value scale linearly with volume (no economies/diseconomies of scale)
-2. **Constant Success Rate:** AI quality remains stable over time (no model drift)
+2. **Constant Realization Rate:** AI quality remains stable over time (no model drift)
 3. **Static Pricing:** API pricing doesn't change during analysis period
 4. **Independent Variables:** Sensitivity multipliers don't interact (e.g., higher volume doesn't reduce unit costs)
 5. **Immediate Value Realization:** Benefits accrue immediately when AI succeeds (no lag)
@@ -725,7 +725,7 @@ If "Costs" has a smaller impact range (15%):
 
 The `calculations.ts` module includes 30+ test cases covering:
 
-- Edge cases (zero volume, 100% success rate, negative margins)
+- Edge cases (zero volume, 100% realization rate, negative margins)
 - All four value methods with representative scenarios
 - Cache optimization logic
 - Model routing with various split percentages
@@ -796,9 +796,9 @@ Our methodology aligns with standard practices:
 ### Scenario: Customer Support Chatbot
 
 **Inputs:**
-- **General:**
+- **Value & Scope:**
   - Monthly Volume: 1,000 tickets
-  - Success Rate: 90%
+  - Realization Rate: 90%
   - Analysis Horizon: 12 months
 
 - **Fixed Costs:**

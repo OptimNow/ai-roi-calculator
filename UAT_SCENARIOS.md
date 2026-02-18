@@ -69,18 +69,18 @@
 
 ---
 
-### Test 1.3: Change Success Rate
-**Objective:** Verify success rate impacts value
+### Test 1.3: Change Realization Rate
+**Objective:** Verify realization rate impacts value
 
 | Step | Action | Expected Result | Status | Notes |
 |------|--------|----------------|---------|-------|
 | 1 | Note initial "Total Monthly Value" in table | Record baseline |✅| |
-| 2 | Change "Success Rate" from 90% to 70% | Input accepts change |✅| |
+| 2 | Change "Realization Rate" from 90% to 70% | Input accepts change |✅| |
 | 3 | Check "Total Monthly Value" | Should decrease (~22% drop) |❌ |What is Total Monthly value?|
 | 4 | Check ROI % | Should decrease |✅  | |
 
 **Acceptance Criteria:**
-✅ Lower success rate = lower value = lower ROI
+✅ Lower realization rate = lower value = lower ROI
 ✅ Input validation prevents > 100% or < 0%
 
 **Testers feedback:** 
@@ -191,9 +191,9 @@ Make a subtle chartreuse accent for the refresh button, because i had to go look
 | 3 | Enter: Deflection Rate = 50% | Accepts input | | |
 | 4 | Enter: Residual Review Rate = 10% | "Review Cost" field appears | | |
 | 5 | Enter: Review Cost = $0.50 | Accepts input | | |
-| 6 | Check "Value per Unit" in table | Should be ~$2.25 per unit (with success rate applied) | | |
+| 6 | Check "Value per Unit" in table | Should be ~$2.25 per unit (with realization rate applied) | | |
 
-**Formula Check:** (5.00 × 0.5) - (0.50 × 0.1) = $2.45 × success rate
+**Formula Check:** (5.00 × 0.5) - (0.50 × 0.1) = $2.45 × realization rate
 
 **Acceptance Criteria:**
 ✅ Deflection rate increases value
@@ -212,9 +212,9 @@ Make a subtle chartreuse accent for the refresh button, because i had to go look
 | 3 | Enter: Absolute Uplift = 0.5% (0.5 percentage points) | | | |
 | 4 | Enter: Average Order Value = $100 | | | |
 | 5 | Enter: Gross Margin = 30% | | | |
-| 6 | Check value calculation | Delta revenue × margin × success rate | | |
+| 6 | Check value calculation | Delta revenue × margin × realization rate | | |
 
-**Formula Check:** ($100 × 0.005) × 0.30 = $0.15 value per unit (before success rate)
+**Formula Check:** ($100 × 0.005) × 0.30 = $0.15 value per unit (before realization rate)
 
 **Acceptance Criteria:**
 ✅ Uplift is ABSOLUTE (not relative percentage)
@@ -312,7 +312,7 @@ Make a subtle chartreuse accent for the refresh button, because i had to go look
 | 1 | Click folder icon in header | Scenario Manager modal opens | | |
 | 2 | Check "Save Current Scenario" section | Shows current use case name and ROI | | |
 | 3 | Enter Scenario Name: "Conservative Estimate" | Input accepts text | | |
-| 4 | Enter Description: "Lower success rate assumptions" | Optional field | | |
+| 4 | Enter Description: "Lower realization rate assumptions" | Optional field | | |
 | 5 | Click "Save Scenario" button | Success feedback | | |
 | 6 | Check "Saved Scenarios" list | New scenario appears with name, ROI, date | | |
 | 7 | Check folder icon badge | Shows "1" (scenario count) | | |
@@ -449,8 +449,8 @@ Make a subtle chartreuse accent for the refresh button, because i had to go look
 | Step | Action | Expected Result | Status | Notes |
 |------|--------|----------------|---------|-------|
 | 1 | Try entering -100 in Monthly Volume | Input prevents or resets to 0 | | |
-| 2 | Try entering -50 in Success Rate | Prevented or reset | | |
-| 3 | Try entering 150 in Success Rate (> 100%) | Capped at 100% | | |
+| 2 | Try entering -50 in Realization Rate | Prevented or reset | | |
+| 3 | Try entering 150 in Realization Rate (> 100%) | Capped at 100% | | |
 | 4 | Try entering "abc" in Monthly Volume | Ignored or cleared | | |
 
 **Acceptance Criteria:**
