@@ -33,11 +33,9 @@ export default function App() {
     valueMultiplier: 1
   });
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    general: true,
-    layer1: true,
-    layer2: true,
-    layer3: true,
-    fixed: false
+    projectSetup: true,
+    costModel: false,
+    valueModel: true,
   });
 
   // Load scenarios from localStorage on mount
@@ -64,6 +62,12 @@ export default function App() {
   const toggleSection = (key: string) => setExpandedSections(prev => ({...prev, [key]: !prev[key]}));
 
   const results = useMemo(() => calculateROI(inputs, modifiers), [inputs, modifiers]);
+
+  const grossBeforeRealization = useMemo(() => {
+    const effectiveRate = Math.min(100, inputs.successRate * modifiers.successRateMultiplier) / 100;
+    if (effectiveRate <= 0) return 0;
+    return results.grossValuePerUnit / effectiveRate;
+  }, [results.grossValuePerUnit, inputs.successRate, modifiers.successRateMultiplier]);
 
   const updateInput = (field: keyof UseCaseInputs, value: any) => {
     setInputs(prev => ({ ...prev, [field]: value }));
@@ -105,7 +109,7 @@ export default function App() {
 
 ## Inputs
 - Volume: ${formatNumber(inputs.monthlyVolume)} ${inputs.unitName}s/mo
-- Success Rate: ${inputs.successRate}%
+- Realization Rate: ${inputs.successRate}%
 - Model: Simple/Complex split ${inputs.routingSimplePercent}% / ${100 - inputs.routingSimplePercent}%
     `.trim();
     navigator.clipboard.writeText(md);
@@ -231,7 +235,7 @@ export default function App() {
         calculate: (multiplier: number) => calculateROI(inputs, { ...baselineModifiers, volumeMultiplier: multiplier }).roiPercentage
       },
       {
-        name: 'Success Rate',
+        name: 'Realization Rate',
         calculate: (multiplier: number) => calculateROI(inputs, { ...baselineModifiers, successRateMultiplier: multiplier }).roiPercentage
       },
       {
@@ -441,7 +445,7 @@ export default function App() {
                     )}
                     {modifiers.successRateMultiplier !== 1 && (
                       <div className="bg-white bg-opacity-50 rounded px-2 py-1">
-                        <span className="font-semibold text-slate-700">Success Rate:</span> <span className="font-mono text-accent">{inputs.successRate}% × {modifiers.successRateMultiplier} = {(inputs.successRate * modifiers.successRateMultiplier).toFixed(1)}%</span>
+                        <span className="font-semibold text-slate-700">Realization Rate:</span> <span className="font-mono text-accent">{inputs.successRate}% × {modifiers.successRateMultiplier} = {(inputs.successRate * modifiers.successRateMultiplier).toFixed(1)}%</span>
                       </div>
                     )}
                     {modifiers.costMultiplier !== 1 && (
@@ -461,15 +465,15 @@ export default function App() {
           )}
 
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            {/* General Inputs */}
-             <SectionHeader title="1. General Parameters" isOpen={expandedSections.general} onToggle={() => toggleSection('general')} />
-             {expandedSections.general && <div className="p-5 border-b border-slate-100">
+            {/* 1. Project Setup */}
+             <SectionHeader title="1. Project Setup" isOpen={expandedSections.projectSetup} onToggle={() => toggleSection('projectSetup')} />
+             {expandedSections.projectSetup && <div className="p-5 border-b border-slate-100">
                <div className="space-y-3">
                  <div>
                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Use Case Name</label>
-                   <input 
-                    type="text" 
-                    value={inputs.useCaseName} 
+                   <input
+                    type="text"
+                    value={inputs.useCaseName}
                     onChange={e => updateInput('useCaseName', e.target.value)}
                     className="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-accent focus:outline-none"
                    />
@@ -477,44 +481,38 @@ export default function App() {
                  <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Unit Name</label>
-                      <input 
-                        type="text" 
-                        value={inputs.unitName} 
+                      <input
+                        type="text"
+                        value={inputs.unitName}
                         onChange={e => updateInput('unitName', e.target.value)}
                         className="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-accent focus:outline-none"
                       />
                     </div>
                     <NumberInput label="Monthly Volume" value={inputs.monthlyVolume} onChange={v => updateInput('monthlyVolume', v)} />
                  </div>
-                 <div className="grid grid-cols-2 gap-4">
-                    <PercentInput
-                      label="Success Rate"
-                      value={inputs.successRate}
-                      onChange={v => updateInput('successRate', v)}
-                      tooltip="Percentage of AI attempts that produce usable output (not quality of output). Example: 90% means 9/10 attempts work, 1/10 fails completely. This is INDEPENDENT of deflection/review rates - an AI can successfully generate output that still needs human review."
-                    />
-                    <NumberInput
-                      label="Analysis Months"
-                      value={inputs.analysisHorizonMonths}
-                      onChange={v => updateInput('analysisHorizonMonths', v)}
-                      tooltip="Analysis horizon for ROI calculation and fixed cost amortization. Longer periods reduce monthly amortized costs, improving ROI. Does NOT affect monthly metrics like Net Benefit."
-                    />
-                 </div>
+                 <NumberInput
+                   label="Analysis Months"
+                   value={inputs.analysisHorizonMonths}
+                   onChange={v => updateInput('analysisHorizonMonths', v)}
+                   tooltip="Analysis horizon for ROI calculation and fixed cost amortization. Longer periods reduce monthly amortized costs, improving ROI. Does NOT affect monthly metrics like Net Benefit."
+                 />
                </div>
              </div>}
 
-             {/* Layer 1 */}
-             <SectionHeader title="2. Infrastructure (Layer 1)" isOpen={expandedSections.layer1} onToggle={() => toggleSection('layer1')} />
-             {expandedSections.layer1 && <div className="p-5 border-b border-slate-100">
+             {/* 2. Cost Model */}
+             <SectionHeader title="2. Cost Model" isOpen={expandedSections.costModel} onToggle={() => toggleSection('costModel')} />
+             {expandedSections.costModel && <div className="p-5 border-b border-slate-100">
+                {/* Sub-section: Infrastructure (Layer 1) */}
+                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Infrastructure (Layer 1)</h4>
                 {mode === 'advanced' && (
                    <div className="mb-4 p-3 bg-slate-50 rounded border border-slate-200">
-                      <h4 className="text-xs font-bold text-slate-700 mb-2">Model Routing Strategy</h4>
+                      <h5 className="text-xs font-bold text-slate-700 mb-2">Model Routing Strategy</h5>
                       <div className="flex items-center justify-between mb-2">
                          <span className="text-xs text-slate-500">Simple Model</span>
                          <span className="text-xs font-bold text-accent">{inputs.routingSimplePercent}%</span>
                       </div>
-                      <input 
-                        type="range" min="0" max="100" 
+                      <input
+                        type="range" min="0" max="100"
                         value={inputs.routingSimplePercent}
                         onChange={(e) => updateInput('routingSimplePercent', parseInt(e.target.value))}
                         className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
@@ -525,7 +523,7 @@ export default function App() {
                       </div>
                    </div>
                 )}
-                
+
                 <div className="space-y-4">
                     <div className="border-l-2 border-accent pl-3">
                         <h5 className="text-xs font-bold text-slate-900 mb-2">{mode === 'advanced' ? 'Primary Model (Simple)' : 'Model Parameters'}</h5>
@@ -560,102 +558,141 @@ export default function App() {
                         </div>
                     )}
                 </div>
+
+                {/* Sub-section: Harness (Layer 2) */}
+                <div className="border-t border-slate-200 mt-5 pt-5">
+                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Harness (Layer 2)</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                      <MoneyInput label="Orchestration Cost" value={inputs.orchestrationCostPerUnit} onChange={v => updateInput('orchestrationCostPerUnit', v)} precision={4} tooltip="Cost per unit for logic/chains" />
+                      <MoneyInput label="Retrieval / Vector DB" value={inputs.retrievalCostPerUnit} onChange={v => updateInput('retrievalCostPerUnit', v)} precision={4} />
+                  </div>
+                  {mode === 'advanced' && (
+                      <div className="grid grid-cols-2 gap-3 mt-3">
+                           <MoneyInput label="Tool APIs" value={inputs.toolApiCostPerUnit} onChange={v => updateInput('toolApiCostPerUnit', v)} precision={4} />
+                           <MoneyInput label="Logging / Monitoring" value={inputs.loggingMonitoringCostPerUnit} onChange={v => updateInput('loggingMonitoringCostPerUnit', v)} precision={4} />
+                           <MoneyInput label="Safety / Guardrails" value={inputs.safetyGuardrailsCostPerUnit} onChange={v => updateInput('safetyGuardrailsCostPerUnit', v)} precision={4} />
+                           <MoneyInput label="Storage" value={inputs.storageCostPerUnit} onChange={v => updateInput('storageCostPerUnit', v)} precision={4} />
+                      </div>
+                  )}
+                  <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-slate-100">
+                      <PercentInput label="Retry Rate" value={inputs.retryRate * 100} onChange={v => updateInput('retryRate', v/100)} tooltip="Percentage of calls that need a retry" />
+                      <NumberInput label="Overhead Multiplier" value={inputs.overheadMultiplier} onChange={v => updateInput('overheadMultiplier', v)} step={0.05} tooltip="Generic multiplier (e.g. 1.1 for 10% misc overhead)" />
+                  </div>
+                </div>
+
+                {/* Sub-section: One-time Costs */}
+                <div className="border-t border-slate-200 mt-5 pt-5">
+                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">One-time Costs</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                       <MoneyInput label="Integration" value={inputs.integrationCost} onChange={v => updateInput('integrationCost', v)} precision={0} />
+                       <MoneyInput label="Training / Tuning" value={inputs.trainingTuningCost} onChange={v => updateInput('trainingTuningCost', v)} precision={0} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 mt-3">
+                       <MoneyInput label="Change Mgmt" value={inputs.changeManagementCost} onChange={v => updateInput('changeManagementCost', v)} precision={0} />
+                       <NumberInput label="Amortization (Mo)" value={inputs.amortizationMonths} onChange={v => updateInput('amortizationMonths', v)} />
+                  </div>
+                </div>
              </div>}
 
-             {/* Layer 2 */}
-             <SectionHeader title="3. Harness (Layer 2)" isOpen={expandedSections.layer2} onToggle={() => toggleSection('layer2')} />
-             {expandedSections.layer2 && <div className="p-5 border-b border-slate-100">
-                <div className="grid grid-cols-2 gap-3">
-                    <MoneyInput label="Orchestration Cost" value={inputs.orchestrationCostPerUnit} onChange={v => updateInput('orchestrationCostPerUnit', v)} precision={4} tooltip="Cost per unit for logic/chains" />
-                    <MoneyInput label="Retrieval / Vector DB" value={inputs.retrievalCostPerUnit} onChange={v => updateInput('retrievalCostPerUnit', v)} precision={4} />
-                </div>
-                {mode === 'advanced' && (
-                    <div className="grid grid-cols-2 gap-3 mt-3">
-                         <MoneyInput label="Tool APIs" value={inputs.toolApiCostPerUnit} onChange={v => updateInput('toolApiCostPerUnit', v)} precision={4} />
-                         <MoneyInput label="Logging / Monitoring" value={inputs.loggingMonitoringCostPerUnit} onChange={v => updateInput('loggingMonitoringCostPerUnit', v)} precision={4} />
-                         <MoneyInput label="Safety / Guardrails" value={inputs.safetyGuardrailsCostPerUnit} onChange={v => updateInput('safetyGuardrailsCostPerUnit', v)} precision={4} />
-                         <MoneyInput label="Storage" value={inputs.storageCostPerUnit} onChange={v => updateInput('storageCostPerUnit', v)} precision={4} />
-                    </div>
-                )}
-                <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-slate-100">
-                    <PercentInput label="Retry Rate" value={inputs.retryRate * 100} onChange={v => updateInput('retryRate', v/100)} tooltip="Percentage of calls that need a retry" />
-                    <NumberInput label="Overhead Multiplier" value={inputs.overheadMultiplier} onChange={v => updateInput('overheadMultiplier', v)} step={0.05} tooltip="Generic multiplier (e.g. 1.1 for 10% misc overhead)" />
-                </div>
-             </div>}
-
-             {/* Layer 3: Value */}
-             <SectionHeader title="4. Value Definition (Layer 3)" isOpen={expandedSections.layer3} onToggle={() => toggleSection('layer3')} />
-             {expandedSections.layer3 && <div className="p-5 border-b border-slate-100">
-                <div className="mb-4">
-                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Value Method</label>
-                    <select 
+             {/* 3. Value Model */}
+             <SectionHeader title="3. Value Model" isOpen={expandedSections.valueModel} onToggle={() => toggleSection('valueModel')} />
+             {expandedSections.valueModel && <div className="p-5">
+                {/* Step 1: Choose Value Archetype */}
+                <div className="flex items-start mb-5" role="group" aria-label="Step 1: Choose value archetype">
+                  <span className="flex-shrink-0 bg-accent text-charcoal rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">1</span>
+                  <div className="flex-1">
+                    <h4 className="text-xs font-bold text-slate-700 uppercase mb-2">Choose Value Archetype</h4>
+                    <select
                       value={inputs.valueMethod}
                       onChange={(e) => updateInput('valueMethod', e.target.value as ValueMethod)}
                       className="w-full px-3 py-2 bg-white border border-slate-300 rounded text-sm focus:ring-2 focus:ring-accent focus:outline-none"
                     >
                         {Object.values(ValueMethod).map(m => <option key={m} value={m}>{m}</option>)}
                     </select>
+                  </div>
                 </div>
 
-                {inputs.valueMethod === ValueMethod.COST_DISPLACEMENT && (
-                    <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
-                        <MoneyInput label="Baseline Human Cost" value={inputs.baselineHumanCostPerUnit} onChange={v => updateInput('baselineHumanCostPerUnit', v)} />
-                        <div className="grid grid-cols-2 gap-3">
-                            <PercentInput label="Deflection Rate" value={inputs.deflectionRate} onChange={v => updateInput('deflectionRate', v)} />
-                            <PercentInput label="Residual Review Rate" value={inputs.residualHumanReviewRate} onChange={v => updateInput('residualHumanReviewRate', v)} />
+                {/* Step 2: Define Value Drivers */}
+                <div className="flex items-start mb-5" role="group" aria-label="Step 2: Define value drivers">
+                  <span className="flex-shrink-0 bg-accent text-charcoal rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">2</span>
+                  <div className="flex-1">
+                    <h4 className="text-xs font-bold text-slate-700 uppercase mb-2">Define Value Drivers</h4>
+
+                    {inputs.valueMethod === ValueMethod.COST_DISPLACEMENT && (
+                        <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
+                            <MoneyInput label="Baseline Human Cost" value={inputs.baselineHumanCostPerUnit} onChange={v => updateInput('baselineHumanCostPerUnit', v)} />
+                            <div className="grid grid-cols-2 gap-3">
+                                <PercentInput label="Deflection Rate" value={inputs.deflectionRate} onChange={v => updateInput('deflectionRate', v)} />
+                                <PercentInput label="Residual Review Rate" value={inputs.residualHumanReviewRate} onChange={v => updateInput('residualHumanReviewRate', v)} />
+                            </div>
+                            {inputs.residualHumanReviewRate > 0 && (
+                                <MoneyInput label="Review Cost (Unit)" value={inputs.residualReviewCostPerUnit} onChange={v => updateInput('residualReviewCostPerUnit', v)} />
+                            )}
                         </div>
-                        {inputs.residualHumanReviewRate > 0 && (
-                            <MoneyInput label="Review Cost (Unit)" value={inputs.residualReviewCostPerUnit} onChange={v => updateInput('residualReviewCostPerUnit', v)} />
-                        )}
-                    </div>
-                )}
+                    )}
 
-                {inputs.valueMethod === ValueMethod.REVENUE_UPLIFT && (
-                    <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
-                         <div className="grid grid-cols-2 gap-3">
-                            <PercentInput label="Baseline Conversion" value={inputs.baselineConversionRate} onChange={v => updateInput('baselineConversionRate', v)} />
-                            <PercentInput
-                              label="Abs. Uplift (+)"
-                              value={inputs.conversionUpliftAbsolute}
-                              onChange={v => updateInput('conversionUpliftAbsolute', v)}
-                              tooltip="Absolute Uplift: Enter percentage POINTS increase (not relative %). Example: if conversion goes from 2% to 2.5%, enter 0.5 (not 25%)."
-                            />
+                    {inputs.valueMethod === ValueMethod.REVENUE_UPLIFT && (
+                        <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
+                             <div className="grid grid-cols-2 gap-3">
+                                <PercentInput label="Baseline Conversion" value={inputs.baselineConversionRate} onChange={v => updateInput('baselineConversionRate', v)} />
+                                <PercentInput
+                                  label="Abs. Uplift (+)"
+                                  value={inputs.conversionUpliftAbsolute}
+                                  onChange={v => updateInput('conversionUpliftAbsolute', v)}
+                                  tooltip="Absolute Uplift: Enter percentage POINTS increase (not relative %). Example: if conversion goes from 2% to 2.5%, enter 0.5 (not 25%)."
+                                />
+                            </div>
+                            <MoneyInput label="Average Order Value" value={inputs.averageOrderValue} onChange={v => updateInput('averageOrderValue', v)} />
+                            <PercentInput label="Gross Margin" value={inputs.grossMargin} onChange={v => updateInput('grossMargin', v)} />
                         </div>
-                        <MoneyInput label="Average Order Value" value={inputs.averageOrderValue} onChange={v => updateInput('averageOrderValue', v)} />
-                        <PercentInput label="Gross Margin" value={inputs.grossMargin} onChange={v => updateInput('grossMargin', v)} />
-                    </div>
-                )}
+                    )}
 
-                {inputs.valueMethod === ValueMethod.RETENTION && (
-                    <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
-                         <div className="grid grid-cols-2 gap-3">
-                            <PercentInput label="Baseline Churn" value={inputs.baselineChurnRate} onChange={v => updateInput('baselineChurnRate', v)} />
-                            <PercentInput label="Churn Reduction" value={inputs.churnReductionAbsolute} onChange={v => updateInput('churnReductionAbsolute', v)} />
+                    {inputs.valueMethod === ValueMethod.RETENTION && (
+                        <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
+                             <div className="grid grid-cols-2 gap-3">
+                                <PercentInput label="Baseline Churn" value={inputs.baselineChurnRate} onChange={v => updateInput('baselineChurnRate', v)} />
+                                <PercentInput label="Churn Reduction" value={inputs.churnReductionAbsolute} onChange={v => updateInput('churnReductionAbsolute', v)} />
+                            </div>
+                            <MoneyInput label="Annual Value / Customer" value={inputs.annualValuePerCustomer} onChange={v => updateInput('annualValuePerCustomer', v)} />
+                            <NumberInput label="Customers Impacted / Mo" value={inputs.customersImpactedPerMonth} onChange={v => updateInput('customersImpactedPerMonth', v)} />
                         </div>
-                        <MoneyInput label="Annual Value / Customer" value={inputs.annualValuePerCustomer} onChange={v => updateInput('annualValuePerCustomer', v)} />
-                        <NumberInput label="Customers Impacted / Mo" value={inputs.customersImpactedPerMonth} onChange={v => updateInput('customersImpactedPerMonth', v)} />
-                    </div>
-                )}
+                    )}
 
-                {inputs.valueMethod === ValueMethod.PREMIUM_MONETIZATION && (
-                    <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
-                        <MoneyInput label="Price / Sub / Mo" value={inputs.pricePerSubscriberPerMonth} onChange={v => updateInput('pricePerSubscriberPerMonth', v)} />
-                        <NumberInput label="Total Subscribers" value={inputs.subscribers} onChange={v => updateInput('subscribers', v)} />
-                        <MoneyInput label="Non-AI COGS / Sub" value={inputs.nonAiCOGSPerSubscriber} onChange={v => updateInput('nonAiCOGSPerSubscriber', v)} />
-                    </div>
-                )}
-             </div>}
-
-             {/* Fixed Costs */}
-             <SectionHeader title="One-time Costs" isOpen={expandedSections.fixed} onToggle={() => toggleSection('fixed')} />
-             {expandedSections.fixed && <div className="p-5">
-                <div className="grid grid-cols-2 gap-3">
-                     <MoneyInput label="Integration" value={inputs.integrationCost} onChange={v => updateInput('integrationCost', v)} precision={0} />
-                     <MoneyInput label="Training / Tuning" value={inputs.trainingTuningCost} onChange={v => updateInput('trainingTuningCost', v)} precision={0} />
+                    {inputs.valueMethod === ValueMethod.PREMIUM_MONETIZATION && (
+                        <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
+                            <MoneyInput label="Price / Sub / Mo" value={inputs.pricePerSubscriberPerMonth} onChange={v => updateInput('pricePerSubscriberPerMonth', v)} />
+                            <NumberInput label="Total Subscribers" value={inputs.subscribers} onChange={v => updateInput('subscribers', v)} />
+                            <MoneyInput label="Non-AI COGS / Sub" value={inputs.nonAiCOGSPerSubscriber} onChange={v => updateInput('nonAiCOGSPerSubscriber', v)} />
+                        </div>
+                    )}
+                  </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3 mt-3">
-                     <MoneyInput label="Change Mgmt" value={inputs.changeManagementCost} onChange={v => updateInput('changeManagementCost', v)} precision={0} />
-                     <NumberInput label="Amortization (Mo)" value={inputs.amortizationMonths} onChange={v => updateInput('amortizationMonths', v)} />
+
+                {/* Step 3: Set Realization Rate */}
+                <div className="flex items-start mb-4" role="group" aria-label="Step 3: Set realization rate">
+                  <span className="flex-shrink-0 bg-accent text-charcoal rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">3</span>
+                  <div className="flex-1">
+                    <h4 className="text-xs font-bold text-slate-700 uppercase mb-2">Set Realization Rate</h4>
+                    <PercentInput
+                      label="Realization Rate"
+                      value={inputs.successRate}
+                      onChange={v => updateInput('successRate', v)}
+                      tooltip="% of AI outputs that actually realize business value. This accounts for outputs that are technically successful but don't translate to business impact."
+                    />
+                  </div>
+                </div>
+
+                {/* Equation Preview */}
+                <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 ml-9">
+                  <h4 className="text-xs font-bold text-slate-500 uppercase mb-2">Equation Preview</h4>
+                  <p className="text-sm text-slate-700 font-mono">
+                    {formatMoney(grossBeforeRealization, 4)}
+                    <span className="text-slate-400"> × </span>
+                    {Math.min(100, inputs.successRate * modifiers.successRateMultiplier).toFixed(0)}%
+                    <span className="text-slate-400"> = </span>
+                    <span className="font-bold text-accent">{formatMoney(results.grossValuePerUnit, 4)}</span>
+                    <span className="text-slate-400"> / {inputs.unitName}</span>
+                  </p>
                 </div>
              </div>}
           </div>
@@ -663,6 +700,42 @@ export default function App() {
 
         {/* --- RIGHT COLUMN: RESULTS --- */}
         <div className="lg:col-span-7 space-y-6 bg-white p-6 rounded-xl" role="region" aria-label="Calculation results">
+
+            {/* Business Value Summary Card */}
+            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-xs font-bold text-slate-500 uppercase">Value Summary</h3>
+                <span className="text-xs px-2 py-0.5 bg-slate-100 rounded-full text-slate-600">
+                  {inputs.valueMethod}
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <span className="text-[10px] text-slate-400 uppercase block">Gross / Unit</span>
+                  <span className="text-sm font-bold text-slate-800">
+                    {formatMoney(grossBeforeRealization, 4)}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 uppercase block">Realized / Unit</span>
+                  <span className="text-sm font-bold text-accent">
+                    {formatMoney(results.grossValuePerUnit, 4)}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 uppercase block">Confidence</span>
+                  <span className={`text-sm font-bold ${
+                    inputs.successRate >= 90 ? 'text-green-600' :
+                    inputs.successRate >= 70 ? 'text-amber-600' :
+                    'text-red-600'
+                  }`}>
+                    {inputs.successRate >= 90 ? 'High' :
+                     inputs.successRate >= 70 ? 'Medium' :
+                     'Low'}
+                  </span>
+                </div>
+              </div>
+            </div>
 
             {/* KPI Cards */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4" role="group" aria-label="Key performance indicators">
@@ -900,7 +973,7 @@ export default function App() {
                     </div>
                     <div>
                         <div className="flex justify-between text-xs mb-2">
-                            <span className="text-slate-400">Success Rate</span>
+                            <span className="text-slate-400">Realization Rate</span>
                             <span className="font-mono text-accent">x{modifiers.successRateMultiplier}</span>
                         </div>
                         <input 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Info, DollarSign, Zap, TrendingUp, Calculator, Settings } from 'lucide-react';
+import { X, Info, DollarSign, TrendingUp, Calculator, Settings } from 'lucide-react';
 
 interface HelpGuideProps {
   isOpen: boolean;
@@ -56,11 +56,11 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
 
           <hr className="border-slate-200" />
 
-          {/* Section 1: General Parameters */}
+          {/* Section 1: Project Setup */}
           <section>
             <div className="flex items-center space-x-2 mb-4">
               <Calculator className="text-accent" size={20} />
-              <h3 className="text-lg font-bold text-slate-800">1. General Parameters</h3>
+              <h3 className="text-lg font-bold text-slate-800">1. Project Setup</h3>
             </div>
 
             <div className="space-y-4 ml-7">
@@ -91,18 +91,6 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
               </div>
 
               <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                <h4 className="font-semibold text-slate-700 mb-2">Success Rate (%)</h4>
-                <p className="text-sm text-slate-600">
-                  Percentage of units successfully handled by AI without errors or escalation to humans. Typical ranges:
-                </p>
-                <ul className="mt-2 text-sm text-slate-600 list-disc list-inside ml-3">
-                  <li><strong>Simple tasks:</strong> 90-98%</li>
-                  <li><strong>Complex tasks:</strong> 70-85%</li>
-                  <li><strong>Experimental:</strong> 50-70%</li>
-                </ul>
-              </div>
-
-              <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
                 <h4 className="font-semibold text-slate-700 mb-2">Analysis Months</h4>
                 <p className="text-sm text-slate-600">
                   The time horizon for your ROI analysis. This determines the timeframe shown in charts and projections. Typical values:
@@ -119,16 +107,20 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
 
           <hr className="border-slate-200" />
 
-          {/* Section 2: Infrastructure (Layer 1) */}
+          {/* Section 2: Cost Model */}
           <section>
             <div className="flex items-center space-x-2 mb-4">
-              <Zap className="text-blue-500" size={20} />
-              <h3 className="text-lg font-bold text-slate-800">2. Infrastructure (Layer 1)</h3>
+              <DollarSign className="text-blue-500" size={20} />
+              <h3 className="text-lg font-bold text-slate-800">2. Cost Model</h3>
             </div>
+            <p className="text-sm text-slate-600 mb-4 ml-7">All costs associated with running your AI — model inference, supporting infrastructure, and one-time implementation costs.</p>
 
             <div className="space-y-4 ml-7">
+              {/* Infrastructure (Layer 1) */}
+              <h4 className="font-bold text-slate-700 text-sm border-b border-slate-200 pb-1">Infrastructure (Layer 1)</h4>
+
               <div className="bg-amber-50 p-4 rounded-lg border border-amber-300">
-                <h4 className="font-semibold text-amber-900 mb-2">⚠️ Pricing Model Assumption</h4>
+                <h4 className="font-semibold text-amber-900 mb-2">Pricing Model Assumption</h4>
                 <p className="text-sm text-amber-800 mb-2">
                   This calculator currently assumes <strong>API-based pricing</strong> (pay-per-token) from cloud providers like OpenAI, Anthropic, Google, etc.
                 </p>
@@ -137,7 +129,7 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                   Self-hosted costs involve hardware amortization, electricity, and DevOps overhead instead of per-token charges.
                 </p>
                 <p className="text-xs text-amber-700 mt-2">
-                  📋 Self-hosted pricing support is planned for a future release (see roadmap).
+                  Self-hosted pricing support is planned for a future release (see roadmap).
                 </p>
               </div>
 
@@ -186,19 +178,10 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                   💡 Only applies to input tokens. Leave at 0% if not using prompt caching.
                 </p>
               </div>
-            </div>
-          </section>
 
-          <hr className="border-slate-200" />
+              {/* Harness (Layer 2) */}
+              <h4 className="font-bold text-slate-700 text-sm border-b border-slate-200 pb-1 mt-6">Harness (Layer 2)</h4>
 
-          {/* Section 3: Harness (Layer 2) */}
-          <section>
-            <div className="flex items-center space-x-2 mb-4">
-              <DollarSign className="text-purple-500" size={20} />
-              <h3 className="text-lg font-bold text-slate-800">3. Harness (Layer 2)</h3>
-            </div>
-
-            <div className="space-y-4 ml-7">
               <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
                 <h4 className="font-semibold text-slate-700 mb-2">What is the "Harness"?</h4>
                 <p className="text-sm text-slate-600">
@@ -222,16 +205,29 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
               </div>
 
               <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                <h4 className="font-semibold text-slate-700 mb-2">Retry Rate</h4>
+                <h4 className="font-semibold text-slate-700 mb-2">Retry Rate & Overhead</h4>
                 <p className="text-sm text-slate-600">
-                  Percentage of requests that fail and need to be retried (e.g., 0.1 = 10% retry rate adds 10% to Layer 1 costs).
+                  <strong>Retry Rate:</strong> Percentage of requests that fail and need to be retried (e.g., 0.1 = 10% retry rate adds 10% to Layer 1 costs).<br />
+                  <strong>Overhead Multiplier:</strong> Generic buffer for miscellaneous costs (e.g., 1.1 = 10% overhead for networking, staff time, etc.).
                 </p>
               </div>
 
-              <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                <h4 className="font-semibold text-slate-700 mb-2">Overhead Multiplier</h4>
+              {/* One-time Costs */}
+              <h4 className="font-bold text-slate-700 text-sm border-b border-slate-200 pb-1 mt-6">One-time Costs</h4>
+
+              <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                <h4 className="font-semibold text-slate-700 mb-2">Implementation Costs</h4>
+                <ul className="space-y-2 text-sm text-slate-600">
+                  <li><strong>Integration:</strong> Development time, API setup, system integration</li>
+                  <li><strong>Training / Tuning:</strong> Fine-tuning models, prompt engineering, testing</li>
+                  <li><strong>Change Management:</strong> User training, documentation, rollout planning</li>
+                </ul>
+              </div>
+
+              <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                <h4 className="font-semibold text-slate-700 mb-2">Amortization Period</h4>
                 <p className="text-sm text-slate-600">
-                  Generic buffer for miscellaneous costs (e.g., 1.1 = 10% overhead for networking, staff time, etc.).
+                  Number of months to spread one-time costs over (default: 12 months). Used for payback calculation.
                 </p>
               </div>
             </div>
@@ -239,19 +235,39 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
 
           <hr className="border-slate-200" />
 
-          {/* Section 4: Value (Layer 3) */}
+          {/* Section 3: Value Model */}
           <section>
             <div className="flex items-center space-x-2 mb-4">
               <TrendingUp className="text-green-600" size={20} />
-              <h3 className="text-lg font-bold text-slate-800">4. Value Definition (Layer 3)</h3>
+              <h3 className="text-lg font-bold text-slate-800">3. Value Model</h3>
             </div>
 
             <div className="space-y-4 ml-7">
               <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                <h4 className="font-semibold text-slate-700 mb-2">Choose Your Value Method</h4>
+                <h4 className="font-semibold text-slate-700 mb-2">3-Step Value Definition</h4>
                 <p className="text-sm text-slate-600 mb-3">
-                  How does your AI create business value? Pick the method that best fits your use case:
+                  The Value Model section guides you through three steps:
                 </p>
+                <ol className="text-sm text-slate-600 list-decimal list-inside ml-3 space-y-1">
+                  <li><strong>Choose Value Archetype:</strong> Select how your AI creates business value</li>
+                  <li><strong>Define Value Drivers:</strong> Enter the specific metrics for your chosen method</li>
+                  <li><strong>Set Realization Rate:</strong> What % of AI outputs translate to real business impact</li>
+                </ol>
+                <p className="text-xs text-slate-500 mt-2">
+                  💡 An equation preview below Step 3 shows how your inputs combine into the final value per unit.
+                </p>
+              </div>
+
+              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                <h4 className="font-semibold text-green-700 mb-2">Realization Rate (%)</h4>
+                <p className="text-sm text-slate-600">
+                  Percentage of AI outputs that actually realize business value. This accounts for outputs that are technically successful but don't translate to business impact. Typical ranges:
+                </p>
+                <ul className="mt-2 text-sm text-slate-600 list-disc list-inside ml-3">
+                  <li><strong>Simple tasks:</strong> 90-98%</li>
+                  <li><strong>Complex tasks:</strong> 70-85%</li>
+                  <li><strong>Experimental:</strong> 50-70%</li>
+                </ul>
               </div>
 
               {/* Cost Displacement */}
@@ -319,36 +335,11 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
 
           <hr className="border-slate-200" />
 
-          {/* One-time Costs */}
-          <section>
-            <h3 className="text-lg font-bold text-slate-800 mb-4">5. One-time Fixed Costs</h3>
-
-            <div className="space-y-4 ml-7">
-              <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                <h4 className="font-semibold text-slate-700 mb-2">Implementation Costs</h4>
-                <ul className="space-y-2 text-sm text-slate-600">
-                  <li><strong>Integration:</strong> Development time, API setup, system integration</li>
-                  <li><strong>Training / Tuning:</strong> Fine-tuning models, prompt engineering, testing</li>
-                  <li><strong>Change Management:</strong> User training, documentation, rollout planning</li>
-                </ul>
-              </div>
-
-              <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                <h4 className="font-semibold text-slate-700 mb-2">Amortization Period</h4>
-                <p className="text-sm text-slate-600">
-                  Number of months to spread one-time costs over (default: 12 months). Used for payback calculation.
-                </p>
-              </div>
-            </div>
-          </section>
-
-          <hr className="border-slate-200" />
-
           {/* Advanced Features */}
           <section>
             <div className="flex items-center space-x-2 mb-4">
               <Settings className="text-purple-500" size={20} />
-              <h3 className="text-lg font-bold text-slate-800">6. Advanced Features</h3>
+              <h3 className="text-lg font-bold text-slate-800">4. Advanced Features</h3>
             </div>
 
             <div className="space-y-4 ml-7">
@@ -396,7 +387,7 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                 </p>
                 <ul className="text-sm text-slate-300 list-disc list-inside ml-3 space-y-2">
                   <li><strong>Volume Multiplier (0.5x - 3.0x):</strong> Simulate lower or higher traffic (e.g., 2x = double your volume)</li>
-                  <li><strong>Success Rate Multiplier (0.5x - 1.5x):</strong> Test if AI performs worse/better than expected</li>
+                  <li><strong>Realization Rate Multiplier (0.5x - 1.5x):</strong> Test if AI performs worse/better than expected</li>
                   <li><strong>Cost Multiplier (0.5x - 2.0x):</strong> Model price changes (e.g., 1.5x = 50% cost increase)</li>
                   <li><strong>Value Multiplier (0.5x - 2.0x):</strong> Adjust business value estimates up or down</li>
                 </ul>
@@ -473,7 +464,7 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
             <ul className="space-y-2 text-sm text-slate-700">
               <li className="flex items-start">
                 <span className="text-accent mr-2">✓</span>
-                <span><strong>Start conservative:</strong> Use lower success rates and deflection rates initially</span>
+                <span><strong>Start conservative:</strong> Use lower realization rates and deflection rates initially</span>
               </li>
               <li className="flex items-start">
                 <span className="text-accent mr-2">✓</span>
@@ -493,7 +484,7 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
               </li>
               <li className="flex items-start">
                 <span className="text-accent mr-2">✓</span>
-                <span><strong>Validate assumptions:</strong> Run small pilots to verify success rates and costs before scaling</span>
+                <span><strong>Validate assumptions:</strong> Run small pilots to verify realization rates and costs before scaling</span>
               </li>
             </ul>
           </section>
