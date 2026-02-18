@@ -56,14 +56,17 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
 
           <hr className="border-slate-200" />
 
-          {/* Section 1: Project Setup */}
+          {/* Section 1: Value & Scope */}
           <section>
             <div className="flex items-center space-x-2 mb-4">
-              <Calculator className="text-accent" size={20} />
-              <h3 className="text-lg font-bold text-slate-800">1. Project Setup</h3>
+              <TrendingUp className="text-green-600" size={20} />
+              <h3 className="text-lg font-bold text-slate-800">1. Value & Scope</h3>
             </div>
+            <p className="text-sm text-slate-600 mb-4 ml-7">Define your AI project, its scale, and how it creates business value.</p>
 
             <div className="space-y-4 ml-7">
+              <h4 className="font-bold text-slate-700 text-sm border-b border-slate-200 pb-1">Project Context</h4>
+
               <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
                 <h4 className="font-semibold text-slate-700 mb-2">Use Case Name</h4>
                 <p className="text-sm text-slate-600">A descriptive name for your AI project (e.g., "Customer Support Bot", "Invoice Processing").</p>
@@ -101,6 +104,96 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                   <li><strong>6 months:</strong> Short-term pilot evaluation</li>
                 </ul>
                 <p className="text-xs text-slate-500 mt-1">💡 Tip: This doesn't affect break-even or payback calculations, only visualization scope.</p>
+              </div>
+
+              <h4 className="font-bold text-slate-700 text-sm border-b border-slate-200 pb-1 mt-4">Value Definition</h4>
+
+              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                <h4 className="font-semibold text-slate-700 mb-2">3-Step Value Definition</h4>
+                <p className="text-sm text-slate-600 mb-3">
+                  The Value Model section guides you through three steps:
+                </p>
+                <ol className="text-sm text-slate-600 list-decimal list-inside ml-3 space-y-1">
+                  <li><strong>Choose Value Archetype:</strong> Select how your AI creates business value</li>
+                  <li><strong>Define Value Drivers:</strong> Enter the specific metrics for your chosen method</li>
+                  <li><strong>Set Realization Rate:</strong> What % of AI outputs translate to real business impact</li>
+                </ol>
+                <p className="text-xs text-slate-500 mt-2">
+                  💡 An equation preview below Step 3 shows how your inputs combine into the final value per unit.
+                </p>
+              </div>
+
+              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                <h4 className="font-semibold text-green-700 mb-2">Realization Rate (%)</h4>
+                <p className="text-sm text-slate-600">
+                  Percentage of AI outputs that actually realize business value. This accounts for outputs that are technically successful but don't translate to business impact. Typical ranges:
+                </p>
+                <ul className="mt-2 text-sm text-slate-600 list-disc list-inside ml-3">
+                  <li><strong>Simple tasks:</strong> 90-98%</li>
+                  <li><strong>Complex tasks:</strong> 70-85%</li>
+                  <li><strong>Experimental:</strong> 50-70%</li>
+                </ul>
+              </div>
+
+              {/* Cost Displacement */}
+              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                <h4 className="font-semibold text-green-700 mb-2">💰 Cost Displacement</h4>
+                <p className="text-sm text-slate-600 mb-2">
+                  <strong>When to use:</strong> AI automates tasks previously done by humans (support, data entry, analysis)
+                </p>
+                <div className="text-sm text-slate-600 space-y-1 ml-3">
+                  <p><strong>Baseline Human Cost per Unit:</strong> Fully loaded cost (salary + benefits + overhead) / units handled per month</p>
+                  <p><strong>Deflection Rate:</strong> % of units AI handles without human intervention</p>
+                  <p><strong>Residual Review Rate:</strong> % of AI outputs that need human review</p>
+                  <p><strong>Review Cost:</strong> Cost per unit for that human review (typically lower than full cost)</p>
+                </div>
+                <p className="text-xs text-slate-500 mt-2">
+                  Example: Support agent costs $0.5/ticket, AI deflects 40%, review needed on 10% → saves ~$0.2/ticket
+                </p>
+              </div>
+
+              {/* Revenue Uplift */}
+              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                <h4 className="font-semibold text-green-700 mb-2">📈 Revenue Uplift</h4>
+                <p className="text-sm text-slate-600 mb-2">
+                  <strong>When to use:</strong> AI increases conversions or sales (recommendations, personalization, upsells)
+                </p>
+                <div className="text-sm text-slate-600 space-y-1 ml-3">
+                  <p><strong>Baseline Conversion Rate:</strong> Current % of visitors/users who convert</p>
+                  <p><strong>Conversion Uplift:</strong> Percentage point increase from AI (e.g., 2.5% → 3.0% = 0.5 point uplift)</p>
+                  <p><strong>Average Order Value:</strong> Average $ per transaction</p>
+                  <p><strong>Gross Margin:</strong> Profit margin % (revenue minus COGS)</p>
+                </div>
+                <p className="text-xs text-slate-500 mt-2">
+                  Example: 100k sessions, 2.5% → 3% conversion, $100 AOV, 60% margin → $30k/mo value
+                </p>
+              </div>
+
+              {/* Retention */}
+              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                <h4 className="font-semibold text-green-700 mb-2">🔄 Retention Uplift</h4>
+                <p className="text-sm text-slate-600 mb-2">
+                  <strong>When to use:</strong> AI reduces customer churn (proactive support, personalization, engagement)
+                </p>
+                <div className="text-sm text-slate-600 space-y-1 ml-3">
+                  <p><strong>Baseline Churn Rate:</strong> % of customers who leave per month</p>
+                  <p><strong>Churn Reduction:</strong> Percentage point decrease from AI</p>
+                  <p><strong>Annual Value per Customer:</strong> Average customer lifetime value or annual revenue</p>
+                  <p><strong>Customers Impacted/Mo:</strong> How many customers experience the AI feature</p>
+                </div>
+              </div>
+
+              {/* Premium Monetization */}
+              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                <h4 className="font-semibold text-green-700 mb-2">💎 Premium Monetization</h4>
+                <p className="text-sm text-slate-600 mb-2">
+                  <strong>When to use:</strong> You charge users directly for AI features (subscriptions, seats, add-ons)
+                </p>
+                <div className="text-sm text-slate-600 space-y-1 ml-3">
+                  <p><strong>Price per Subscriber/Mo:</strong> Monthly fee for AI features</p>
+                  <p><strong>Total Subscribers:</strong> Number of paying users</p>
+                  <p><strong>Non-AI COGS:</strong> Other costs per subscriber (hosting, support, etc.)</p>
+                </div>
               </div>
             </div>
           </section>
@@ -235,111 +328,11 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
 
           <hr className="border-slate-200" />
 
-          {/* Section 3: Value Model */}
-          <section>
-            <div className="flex items-center space-x-2 mb-4">
-              <TrendingUp className="text-green-600" size={20} />
-              <h3 className="text-lg font-bold text-slate-800">3. Value Model</h3>
-            </div>
-
-            <div className="space-y-4 ml-7">
-              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                <h4 className="font-semibold text-slate-700 mb-2">3-Step Value Definition</h4>
-                <p className="text-sm text-slate-600 mb-3">
-                  The Value Model section guides you through three steps:
-                </p>
-                <ol className="text-sm text-slate-600 list-decimal list-inside ml-3 space-y-1">
-                  <li><strong>Choose Value Archetype:</strong> Select how your AI creates business value</li>
-                  <li><strong>Define Value Drivers:</strong> Enter the specific metrics for your chosen method</li>
-                  <li><strong>Set Realization Rate:</strong> What % of AI outputs translate to real business impact</li>
-                </ol>
-                <p className="text-xs text-slate-500 mt-2">
-                  💡 An equation preview below Step 3 shows how your inputs combine into the final value per unit.
-                </p>
-              </div>
-
-              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                <h4 className="font-semibold text-green-700 mb-2">Realization Rate (%)</h4>
-                <p className="text-sm text-slate-600">
-                  Percentage of AI outputs that actually realize business value. This accounts for outputs that are technically successful but don't translate to business impact. Typical ranges:
-                </p>
-                <ul className="mt-2 text-sm text-slate-600 list-disc list-inside ml-3">
-                  <li><strong>Simple tasks:</strong> 90-98%</li>
-                  <li><strong>Complex tasks:</strong> 70-85%</li>
-                  <li><strong>Experimental:</strong> 50-70%</li>
-                </ul>
-              </div>
-
-              {/* Cost Displacement */}
-              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                <h4 className="font-semibold text-green-700 mb-2">💰 Cost Displacement</h4>
-                <p className="text-sm text-slate-600 mb-2">
-                  <strong>When to use:</strong> AI automates tasks previously done by humans (support, data entry, analysis)
-                </p>
-                <div className="text-sm text-slate-600 space-y-1 ml-3">
-                  <p><strong>Baseline Human Cost per Unit:</strong> Fully loaded cost (salary + benefits + overhead) / units handled per month</p>
-                  <p><strong>Deflection Rate:</strong> % of units AI handles without human intervention</p>
-                  <p><strong>Residual Review Rate:</strong> % of AI outputs that need human review</p>
-                  <p><strong>Review Cost:</strong> Cost per unit for that human review (typically lower than full cost)</p>
-                </div>
-                <p className="text-xs text-slate-500 mt-2">
-                  Example: Support agent costs $0.5/ticket, AI deflects 40%, review needed on 10% → saves ~$0.2/ticket
-                </p>
-              </div>
-
-              {/* Revenue Uplift */}
-              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                <h4 className="font-semibold text-green-700 mb-2">📈 Revenue Uplift</h4>
-                <p className="text-sm text-slate-600 mb-2">
-                  <strong>When to use:</strong> AI increases conversions or sales (recommendations, personalization, upsells)
-                </p>
-                <div className="text-sm text-slate-600 space-y-1 ml-3">
-                  <p><strong>Baseline Conversion Rate:</strong> Current % of visitors/users who convert</p>
-                  <p><strong>Conversion Uplift:</strong> Percentage point increase from AI (e.g., 2.5% → 3.0% = 0.5 point uplift)</p>
-                  <p><strong>Average Order Value:</strong> Average $ per transaction</p>
-                  <p><strong>Gross Margin:</strong> Profit margin % (revenue minus COGS)</p>
-                </div>
-                <p className="text-xs text-slate-500 mt-2">
-                  Example: 100k sessions, 2.5% → 3% conversion, $100 AOV, 60% margin → $30k/mo value
-                </p>
-              </div>
-
-              {/* Retention */}
-              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                <h4 className="font-semibold text-green-700 mb-2">🔄 Retention Uplift</h4>
-                <p className="text-sm text-slate-600 mb-2">
-                  <strong>When to use:</strong> AI reduces customer churn (proactive support, personalization, engagement)
-                </p>
-                <div className="text-sm text-slate-600 space-y-1 ml-3">
-                  <p><strong>Baseline Churn Rate:</strong> % of customers who leave per month</p>
-                  <p><strong>Churn Reduction:</strong> Percentage point decrease from AI</p>
-                  <p><strong>Annual Value per Customer:</strong> Average customer lifetime value or annual revenue</p>
-                  <p><strong>Customers Impacted/Mo:</strong> How many customers experience the AI feature</p>
-                </div>
-              </div>
-
-              {/* Premium Monetization */}
-              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                <h4 className="font-semibold text-green-700 mb-2">💎 Premium Monetization</h4>
-                <p className="text-sm text-slate-600 mb-2">
-                  <strong>When to use:</strong> You charge users directly for AI features (subscriptions, seats, add-ons)
-                </p>
-                <div className="text-sm text-slate-600 space-y-1 ml-3">
-                  <p><strong>Price per Subscriber/Mo:</strong> Monthly fee for AI features</p>
-                  <p><strong>Total Subscribers:</strong> Number of paying users</p>
-                  <p><strong>Non-AI COGS:</strong> Other costs per subscriber (hosting, support, etc.)</p>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <hr className="border-slate-200" />
-
           {/* Advanced Features */}
           <section>
             <div className="flex items-center space-x-2 mb-4">
               <Settings className="text-purple-500" size={20} />
-              <h3 className="text-lg font-bold text-slate-800">4. Advanced Features</h3>
+              <h3 className="text-lg font-bold text-slate-800">3. Advanced Features</h3>
             </div>
 
             <div className="space-y-4 ml-7">

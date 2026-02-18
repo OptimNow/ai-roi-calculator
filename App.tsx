@@ -33,9 +33,8 @@ export default function App() {
     valueMultiplier: 1
   });
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    projectSetup: true,
+    valueScope: true,
     costModel: false,
-    valueModel: true,
   });
 
   // Load scenarios from localStorage on mount
@@ -465,9 +464,9 @@ export default function App() {
           )}
 
           <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            {/* 1. Project Setup */}
-             <SectionHeader title="1. Project Setup" isOpen={expandedSections.projectSetup} onToggle={() => toggleSection('projectSetup')} />
-             {expandedSections.projectSetup && <div className="p-5 border-b border-slate-100">
+            {/* 1. Value & Scope */}
+             <SectionHeader title="1. Value & Scope" isOpen={expandedSections.valueScope} onToggle={() => toggleSection('valueScope')} />
+             {expandedSections.valueScope && <div className="p-5 border-b border-slate-100">
                <div className="space-y-3">
                  <div>
                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Use Case Name</label>
@@ -496,6 +495,107 @@ export default function App() {
                    onChange={v => updateInput('analysisHorizonMonths', v)}
                    tooltip="Analysis horizon for ROI calculation and fixed cost amortization. Longer periods reduce monthly amortized costs, improving ROI. Does NOT affect monthly metrics like Net Benefit."
                  />
+               </div>
+
+               {/* Value Definition */}
+               <div className="border-t border-slate-200 mt-5 pt-5">
+                {/* Step 1: Choose Value Archetype */}
+                <div className="flex items-start mb-5" role="group" aria-label="Step 1: Choose value archetype">
+                  <span className="flex-shrink-0 bg-accent text-charcoal rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">1</span>
+                  <div className="flex-1">
+                    <h4 className="text-xs font-bold text-slate-700 uppercase mb-2">Choose Value Archetype</h4>
+                    <select
+                      value={inputs.valueMethod}
+                      onChange={(e) => updateInput('valueMethod', e.target.value as ValueMethod)}
+                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded text-sm focus:ring-2 focus:ring-accent focus:outline-none"
+                    >
+                        {Object.values(ValueMethod).map(m => <option key={m} value={m}>{m}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Step 2: Define Value Drivers */}
+                <div className="flex items-start mb-5" role="group" aria-label="Step 2: Define value drivers">
+                  <span className="flex-shrink-0 bg-accent text-charcoal rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">2</span>
+                  <div className="flex-1">
+                    <h4 className="text-xs font-bold text-slate-700 uppercase mb-2">Define Value Drivers</h4>
+
+                    {inputs.valueMethod === ValueMethod.COST_DISPLACEMENT && (
+                        <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
+                            <MoneyInput label="Baseline Human Cost" value={inputs.baselineHumanCostPerUnit} onChange={v => updateInput('baselineHumanCostPerUnit', v)} />
+                            <div className="grid grid-cols-2 gap-3">
+                                <PercentInput label="Deflection Rate" value={inputs.deflectionRate} onChange={v => updateInput('deflectionRate', v)} />
+                                <PercentInput label="Residual Review Rate" value={inputs.residualHumanReviewRate} onChange={v => updateInput('residualHumanReviewRate', v)} />
+                            </div>
+                            {inputs.residualHumanReviewRate > 0 && (
+                                <MoneyInput label="Review Cost (Unit)" value={inputs.residualReviewCostPerUnit} onChange={v => updateInput('residualReviewCostPerUnit', v)} />
+                            )}
+                        </div>
+                    )}
+
+                    {inputs.valueMethod === ValueMethod.REVENUE_UPLIFT && (
+                        <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
+                             <div className="grid grid-cols-2 gap-3">
+                                <PercentInput label="Baseline Conversion" value={inputs.baselineConversionRate} onChange={v => updateInput('baselineConversionRate', v)} />
+                                <PercentInput
+                                  label="Abs. Uplift (+)"
+                                  value={inputs.conversionUpliftAbsolute}
+                                  onChange={v => updateInput('conversionUpliftAbsolute', v)}
+                                  tooltip="Absolute Uplift: Enter percentage POINTS increase (not relative %). Example: if conversion goes from 2% to 2.5%, enter 0.5 (not 25%)."
+                                />
+                            </div>
+                            <MoneyInput label="Average Order Value" value={inputs.averageOrderValue} onChange={v => updateInput('averageOrderValue', v)} />
+                            <PercentInput label="Gross Margin" value={inputs.grossMargin} onChange={v => updateInput('grossMargin', v)} />
+                        </div>
+                    )}
+
+                    {inputs.valueMethod === ValueMethod.RETENTION && (
+                        <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
+                             <div className="grid grid-cols-2 gap-3">
+                                <PercentInput label="Baseline Churn" value={inputs.baselineChurnRate} onChange={v => updateInput('baselineChurnRate', v)} />
+                                <PercentInput label="Churn Reduction" value={inputs.churnReductionAbsolute} onChange={v => updateInput('churnReductionAbsolute', v)} />
+                            </div>
+                            <MoneyInput label="Annual Value / Customer" value={inputs.annualValuePerCustomer} onChange={v => updateInput('annualValuePerCustomer', v)} />
+                            <NumberInput label="Customers Impacted / Mo" value={inputs.customersImpactedPerMonth} onChange={v => updateInput('customersImpactedPerMonth', v)} />
+                        </div>
+                    )}
+
+                    {inputs.valueMethod === ValueMethod.PREMIUM_MONETIZATION && (
+                        <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
+                            <MoneyInput label="Price / Sub / Mo" value={inputs.pricePerSubscriberPerMonth} onChange={v => updateInput('pricePerSubscriberPerMonth', v)} />
+                            <NumberInput label="Total Subscribers" value={inputs.subscribers} onChange={v => updateInput('subscribers', v)} />
+                            <MoneyInput label="Non-AI COGS / Sub" value={inputs.nonAiCOGSPerSubscriber} onChange={v => updateInput('nonAiCOGSPerSubscriber', v)} />
+                        </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Step 3: Set Realization Rate */}
+                <div className="flex items-start mb-4" role="group" aria-label="Step 3: Set realization rate">
+                  <span className="flex-shrink-0 bg-accent text-charcoal rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">3</span>
+                  <div className="flex-1">
+                    <h4 className="text-xs font-bold text-slate-700 uppercase mb-2">Set Realization Rate</h4>
+                    <PercentInput
+                      label="Realization Rate"
+                      value={inputs.successRate}
+                      onChange={v => updateInput('successRate', v)}
+                      tooltip="% of AI outputs that actually realize business value. This accounts for outputs that are technically successful but don't translate to business impact."
+                    />
+                  </div>
+                </div>
+
+                {/* Equation Preview */}
+                <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 ml-9">
+                  <h4 className="text-xs font-bold text-slate-500 uppercase mb-2">Equation Preview</h4>
+                  <p className="text-sm text-slate-700 font-mono">
+                    {formatMoney(grossBeforeRealization, 4)}
+                    <span className="text-slate-400"> × </span>
+                    {Math.min(100, inputs.successRate * modifiers.successRateMultiplier).toFixed(0)}%
+                    <span className="text-slate-400"> = </span>
+                    <span className="font-bold text-accent">{formatMoney(results.grossValuePerUnit, 4)}</span>
+                    <span className="text-slate-400"> / {inputs.unitName}</span>
+                  </p>
+                </div>
                </div>
              </div>}
 
@@ -594,107 +694,6 @@ export default function App() {
                 </div>
              </div>}
 
-             {/* 3. Value Model */}
-             <SectionHeader title="3. Value Model" isOpen={expandedSections.valueModel} onToggle={() => toggleSection('valueModel')} />
-             {expandedSections.valueModel && <div className="p-5">
-                {/* Step 1: Choose Value Archetype */}
-                <div className="flex items-start mb-5" role="group" aria-label="Step 1: Choose value archetype">
-                  <span className="flex-shrink-0 bg-accent text-charcoal rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">1</span>
-                  <div className="flex-1">
-                    <h4 className="text-xs font-bold text-slate-700 uppercase mb-2">Choose Value Archetype</h4>
-                    <select
-                      value={inputs.valueMethod}
-                      onChange={(e) => updateInput('valueMethod', e.target.value as ValueMethod)}
-                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded text-sm focus:ring-2 focus:ring-accent focus:outline-none"
-                    >
-                        {Object.values(ValueMethod).map(m => <option key={m} value={m}>{m}</option>)}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Step 2: Define Value Drivers */}
-                <div className="flex items-start mb-5" role="group" aria-label="Step 2: Define value drivers">
-                  <span className="flex-shrink-0 bg-accent text-charcoal rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">2</span>
-                  <div className="flex-1">
-                    <h4 className="text-xs font-bold text-slate-700 uppercase mb-2">Define Value Drivers</h4>
-
-                    {inputs.valueMethod === ValueMethod.COST_DISPLACEMENT && (
-                        <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
-                            <MoneyInput label="Baseline Human Cost" value={inputs.baselineHumanCostPerUnit} onChange={v => updateInput('baselineHumanCostPerUnit', v)} />
-                            <div className="grid grid-cols-2 gap-3">
-                                <PercentInput label="Deflection Rate" value={inputs.deflectionRate} onChange={v => updateInput('deflectionRate', v)} />
-                                <PercentInput label="Residual Review Rate" value={inputs.residualHumanReviewRate} onChange={v => updateInput('residualHumanReviewRate', v)} />
-                            </div>
-                            {inputs.residualHumanReviewRate > 0 && (
-                                <MoneyInput label="Review Cost (Unit)" value={inputs.residualReviewCostPerUnit} onChange={v => updateInput('residualReviewCostPerUnit', v)} />
-                            )}
-                        </div>
-                    )}
-
-                    {inputs.valueMethod === ValueMethod.REVENUE_UPLIFT && (
-                        <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
-                             <div className="grid grid-cols-2 gap-3">
-                                <PercentInput label="Baseline Conversion" value={inputs.baselineConversionRate} onChange={v => updateInput('baselineConversionRate', v)} />
-                                <PercentInput
-                                  label="Abs. Uplift (+)"
-                                  value={inputs.conversionUpliftAbsolute}
-                                  onChange={v => updateInput('conversionUpliftAbsolute', v)}
-                                  tooltip="Absolute Uplift: Enter percentage POINTS increase (not relative %). Example: if conversion goes from 2% to 2.5%, enter 0.5 (not 25%)."
-                                />
-                            </div>
-                            <MoneyInput label="Average Order Value" value={inputs.averageOrderValue} onChange={v => updateInput('averageOrderValue', v)} />
-                            <PercentInput label="Gross Margin" value={inputs.grossMargin} onChange={v => updateInput('grossMargin', v)} />
-                        </div>
-                    )}
-
-                    {inputs.valueMethod === ValueMethod.RETENTION && (
-                        <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
-                             <div className="grid grid-cols-2 gap-3">
-                                <PercentInput label="Baseline Churn" value={inputs.baselineChurnRate} onChange={v => updateInput('baselineChurnRate', v)} />
-                                <PercentInput label="Churn Reduction" value={inputs.churnReductionAbsolute} onChange={v => updateInput('churnReductionAbsolute', v)} />
-                            </div>
-                            <MoneyInput label="Annual Value / Customer" value={inputs.annualValuePerCustomer} onChange={v => updateInput('annualValuePerCustomer', v)} />
-                            <NumberInput label="Customers Impacted / Mo" value={inputs.customersImpactedPerMonth} onChange={v => updateInput('customersImpactedPerMonth', v)} />
-                        </div>
-                    )}
-
-                    {inputs.valueMethod === ValueMethod.PREMIUM_MONETIZATION && (
-                        <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
-                            <MoneyInput label="Price / Sub / Mo" value={inputs.pricePerSubscriberPerMonth} onChange={v => updateInput('pricePerSubscriberPerMonth', v)} />
-                            <NumberInput label="Total Subscribers" value={inputs.subscribers} onChange={v => updateInput('subscribers', v)} />
-                            <MoneyInput label="Non-AI COGS / Sub" value={inputs.nonAiCOGSPerSubscriber} onChange={v => updateInput('nonAiCOGSPerSubscriber', v)} />
-                        </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Step 3: Set Realization Rate */}
-                <div className="flex items-start mb-4" role="group" aria-label="Step 3: Set realization rate">
-                  <span className="flex-shrink-0 bg-accent text-charcoal rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">3</span>
-                  <div className="flex-1">
-                    <h4 className="text-xs font-bold text-slate-700 uppercase mb-2">Set Realization Rate</h4>
-                    <PercentInput
-                      label="Realization Rate"
-                      value={inputs.successRate}
-                      onChange={v => updateInput('successRate', v)}
-                      tooltip="% of AI outputs that actually realize business value. This accounts for outputs that are technically successful but don't translate to business impact."
-                    />
-                  </div>
-                </div>
-
-                {/* Equation Preview */}
-                <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 ml-9">
-                  <h4 className="text-xs font-bold text-slate-500 uppercase mb-2">Equation Preview</h4>
-                  <p className="text-sm text-slate-700 font-mono">
-                    {formatMoney(grossBeforeRealization, 4)}
-                    <span className="text-slate-400"> × </span>
-                    {Math.min(100, inputs.successRate * modifiers.successRateMultiplier).toFixed(0)}%
-                    <span className="text-slate-400"> = </span>
-                    <span className="font-bold text-accent">{formatMoney(results.grossValuePerUnit, 4)}</span>
-                    <span className="text-slate-400"> / {inputs.unitName}</span>
-                  </p>
-                </div>
-             </div>}
           </div>
         </div>
 
