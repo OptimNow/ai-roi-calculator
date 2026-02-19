@@ -68,6 +68,8 @@ export default function App() {
     return results.grossValuePerUnit / effectiveRate;
   }, [results.grossValuePerUnit, inputs.successRate, modifiers.successRateMultiplier]);
 
+  const effectiveRealizationRate = Math.min(100, Math.max(0, inputs.successRate * modifiers.successRateMultiplier));
+
   const updateInput = (field: keyof UseCaseInputs, value: any) => {
     setInputs(prev => ({ ...prev, [field]: value }));
   };
@@ -96,13 +98,18 @@ export default function App() {
   };
 
   const handleCopyMarkdown = () => {
+    const paybackAsNumber = Number(results.paybackMonths);
+    const paybackDisplay = Number.isFinite(paybackAsNumber)
+      ? `${paybackAsNumber} months`
+      : results.paybackMonths;
+
     const md = `
 # AI ROI Analysis: ${inputs.useCaseName}
 
 ## Summary
 - **Monthly Net Benefit**: ${formatMoney(results.netMonthlyBenefit, 0)}
 - **ROI**: ${results.roiPercentage.toFixed(1)}%
-- **Payback Period**: ${results.paybackMonths} months
+- **Payback Period**: ${paybackDisplay}
 - **Cost per Unit**: ${formatMoney(results.totalCostPerUnit, 4)}
 - **Value per Unit**: ${formatMoney(results.grossValuePerUnit, 4)}
 
@@ -590,7 +597,7 @@ export default function App() {
                   <p className="text-sm text-slate-700 font-mono">
                     {formatMoney(grossBeforeRealization, 4)}
                     <span className="text-slate-400"> × </span>
-                    {Math.min(100, inputs.successRate * modifiers.successRateMultiplier).toFixed(0)}%
+                    {effectiveRealizationRate.toFixed(0)}%
                     <span className="text-slate-400"> = </span>
                     <span className="font-bold text-accent">{formatMoney(results.grossValuePerUnit, 4)}</span>
                     <span className="text-slate-400"> / {inputs.unitName}</span>
@@ -724,12 +731,12 @@ export default function App() {
                 <div>
                   <span className="text-[10px] text-slate-400 uppercase block">Confidence</span>
                   <span className={`text-sm font-bold ${
-                    inputs.successRate >= 90 ? 'text-green-600' :
-                    inputs.successRate >= 70 ? 'text-amber-600' :
+                    effectiveRealizationRate >= 90 ? 'text-green-600' :
+                    effectiveRealizationRate >= 70 ? 'text-amber-600' :
                     'text-red-600'
                   }`}>
-                    {inputs.successRate >= 90 ? 'High' :
-                     inputs.successRate >= 70 ? 'Medium' :
+                    {effectiveRealizationRate >= 90 ? 'High' :
+                     effectiveRealizationRate >= 70 ? 'Medium' :
                      'Low'}
                   </span>
                 </div>
