@@ -326,12 +326,12 @@ GV = AOV × ΔConv × Gm × (S / 100) × M_value
 ΔConv = 0.002 (0.2 percentage points as decimal)
 GV = 85 × 0.002 × 0.45 × 1.00
    = 0.17 × 0.45 × 1.00
-   = $0.0765 per session
+   = $0.0765 per order
 ```
 
-**At 500,000 sessions/month:**
+**At 100,000 orders/month (default recommendation preset):**
 ```
-Total Value = 0.0765 × 500,000 = $38,250/month
+Total Value = 0.0765 × 100,000 = $7,650/month
 ```
 
 **Note:** Absolute uplift ≠ relative uplift. 3% → 3.2% is:
@@ -339,7 +339,7 @@ Total Value = 0.0765 × 500,000 = $38,250/month
 - **Relative:** +6.67% ✗ (do NOT enter this)
 
 **Realization Rate Explanation (100%):**
-- **What it means:** 100% of sessions receive AI-generated recommendations without technical failures
+- **What it means:** 100% of orders receive AI-generated recommendations without technical failures
 - **Why 100% for this scenario:** E-commerce recommendation engines are typically stateless, pre-computed systems with high reliability. Unlike interactive chatbots, they serve cached/pre-generated recommendations, so technical failure rates approach zero in production.
 - **No quality dependency:** Realization rate measures technical delivery, not recommendation quality. A poorly-targeted recommendation still counts as "successful" if delivered. The conversion uplift metric captures quality - if recommendations are bad, uplift will be low/zero.
 
@@ -401,6 +401,7 @@ Total_Value = (Ps - Cn) × Ns × (S / 100) × M_value
 - `Ps` = Price per subscriber per month ($)
 - `Cn` = Non-AI COGS per subscriber ($)
 - `Ns` = Number of subscribers
+- **UI behavior:** In Premium Monetization mode, the calculator keeps Monthly Volume and Total Subscribers synchronized so value and cost drivers stay consistent.
 
 **Example Calculation:**
 
@@ -778,6 +779,11 @@ Our methodology aligns with standard practices:
 ---
 
 ## Changelog
+
+### v1.2 (February 2026)
+- Updated Revenue Uplift worked example wording from sessions to orders for recommendation scenarios
+- Updated recommendation volume example to 100,000 orders/month to match current default preset scale
+- Clarified Premium Monetization UI behavior: Monthly Volume and Total Subscribers are synchronized
 
 ### v1.1 (January 2026)
 - Initial public methodology documentation
