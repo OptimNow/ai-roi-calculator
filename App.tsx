@@ -71,7 +71,25 @@ export default function App() {
   const effectiveRealizationRate = Math.min(100, Math.max(0, inputs.successRate * modifiers.successRateMultiplier));
 
   const updateInput = (field: keyof UseCaseInputs, value: any) => {
-    setInputs(prev => ({ ...prev, [field]: value }));
+    setInputs(prev => {
+      const nextInputs = { ...prev, [field]: value };
+
+      // Keep Premium Monetization value driver aligned with monthly subscriber volume.
+      // In this scenario, Monthly Volume represents active subscribers per month.
+      if (nextInputs.valueMethod === ValueMethod.PREMIUM_MONETIZATION) {
+        if (field === 'valueMethod') {
+          nextInputs.subscribers = nextInputs.monthlyVolume;
+        }
+        if (field === 'monthlyVolume') {
+          nextInputs.subscribers = Number(value) || 0;
+        }
+        if (field === 'subscribers') {
+          nextInputs.monthlyVolume = Number(value) || 0;
+        }
+      }
+
+      return nextInputs;
+    });
   };
 
   const updateModelParam = (model: 'primaryModel' | 'secondaryModel', field: keyof ModelParams, value: any) => {
@@ -83,7 +101,13 @@ export default function App() {
 
   const loadPreset = (key: string) => {
     if (PRESETS[key]) {
-      setInputs(prev => ({ ...prev, ...PRESETS[key] }));
+      setInputs(prev => {
+        const nextInputs = { ...prev, ...PRESETS[key] } as UseCaseInputs;
+        if (nextInputs.valueMethod === ValueMethod.PREMIUM_MONETIZATION) {
+          nextInputs.subscribers = nextInputs.monthlyVolume;
+        }
+        return nextInputs;
+      });
     }
   };
 
