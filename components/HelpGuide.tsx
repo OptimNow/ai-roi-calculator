@@ -80,7 +80,7 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                 <ul className="mt-2 text-sm text-slate-600 list-disc list-inside ml-3">
                   <li><strong>ticket</strong> - for support chatbots</li>
                   <li><strong>invoice</strong> - for document processing</li>
-                  <li><strong>session</strong> - for recommendation engines</li>
+                  <li><strong>order</strong> - for recommendation engines</li>
                   <li><strong>conversation</strong> - for customer interactions</li>
                 </ul>
               </div>
@@ -165,7 +165,7 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                   <p><strong>Gross Margin:</strong> Profit margin % (revenue minus COGS)</p>
                 </div>
                 <p className="text-xs text-slate-500 mt-2">
-                  Example: 100k sessions, 2.5% → 3% conversion, $100 AOV, 60% margin → $30k/mo value
+                  Example: 100k orders, 2.5% → 3% conversion, $100 AOV, 60% margin → $30k/mo value
                 </p>
               </div>
 
