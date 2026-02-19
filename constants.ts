@@ -12,7 +12,7 @@ export const DEFAULT_MODEL_PARAMS = {
 export const DEFAULT_INPUTS: UseCaseInputs = {
   useCaseName: 'E-commerce Recommendations',
   unitName: 'Order',
-  monthlyVolume: 50000,
+  monthlyVolume: 100000,
   successRate: 100,
   analysisHorizonMonths: 12,
 
@@ -64,7 +64,7 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
   support: {
     useCaseName: 'Customer Support Bot',
     unitName: 'ticket',
-    monthlyVolume: 500,
+    monthlyVolume: 5000,
     successRate: 90,
     // SMB support rollout: knowledge base setup, guardrails tuning, and agent enablement
     integrationCost: 6000,
@@ -95,7 +95,7 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
   invoice: {
     useCaseName: 'Invoice Processing',
     unitName: 'invoice',
-    monthlyVolume: 5000,
+    monthlyVolume: 10000,
     successRate: 98,
     valueMethod: ValueMethod.COST_DISPLACEMENT,
     // Assumption: specialist in India at ~$4/hour and ~10 invoices/hour => ~$0.40 per invoice
@@ -127,7 +127,7 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
   recommendation: {
     useCaseName: 'E-commerce Recommendations',
     unitName: 'Order',
-    monthlyVolume: 50000,
+    monthlyVolume: 100000,
     successRate: 100,
     valueMethod: ValueMethod.REVENUE_UPLIFT,
     baselineConversionRate: 3.0,
