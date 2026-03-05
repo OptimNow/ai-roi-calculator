@@ -9,7 +9,10 @@
   --color-dark-grey: #C1C1C1;      /* Dark Grey */
 
   /* Typography */
-  --font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  --font-headline: 'Manrope', Arial, Helvetica, sans-serif;
+  --font-body: 'Almarai', Arial, Helvetica, sans-serif;
+  --font-label: 'Ayuthaya', Arial, Helvetica, sans-serif;
+  --font-primary: var(--font-body);
 
   /* Spacing */
   --spacing-xs: 0.25rem;

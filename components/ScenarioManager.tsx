@@ -88,16 +88,16 @@ export const ScenarioManager: React.FC<ScenarioManagerProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-white rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="bg-gradient-to-r from-accent to-green-400 px-6 py-4 flex items-center justify-between">
+        <div className="bg-[#2C2C2C] px-6 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="bg-white text-charcoal p-2 rounded-lg">
+            <div className="bg-[#ACE849] text-charcoal p-2 rounded-lg">
               <FolderOpen size={24} />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-charcoal">Scenario Manager</h2>
-              <p className="text-sm text-charcoal text-opacity-80">Save, compare, and manage calculation scenarios</p>
+              <h2 className="text-xl font-bold font-headline text-white">Scenario Manager</h2>
+              <p className="text-sm text-white text-opacity-80">Save, compare, and manage calculation scenarios</p>
             </div>
           </div>
           <button
@@ -105,21 +105,21 @@ export const ScenarioManager: React.FC<ScenarioManagerProps> = ({
             className="p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
             aria-label="Close scenario manager"
           >
-            <X size={24} className="text-charcoal" />
+            <X size={24} className="text-white" />
           </button>
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Save Current Scenario */}
-          <section className="bg-slate-50 rounded-xl border border-slate-200 p-4">
-            <h3 className="text-sm font-bold text-slate-700 uppercase mb-3 flex items-center">
+          <section className="bg-slate-50 rounded-lg border border-slate-200 p-4">
+            <h3 className="text-sm font-bold font-headline text-slate-700 uppercase mb-3 flex items-center">
               <Save size={16} className="mr-2" />
               Save Current Scenario
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Scenario Name *</label>
+                <label className="block text-xs font-semibold font-label text-slate-600 uppercase mb-1">Scenario Name *</label>
                 <input
                   type="text"
                   value={scenarioName}
@@ -129,7 +129,7 @@ export const ScenarioManager: React.FC<ScenarioManagerProps> = ({
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Description (Optional)</label>
+                <label className="block text-xs font-semibold font-label text-slate-600 uppercase mb-1">Description (Optional)</label>
                 <input
                   type="text"
                   value={scenarioDescription}
@@ -156,7 +156,7 @@ export const ScenarioManager: React.FC<ScenarioManagerProps> = ({
           {/* Saved Scenarios */}
           <section>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-bold text-slate-700 uppercase flex items-center">
+              <h3 className="text-sm font-bold font-headline text-slate-700 uppercase flex items-center">
                 <FolderOpen size={16} className="mr-2" />
                 Saved Scenarios ({scenarios.length})
               </h3>
@@ -188,7 +188,7 @@ export const ScenarioManager: React.FC<ScenarioManagerProps> = ({
             </div>
 
             {scenarios.length === 0 ? (
-              <div className="text-center py-12 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+              <div className="text-center py-12 bg-slate-50 rounded-lg border border-dashed border-slate-300">
                 <FolderOpen size={48} className="mx-auto text-slate-300 mb-3" />
                 <p className="text-slate-500 text-sm">No saved scenarios yet</p>
                 <p className="text-slate-400 text-xs mt-1">Save your first scenario above</p>
@@ -200,7 +200,7 @@ export const ScenarioManager: React.FC<ScenarioManagerProps> = ({
                     key={scenario.id}
                     className={`bg-white rounded-lg border-2 p-4 transition-all ${
                       selectedScenarios.includes(scenario.id)
-                        ? 'border-purple-500 shadow-md'
+                        ? 'border-[#ACE849]'
                         : 'border-slate-200 hover:border-slate-300'
                     }`}
                   >
