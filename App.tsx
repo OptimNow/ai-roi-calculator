@@ -370,7 +370,7 @@ export default function App() {
           </div>
 
           {/* Center: Title */}
-          <h1 className="hidden sm:block text-xl font-bold font-headline text-slate-800 tracking-tight whitespace-nowrap">AI ROI Calculator</h1>
+          <h1 className="sr-only sm:not-sr-only text-xl font-bold font-headline text-slate-800 tracking-tight whitespace-nowrap">AI ROI Calculator</h1>
 
           {/* Right: Controls */}
           <div className="flex items-center space-x-1 sm:space-x-3 flex-shrink-0" role="toolbar" aria-label="Calculator controls">
