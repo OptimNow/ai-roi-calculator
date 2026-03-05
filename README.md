@@ -9,34 +9,29 @@ A comprehensive web application for calculating the return on investment (ROI) o
 
 ## Overview
 
-The AI ROI Calculator provides a sophisticated yet user-friendly interface for estimating the total cost of ownership (TCO) and business value of AI solutions. It accounts for infrastructure costs, operational overhead, and business outcomes using four distinct value measurement methods.
+Calculating ROI for AI initiatives is notoriously difficult. Unlike traditional software projects with predictable costs, AI implementations involve multiple layers of complexity that most organizations struggle to capture. Token-based pricing fluctuates with usage patterns, cache optimization impacts costs unpredictably, and operational overhead from orchestration and monitoring often remains hidden until production. Meanwhile, quantifying business value proves equally challenging: how do you measure the true impact of an AI assistant that deflects support tickets, or the revenue uplift from improved conversions?
 
-### Key Features
+Finance teams need more than back-of-the-envelope estimates. They need a rigorous framework that accounts for the full technical stack while translating AI capabilities into concrete business metrics. That's exactly what this calculator provides.
 
-- **3-Layer Cost Framework:**
-  - **Layer 1 (Infrastructure):** Model inference costs with token-based pricing, cache optimization, and multi-model routing
-  - **Layer 2 (Harness):** Orchestration, retrieval, monitoring, tool APIs, and operational overhead
-  - **Layer 3 (Business Value):** Four value methods to quantify ROI based on your use case
+The AI ROI Calculator uses a **3-layer framework** that mirrors how production AI systems actually work. Layer 1 captures infrastructure costs at the model level—accounting for token consumption, cache hit rates, and multi-model routing strategies. Layer 2 adds the "harness" costs that surround the model: orchestration platforms, vector databases for retrieval, monitoring systems, API tool calls, and network overhead. Layer 3 translates all this technical investment into business value using four distinct measurement methods, each tailored to different use cases.
 
-- **4 Value Measurement Methods:**
-  - **Cost Displacement:** Calculate savings from automating manual processes
-  - **Revenue Uplift:** Measure increased conversions and sales
-  - **Retention Uplift:** Quantify reduced customer churn
-  - **Premium Monetization:** Evaluate subscription-based AI feature revenue
+This approach solves a critical gap in AI planning. Most ROI estimates either oversimplify costs (ignoring operational overhead entirely) or overcomplicate them (requiring weeks of spreadsheet engineering). This calculator strikes a balance: sophisticated enough to handle real-world complexity, yet accessible enough for product managers and finance teams to use independently. The result is transparent, auditable projections that stand up to CFO scrutiny while remaining grounded in production realities.
 
-- **Advanced Analysis Tools (Phase 1 Complete):**
-  - **What-If Scenarios:** Save, compare, and export unlimited calculation scenarios
-  - **Break-even Analysis:** ROI curve visualization showing cumulative profit over time
-  - **Sensitivity Analysis:** Tornado chart ranking variable impact on ROI (±20% variation)
-  - **Scenario Comparison:** Side-by-side visual comparison with percentage differences
+### What Makes This Framework Different
 
-- **Professional UI/UX:**
-  - Responsive design optimized for desktop and mobile
-  - Visual hierarchy: grey input column, white results column
-  - WCAG 2.1 AA accessibility compliance
-  - Interactive charts and visualizations powered by Recharts
-  - Comprehensive help guide with step-by-step instructions
-  - OptimNow brand colors (Chartreuse #ACE849 accent)
+The calculator doesn't just add up costs and benefits. It provides the analytical depth needed for confident decision-making through features like break-even analysis (showing exactly when your AI investment pays off), sensitivity analysis (identifying which variables matter most to ROI), and scenario comparison (evaluating trade-offs between different implementation approaches). Every calculation is fully transparent and documented in the accompanying methodology guide, ensuring stakeholders can audit the math and understand the assumptions.
+
+Whether you're evaluating an AI customer support bot, a content generation tool, or a data extraction system, this framework helps you move beyond vague promises of "productivity gains" and "efficiency improvements" toward concrete, defensible financial projections.
+
+### Core Capabilities
+
+**3-Layer Cost Framework** captures the full technical stack from model inference through operational overhead to business value generation. Layer 1 (Infrastructure) handles model costs with token-based pricing, cache optimization, and multi-model routing. Layer 2 (Harness) accounts for orchestration, retrieval, monitoring, tool APIs, and operational overhead. Layer 3 (Business Value) quantifies ROI using four distinct measurement methods.
+
+**4 Value Measurement Methods** let you quantify business impact based on your specific use case. Cost Displacement calculates savings from automating manual processes, Revenue Uplift measures increased conversions and sales, Retention Uplift quantifies reduced customer churn, and Premium Monetization evaluates subscription-based AI feature revenue.
+
+**Advanced Analysis Tools** provide the depth needed for strategic planning. Create unlimited What-If Scenarios to compare different approaches, visualize Break-even Analysis showing cumulative profit over time, run Sensitivity Analysis with tornado charts ranking variable impact on ROI, and export detailed scenario comparisons with percentage differences highlighted.
+
+**Professional Interface** combines sophisticated analysis with accessible design. The responsive layout works seamlessly on desktop and mobile, with a clear visual hierarchy separating grey input columns from white results. Interactive charts powered by Recharts bring your projections to life, while comprehensive help guides and WCAG 2.1 AA accessibility ensure everyone can use the tool effectively.
 
 ---
 

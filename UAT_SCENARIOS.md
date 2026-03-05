@@ -409,7 +409,7 @@ Make a subtle chartreuse accent for the refresh button, because i had to go look
 | 1 | Click help icon (?) in header | Help modal opens | | |
 | 2 | Scroll through guide | All sections visible (6 sections) | | |
 | 3 | Find "API-based pricing" warning | Amber box in Infrastructure section | | |
-| 4 | Find "Analysis Months" explanation | In General Parameters section | | |
+| 4 | Find "Analysis Months" explanation | In Value & Scope section | | |
 | 5 | Find "Model Routing Strategy" | In Advanced Features section (Section 6) | | |
 | 6 | Find "Sensitivity Simulator" | Dark gray box in Advanced Features | | |
 | 7 | Click X or outside modal | Modal closes | | |
