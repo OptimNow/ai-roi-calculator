@@ -64,7 +64,7 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
   support: {
     useCaseName: 'Customer Support Bot',
     unitName: 'ticket',
-    monthlyVolume: 5000,
+    monthlyVolume: 10000,
     successRate: 90,
     // SMB support rollout: knowledge base setup, guardrails tuning, and agent enablement
     integrationCost: 6000,
@@ -95,7 +95,7 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
   knowledgeQA: {
     useCaseName: 'Knowledge Q&A',
     unitName: 'query',
-    monthlyVolume: 5000,
+    monthlyVolume: 1000,
     successRate: 90,
     integrationCost: 3000,
     trainingTuningCost: 2000,
@@ -217,7 +217,7 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
   callSummary: {
     useCaseName: 'Call Summary',
     unitName: 'call',
-    monthlyVolume: 2000,
+    monthlyVolume: 500,
     successRate: 95,
     integrationCost: 3000,
     trainingTuningCost: 1000,
@@ -322,7 +322,7 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
   premium: {
     useCaseName: 'AI Premium Features',
     unitName: 'subscriber',
-    monthlyVolume: 5000,
+    monthlyVolume: 1000,
     successRate: 100,
     // Premium feature launch: product integration, monetization experiments, go-to-market and support enablement
     integrationCost: 35000,
@@ -330,7 +330,7 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
     changeManagementCost: 10000,
     valueMethod: ValueMethod.PREMIUM_MONETIZATION,
     pricePerSubscriberPerMonth: 15,
-    subscribers: 5000,
+    subscribers: 1000,
     nonAiCOGSPerSubscriber: 3,
     primaryModel: {
         ...DEFAULT_MODEL_PARAMS,
