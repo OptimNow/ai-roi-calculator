@@ -19,7 +19,7 @@ const formatNumber = (val: number) =>
 const SCENARIOS_STORAGE_KEY = 'ai-roi-calculator-scenarios';
 
 export default function App() {
-  const [inputs, setInputs] = useState<UseCaseInputs>({ ...DEFAULT_INPUTS, ...PRESETS.support, monthlyVolume: 5000 } as UseCaseInputs);
+  const [inputs, setInputs] = useState<UseCaseInputs>({ ...DEFAULT_INPUTS, ...PRESETS.support } as UseCaseInputs);
   const [mode, setMode] = useState<'simple' | 'advanced'>('simple');
   const [showHelp, setShowHelp] = useState<boolean>(false);
   const [showScenarios, setShowScenarios] = useState<boolean>(false);

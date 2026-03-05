@@ -10,40 +10,40 @@ export const DEFAULT_MODEL_PARAMS = {
 };
 
 export const DEFAULT_INPUTS: UseCaseInputs = {
-  useCaseName: 'E-commerce Recommendations',
-  unitName: 'Order',
-  monthlyVolume: 100000,
-  successRate: 100,
+  useCaseName: 'Customer Support Bot',
+  unitName: 'ticket',
+  monthlyVolume: 10000,
+  successRate: 90,
   analysisHorizonMonths: 12,
 
-  integrationCost: 30000,
-  trainingTuningCost: 12000,
-  changeManagementCost: 8000,
+  integrationCost: 6000,
+  trainingTuningCost: 2500,
+  changeManagementCost: 1500,
   amortizationMonths: 12,
 
-  primaryModel: { ...DEFAULT_MODEL_PARAMS, avgInputTokensPerUnit: 1200, avgOutputTokensPerUnit: 300 },
+  primaryModel: { ...DEFAULT_MODEL_PARAMS, avgInputTokensPerUnit: 1500, avgOutputTokensPerUnit: 500 },
   secondaryModel: { ...DEFAULT_MODEL_PARAMS, pricePer1MInputTokens: 2.5, pricePer1MOutputTokens: 10 },
   routingSimplePercent: 100,
   cacheHitRate: 10,
   cachedTokenDiscount: 90,
 
-  orchestrationCostPerUnit: 0.003,
-  retrievalCostPerUnit: 0.004,
-  toolApiCostPerUnit: 0.0005,
-  loggingMonitoringCostPerUnit: 0.001,
-  safetyGuardrailsCostPerUnit: 0.0008,
-  networkEgressCostPerUnit: 0.0003,
+  orchestrationCostPerUnit: 0.002,
+  retrievalCostPerUnit: 0.0015,
+  toolApiCostPerUnit: 0.0003,
+  loggingMonitoringCostPerUnit: 0.0008,
+  safetyGuardrailsCostPerUnit: 0.0005,
+  networkEgressCostPerUnit: 0.0002,
   storageCostPerUnit: 0.0002,
-  
+
   retryRate: 0.1,
   overheadMultiplier: 1.0,
 
-  valueMethod: ValueMethod.REVENUE_UPLIFT,
+  valueMethod: ValueMethod.COST_DISPLACEMENT,
 
-  baselineHumanCostPerUnit: 1.00,
-  deflectionRate: 40,
-  residualHumanReviewRate: 10,
-  residualReviewCostPerUnit: 0.50,
+  baselineHumanCostPerUnit: 0.50,
+  deflectionRate: 35,
+  residualHumanReviewRate: 5,
+  residualReviewCostPerUnit: 0.10,
 
   baselineConversionRate: 3.0,
   conversionUpliftAbsolute: 0.2,
@@ -184,9 +184,6 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
     unitName: 'invoice',
     monthlyVolume: 10000,
     successRate: 98,
-    integrationCost: 5000,
-    trainingTuningCost: 2000,
-    changeManagementCost: 1000,
     valueMethod: ValueMethod.COST_DISPLACEMENT,
     // Assumption: specialist in India at ~$4/hour and ~10 invoices/hour => ~$0.40 per invoice
     baselineHumanCostPerUnit: 0.40,
