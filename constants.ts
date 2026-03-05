@@ -40,10 +40,10 @@ export const DEFAULT_INPUTS: UseCaseInputs = {
 
   valueMethod: ValueMethod.REVENUE_UPLIFT,
 
-  baselineHumanCostPerUnit: 5.00,
+  baselineHumanCostPerUnit: 1.00,
   deflectionRate: 40,
   residualHumanReviewRate: 10,
-  residualReviewCostPerUnit: 2.50,
+  residualReviewCostPerUnit: 0.50,
 
   baselineConversionRate: 3.0,
   conversionUpliftAbsolute: 0.2,
@@ -71,15 +71,15 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
     trainingTuningCost: 2500,
     changeManagementCost: 1500,
     valueMethod: ValueMethod.COST_DISPLACEMENT,
-    baselineHumanCostPerUnit: 1.00,
+    baselineHumanCostPerUnit: 0.50,
     deflectionRate: 35,
     residualHumanReviewRate: 5,
-    residualReviewCostPerUnit: 0.20,
+    residualReviewCostPerUnit: 0.10,
     retryRate: 0.1,
     primaryModel: {
         ...DEFAULT_MODEL_PARAMS,
-        avgInputTokensPerUnit: 800,
-        avgOutputTokensPerUnit: 300,
+        avgInputTokensPerUnit: 1500,
+        avgOutputTokensPerUnit: 500,
         pricePer1MInputTokens: 0.15,
         pricePer1MOutputTokens: 0.60
     },
@@ -92,11 +92,101 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
     networkEgressCostPerUnit: 0.0002,
     storageCostPerUnit: 0.0002
   },
+  knowledgeQA: {
+    useCaseName: 'Knowledge Q&A',
+    unitName: 'query',
+    monthlyVolume: 5000,
+    successRate: 90,
+    integrationCost: 3000,
+    trainingTuningCost: 2000,
+    changeManagementCost: 500,
+    valueMethod: ValueMethod.COST_DISPLACEMENT,
+    baselineHumanCostPerUnit: 2.00,
+    deflectionRate: 60,
+    residualHumanReviewRate: 10,
+    residualReviewCostPerUnit: 0.75,
+    primaryModel: {
+        ...DEFAULT_MODEL_PARAMS,
+        avgInputTokensPerUnit: 2000,
+        avgOutputTokensPerUnit: 800,
+        pricePer1MInputTokens: 0.15,
+        pricePer1MOutputTokens: 0.60
+    },
+    retrievalCostPerUnit: 0.005
+  },
+  meetingSummary: {
+    useCaseName: 'Meeting Summary',
+    unitName: 'meeting',
+    monthlyVolume: 500,
+    successRate: 95,
+    integrationCost: 2000,
+    trainingTuningCost: 1000,
+    changeManagementCost: 500,
+    valueMethod: ValueMethod.COST_DISPLACEMENT,
+    baselineHumanCostPerUnit: 5.00,
+    deflectionRate: 80,
+    residualHumanReviewRate: 20,
+    residualReviewCostPerUnit: 1.00,
+    primaryModel: {
+        ...DEFAULT_MODEL_PARAMS,
+        avgInputTokensPerUnit: 10000,
+        avgOutputTokensPerUnit: 1200,
+        pricePer1MInputTokens: 0.15,
+        pricePer1MOutputTokens: 0.60
+    }
+  },
+  marketingContent: {
+    useCaseName: 'Marketing Content',
+    unitName: 'piece',
+    monthlyVolume: 200,
+    successRate: 85,
+    integrationCost: 2000,
+    trainingTuningCost: 3000,
+    changeManagementCost: 1000,
+    valueMethod: ValueMethod.COST_DISPLACEMENT,
+    baselineHumanCostPerUnit: 10.00,
+    deflectionRate: 60,
+    residualHumanReviewRate: 40,
+    residualReviewCostPerUnit: 3.00,
+    primaryModel: {
+        ...DEFAULT_MODEL_PARAMS,
+        avgInputTokensPerUnit: 2500,
+        avgOutputTokensPerUnit: 1800,
+        pricePer1MInputTokens: 3.00,
+        pricePer1MOutputTokens: 15.00
+    }
+  },
+  codingTask: {
+    useCaseName: 'Coding Task',
+    unitName: 'task',
+    monthlyVolume: 1000,
+    successRate: 80,
+    integrationCost: 5000,
+    trainingTuningCost: 3000,
+    changeManagementCost: 2000,
+    valueMethod: ValueMethod.COST_DISPLACEMENT,
+    baselineHumanCostPerUnit: 8.00,
+    deflectionRate: 50,
+    residualHumanReviewRate: 30,
+    residualReviewCostPerUnit: 3.00,
+    primaryModel: {
+        ...DEFAULT_MODEL_PARAMS,
+        avgInputTokensPerUnit: 3000,
+        avgOutputTokensPerUnit: 2000,
+        pricePer1MInputTokens: 2.50,
+        pricePer1MOutputTokens: 10.00
+    },
+    orchestrationCostPerUnit: 0.005,
+    toolApiCostPerUnit: 0.01
+  },
   invoice: {
     useCaseName: 'Invoice Processing',
     unitName: 'invoice',
     monthlyVolume: 10000,
     successRate: 98,
+    integrationCost: 5000,
+    trainingTuningCost: 2000,
+    changeManagementCost: 1000,
     valueMethod: ValueMethod.COST_DISPLACEMENT,
     // Assumption: specialist in India at ~$4/hour and ~10 invoices/hour => ~$0.40 per invoice
     baselineHumanCostPerUnit: 0.40,
@@ -123,6 +213,51 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
     safetyGuardrailsCostPerUnit: 0.0007,
     networkEgressCostPerUnit: 0.0002,
     storageCostPerUnit: 0.0005
+  },
+  callSummary: {
+    useCaseName: 'Call Summary',
+    unitName: 'call',
+    monthlyVolume: 2000,
+    successRate: 95,
+    integrationCost: 3000,
+    trainingTuningCost: 1000,
+    changeManagementCost: 500,
+    valueMethod: ValueMethod.COST_DISPLACEMENT,
+    baselineHumanCostPerUnit: 3.00,
+    deflectionRate: 85,
+    residualHumanReviewRate: 10,
+    residualReviewCostPerUnit: 0.75,
+    primaryModel: {
+        ...DEFAULT_MODEL_PARAMS,
+        avgInputTokensPerUnit: 2000,
+        avgOutputTokensPerUnit: 700,
+        pricePer1MInputTokens: 0.15,
+        pricePer1MOutputTokens: 0.60
+    }
+  },
+  agentWorkflow: {
+    useCaseName: 'Agent Workflow',
+    unitName: 'workflow',
+    monthlyVolume: 500,
+    successRate: 80,
+    integrationCost: 10000,
+    trainingTuningCost: 5000,
+    changeManagementCost: 3000,
+    valueMethod: ValueMethod.COST_DISPLACEMENT,
+    baselineHumanCostPerUnit: 15.00,
+    deflectionRate: 55,
+    residualHumanReviewRate: 25,
+    residualReviewCostPerUnit: 4.00,
+    primaryModel: {
+        ...DEFAULT_MODEL_PARAMS,
+        avgInputTokensPerUnit: 6000,
+        avgOutputTokensPerUnit: 3000,
+        pricePer1MInputTokens: 2.50,
+        pricePer1MOutputTokens: 10.00
+    },
+    orchestrationCostPerUnit: 0.01,
+    retrievalCostPerUnit: 0.005,
+    toolApiCostPerUnit: 0.02
   },
   recommendation: {
     useCaseName: 'E-commerce Recommendations',
@@ -201,8 +336,8 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
         ...DEFAULT_MODEL_PARAMS,
         avgInputTokensPerUnit: 2000,
         avgOutputTokensPerUnit: 800,
-        pricePer1MInputTokens: 0.50,
-        pricePer1MOutputTokens: 1.50
+        pricePer1MInputTokens: 1.00,
+        pricePer1MOutputTokens: 5.00
     },
     // Harness assumptions: entitlement-aware orchestration, retrieval/tool calls, observability and safety at scale
     orchestrationCostPerUnit: 0.006,

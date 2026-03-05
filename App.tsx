@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Download, Copy, RefreshCw, Settings, Calculator, HelpCircle, FolderOpen, Info, BookOpen } from 'lucide-react';
+import { Download, Copy, Check, RefreshCw, Settings, HelpCircle, FolderOpen, Info, BookOpen } from 'lucide-react';
 
 import { UseCaseInputs, CalculationResults, ValueMethod, SensitivityModifiers, ModelParams, Scenario } from './types';
 import { DEFAULT_INPUTS, PRESETS, DEFAULT_MODEL_PARAMS } from './constants';
@@ -19,7 +19,7 @@ const formatNumber = (val: number) =>
 const SCENARIOS_STORAGE_KEY = 'ai-roi-calculator-scenarios';
 
 export default function App() {
-  const [inputs, setInputs] = useState<UseCaseInputs>(DEFAULT_INPUTS);
+  const [inputs, setInputs] = useState<UseCaseInputs>({ ...DEFAULT_INPUTS, ...PRESETS.support, monthlyVolume: 5000 } as UseCaseInputs);
   const [mode, setMode] = useState<'simple' | 'advanced'>('simple');
   const [showHelp, setShowHelp] = useState<boolean>(false);
   const [showScenarios, setShowScenarios] = useState<boolean>(false);
@@ -36,6 +36,7 @@ export default function App() {
     valueScope: true,
     costModel: false,
   });
+  const [copied, setCopied] = useState(false);
 
   // Load scenarios from localStorage on mount
   useEffect(() => {
@@ -121,7 +122,7 @@ export default function App() {
     link.click();
   };
 
-  const handleCopyMarkdown = () => {
+  const handleCopyMarkdown = async () => {
     const paybackAsNumber = Number(results.paybackMonths);
     const paybackDisplay = Number.isFinite(paybackAsNumber)
       ? `${paybackAsNumber} months`
@@ -142,8 +143,23 @@ export default function App() {
 - Realization Rate: ${inputs.successRate}%
 - Model: Simple/Complex split ${inputs.routingSimplePercent}% / ${100 - inputs.routingSimplePercent}%
     `.trim();
-    navigator.clipboard.writeText(md);
-    alert('Summary copied to clipboard!');
+    try {
+      await navigator.clipboard.writeText(md);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Fallback for non-HTTPS or permission-denied contexts
+      const textarea = document.createElement('textarea');
+      textarea.value = md;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   // Scenario Management Handlers
@@ -303,7 +319,7 @@ export default function App() {
   }, [inputs]);
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900">
+    <div className="min-h-screen bg-[#F4F4F4] flex flex-col font-sans text-slate-900">
       {/* Help Guide Modal */}
       <HelpGuide isOpen={showHelp} onClose={() => setShowHelp(false)} />
 
@@ -330,10 +346,10 @@ export default function App() {
       />
 
       {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 sm:h-20 flex items-center justify-between gap-2">
           {/* Left: Logo */}
-          <div className="flex items-center">
+          <div className="flex items-center flex-shrink-0">
             <a
               href="https://www.optimnow.io"
               target="_blank"
@@ -344,7 +360,7 @@ export default function App() {
               <img
                 src="/images/Logo.png"
                 alt="OptimNow Logo"
-                className="h-10 w-auto object-contain max-w-[180px]"
+                className="h-8 sm:h-10 w-auto object-contain max-w-[140px] sm:max-w-[180px]"
                 onError={(e) => {
                   console.error('Logo failed to load from:', e.currentTarget.src);
                   e.currentTarget.style.display = 'none';
@@ -354,19 +370,14 @@ export default function App() {
           </div>
 
           {/* Center: Title */}
-          <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center space-x-3">
-            <div className="bg-accent text-charcoal p-2 rounded-lg">
-              <Calculator size={20} />
-            </div>
-            <h1 className="text-xl font-bold text-slate-800 tracking-tight whitespace-nowrap">AI ROI Calculator</h1>
-          </div>
+          <h1 className="hidden sm:block text-xl font-bold font-headline text-slate-800 tracking-tight whitespace-nowrap">AI ROI Calculator</h1>
 
           {/* Right: Controls */}
-          <div className="flex items-center space-x-3" role="toolbar" aria-label="Calculator controls">
-             <div className="flex bg-slate-100 rounded-lg p-1" role="group" aria-label="Display mode toggle">
+          <div className="flex items-center space-x-1 sm:space-x-3 flex-shrink-0" role="toolbar" aria-label="Calculator controls">
+             <div className="flex bg-slate-100 rounded-lg p-0.5 sm:p-1" role="group" aria-label="Display mode toggle">
                 <button
                   onClick={() => setMode('simple')}
-                  className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${mode === 'simple' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
+                  className={`px-2 sm:px-3 py-1 text-[10px] sm:text-xs font-medium rounded-md transition-all ${mode === 'simple' ? 'bg-white text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
                   aria-pressed={mode === 'simple'}
                   aria-label="Switch to simple mode"
                 >
@@ -374,7 +385,7 @@ export default function App() {
                 </button>
                 <button
                   onClick={() => setMode('advanced')}
-                  className={`px-3 py-1 text-xs font-medium rounded-md transition-all ${mode === 'advanced' ? 'bg-white shadow-sm text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
+                  className={`px-2 sm:px-3 py-1 text-[10px] sm:text-xs font-medium rounded-md transition-all ${mode === 'advanced' ? 'bg-white text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
                   aria-pressed={mode === 'advanced'}
                   aria-label="Switch to advanced mode"
                 >
@@ -383,11 +394,11 @@ export default function App() {
              </div>
             <button
               onClick={() => setShowScenarios(true)}
-              className="p-2 text-slate-500 hover:bg-accent hover:bg-opacity-10 rounded-md transition-colors relative"
+              className="p-1.5 sm:p-2 text-slate-500 hover:bg-accent hover:bg-opacity-10 rounded-md transition-colors relative"
               title="Manage Scenarios"
               aria-label="Open scenario manager"
             >
-              <FolderOpen size={20} aria-hidden="true" />
+              <FolderOpen size={18} aria-hidden="true" />
               {scenarios.length > 0 && (
                 <span className="absolute -top-1 -right-1 bg-accent text-charcoal text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
                   {scenarios.length}
@@ -396,33 +407,33 @@ export default function App() {
             </button>
             <button
               onClick={() => setShowHelp(true)}
-              className="p-2 text-slate-500 hover:bg-accent hover:bg-opacity-10 rounded-md transition-colors"
+              className="p-1.5 sm:p-2 text-slate-500 hover:bg-accent hover:bg-opacity-10 rounded-md transition-colors"
               title="How to Fill the Calculator"
               aria-label="Open help guide"
             >
-              <HelpCircle size={20} aria-hidden="true" />
+              <HelpCircle size={18} aria-hidden="true" />
             </button>
             <a
               href="https://github.com/OptimNow/ai-roi-calculator/blob/main/METHODOLOGY.md"
               target="_blank"
               rel="noopener noreferrer"
-              className="p-2 text-slate-500 hover:bg-accent hover:bg-opacity-10 rounded-md transition-colors"
+              className="hidden sm:block p-1.5 sm:p-2 text-slate-500 hover:bg-accent hover:bg-opacity-10 rounded-md transition-colors"
               title="View Calculation Methodology"
               aria-label="Open methodology documentation in new tab"
             >
-              <BookOpen size={20} aria-hidden="true" />
+              <BookOpen size={18} aria-hidden="true" />
             </a>
             <button
               onClick={handleCopyMarkdown}
-              className="p-2 text-slate-500 hover:bg-slate-100 rounded-md"
+              className={`hidden sm:block p-1.5 sm:p-2 rounded-md ${copied ? 'text-green-600 bg-green-50' : 'text-slate-500 hover:bg-slate-100'}`}
               title="Copy Summary"
               aria-label="Copy summary to clipboard"
             >
-              <Copy size={18} aria-hidden="true" />
+              {copied ? <Check size={18} aria-hidden="true" /> : <Copy size={18} aria-hidden="true" />}
             </button>
             <button
               onClick={handleExportJSON}
-              className="p-2 text-slate-500 hover:bg-slate-100 rounded-md"
+              className="hidden sm:block p-1.5 sm:p-2 text-slate-500 hover:bg-slate-100 rounded-md"
               title="Download JSON"
               aria-label="Download results as JSON"
             >
@@ -434,10 +445,10 @@ export default function App() {
 
       <main className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* --- LEFT COLUMN: INPUTS --- */}
-        <div className="lg:col-span-5 space-y-6 overflow-y-auto h-full p-6 rounded-xl" style={{ backgroundColor: 'var(--color-secondary)' }}>
+        <div className="lg:col-span-5 space-y-6 overflow-y-auto h-full p-6 rounded-lg" style={{ backgroundColor: 'var(--color-secondary)' }}>
           {/* Preset Loader */}
-          <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-            <h3 className="text-xs font-bold text-slate-500 uppercase mb-3">Load Example Profile</h3>
+          <div className="bg-white p-4 rounded-lg border border-slate-200">
+            <h3 className="text-xs font-bold font-label text-slate-500 uppercase mb-3">Load Example Profile</h3>
             <div className="flex flex-wrap gap-2">
               {Object.keys(PRESETS).map(key => (
                 <button
@@ -450,7 +461,7 @@ export default function App() {
               ))}
               <button
                 onClick={() => setInputs(DEFAULT_INPUTS)}
-                className="px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-accent hover:bg-accent hover:bg-opacity-10 transition-colors ml-auto rounded-md"
+                className="px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-[#2C2C2C] hover:bg-slate-100 transition-colors ml-auto rounded-md"
                 title="Reset to defaults"
                 aria-label="Reset calculator to default values"
               >
@@ -461,31 +472,31 @@ export default function App() {
 
           {/* Sensitivity Simulation Active Banner */}
           {(modifiers.volumeMultiplier !== 1 || modifiers.successRateMultiplier !== 1 || modifiers.costMultiplier !== 1 || modifiers.valueMultiplier !== 1) && (
-            <div className="bg-accent bg-opacity-10 border border-accent rounded-xl p-4">
+            <div className="bg-accent bg-opacity-10 border border-accent rounded-lg p-4">
               <div className="flex items-start">
-                <Info size={18} className="text-accent mr-2 mt-0.5 flex-shrink-0" />
+                <Info size={18} className="text-[#2C2C2C] mr-2 mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
                   <h4 className="text-sm font-bold text-slate-800 mb-2">Sensitivity Simulation Active</h4>
                   <p className="text-xs text-slate-600 mb-2">Results shown are based on modified values below. Base inputs remain unchanged.</p>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     {modifiers.volumeMultiplier !== 1 && (
                       <div className="bg-white bg-opacity-50 rounded px-2 py-1">
-                        <span className="font-semibold text-slate-700">Volume:</span> <span className="font-mono text-accent">{formatNumber(inputs.monthlyVolume)} × {modifiers.volumeMultiplier} = {formatNumber(inputs.monthlyVolume * modifiers.volumeMultiplier)}</span>
+                        <span className="font-semibold text-slate-700">Volume:</span> <span className="font-mono font-bold text-[#2C2C2C]">{formatNumber(inputs.monthlyVolume)} × {modifiers.volumeMultiplier} = {formatNumber(inputs.monthlyVolume * modifiers.volumeMultiplier)}</span>
                       </div>
                     )}
                     {modifiers.successRateMultiplier !== 1 && (
                       <div className="bg-white bg-opacity-50 rounded px-2 py-1">
-                        <span className="font-semibold text-slate-700">Realization Rate:</span> <span className="font-mono text-accent">{inputs.successRate}% × {modifiers.successRateMultiplier} = {(inputs.successRate * modifiers.successRateMultiplier).toFixed(1)}%</span>
+                        <span className="font-semibold text-slate-700">Realization Rate:</span> <span className="font-mono font-bold text-[#2C2C2C]">{inputs.successRate}% × {modifiers.successRateMultiplier} = {(inputs.successRate * modifiers.successRateMultiplier).toFixed(1)}%</span>
                       </div>
                     )}
                     {modifiers.costMultiplier !== 1 && (
                       <div className="bg-white bg-opacity-50 rounded px-2 py-1">
-                        <span className="font-semibold text-slate-700">Costs:</span> <span className="font-mono text-accent">×{modifiers.costMultiplier}</span>
+                        <span className="font-semibold text-slate-700">Costs:</span> <span className="font-mono font-bold text-[#2C2C2C]">×{modifiers.costMultiplier}</span>
                       </div>
                     )}
                     {modifiers.valueMultiplier !== 1 && (
                       <div className="bg-white bg-opacity-50 rounded px-2 py-1">
-                        <span className="font-semibold text-slate-700">Value:</span> <span className="font-mono text-accent">×{modifiers.valueMultiplier}</span>
+                        <span className="font-semibold text-slate-700">Value:</span> <span className="font-mono font-bold text-[#2C2C2C]">×{modifiers.valueMultiplier}</span>
                       </div>
                     )}
                   </div>
@@ -494,7 +505,7 @@ export default function App() {
             </div>
           )}
 
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
             {/* 1. Value & Scope */}
              <SectionHeader title="1. Value & Scope" isOpen={expandedSections.valueScope} onToggle={() => toggleSection('valueScope')} />
              {expandedSections.valueScope && <div className="p-5 border-b border-slate-100">
@@ -534,7 +545,7 @@ export default function App() {
                 <div className="flex items-start mb-5" role="group" aria-label="Step 1: Choose value archetype">
                   <span className="flex-shrink-0 bg-accent text-charcoal rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">1</span>
                   <div className="flex-1">
-                    <h4 className="text-xs font-bold text-slate-700 uppercase mb-2">Choose Value Archetype</h4>
+                    <h4 className="text-sm font-bold text-slate-800 mb-2">Choose Value Archetype</h4>
                     <select
                       value={inputs.valueMethod}
                       onChange={(e) => updateInput('valueMethod', e.target.value as ValueMethod)}
@@ -549,14 +560,14 @@ export default function App() {
                 <div className="flex items-start mb-5" role="group" aria-label="Step 2: Define value drivers">
                   <span className="flex-shrink-0 bg-accent text-charcoal rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">2</span>
                   <div className="flex-1">
-                    <h4 className="text-xs font-bold text-slate-700 uppercase mb-2">Define Value Drivers</h4>
+                    <h4 className="text-sm font-bold text-slate-800 mb-2">Define Value Drivers</h4>
 
                     {inputs.valueMethod === ValueMethod.COST_DISPLACEMENT && (
                         <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
                             <MoneyInput label="Baseline Human Cost" value={inputs.baselineHumanCostPerUnit} onChange={v => updateInput('baselineHumanCostPerUnit', v)} />
                             <div className="grid grid-cols-2 gap-3">
-                                <PercentInput label="Deflection Rate" value={inputs.deflectionRate} onChange={v => updateInput('deflectionRate', v)} />
-                                <PercentInput label="Residual Review Rate" value={inputs.residualHumanReviewRate} onChange={v => updateInput('residualHumanReviewRate', v)} />
+                                <PercentInput label="Deflection Rate" value={inputs.deflectionRate} onChange={v => updateInput('deflectionRate', v)} tooltip="Percentage of tasks fully handled by AI without human intervention." />
+                                <PercentInput label="Residual Review Rate" value={inputs.residualHumanReviewRate} onChange={v => updateInput('residualHumanReviewRate', v)} tooltip="Percentage of AI-handled tasks that still require a human to review or approve the output." />
                             </div>
                             {inputs.residualHumanReviewRate > 0 && (
                                 <MoneyInput label="Review Cost (Unit)" value={inputs.residualReviewCostPerUnit} onChange={v => updateInput('residualReviewCostPerUnit', v)} />
@@ -567,7 +578,7 @@ export default function App() {
                     {inputs.valueMethod === ValueMethod.REVENUE_UPLIFT && (
                         <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
                              <div className="grid grid-cols-2 gap-3">
-                                <PercentInput label="Baseline Conversion" value={inputs.baselineConversionRate} onChange={v => updateInput('baselineConversionRate', v)} />
+                                <PercentInput label="Baseline Conversion" value={inputs.baselineConversionRate} onChange={v => updateInput('baselineConversionRate', v)} tooltip="Your current conversion rate before AI is applied. Used to measure the uplift AI provides." />
                                 <PercentInput
                                   label="Abs. Uplift (+)"
                                   value={inputs.conversionUpliftAbsolute}
@@ -595,7 +606,7 @@ export default function App() {
                         <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
                             <MoneyInput label="Price / Sub / Mo" value={inputs.pricePerSubscriberPerMonth} onChange={v => updateInput('pricePerSubscriberPerMonth', v)} />
                             <NumberInput label="Total Subscribers" value={inputs.subscribers} onChange={v => updateInput('subscribers', v)} />
-                            <MoneyInput label="Non-AI COGS / Sub" value={inputs.nonAiCOGSPerSubscriber} onChange={v => updateInput('nonAiCOGSPerSubscriber', v)} />
+                            <MoneyInput label="Non-AI COGS / Sub" value={inputs.nonAiCOGSPerSubscriber} onChange={v => updateInput('nonAiCOGSPerSubscriber', v)} tooltip="Non-AI cost of goods sold per subscriber per month (e.g. hosting, support, content). AI inference cost is calculated separately." />
                         </div>
                     )}
                   </div>
@@ -605,7 +616,7 @@ export default function App() {
                 <div className="flex items-start mb-4" role="group" aria-label="Step 3: Set realization rate">
                   <span className="flex-shrink-0 bg-accent text-charcoal rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold mr-3 mt-0.5">3</span>
                   <div className="flex-1">
-                    <h4 className="text-xs font-bold text-slate-700 uppercase mb-2">Set Realization Rate</h4>
+                    <h4 className="text-sm font-bold text-slate-800 mb-2">Set Realization Rate</h4>
                     <PercentInput
                       label="Realization Rate"
                       value={inputs.successRate}
@@ -617,13 +628,13 @@ export default function App() {
 
                 {/* Equation Preview */}
                 <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 ml-9">
-                  <h4 className="text-xs font-bold text-slate-500 uppercase mb-2">Equation Preview</h4>
+                  <h4 className="text-xs font-bold font-label text-slate-500 uppercase mb-2">Equation Preview</h4>
                   <p className="text-sm text-slate-700 font-mono">
                     {formatMoney(grossBeforeRealization, 4)}
                     <span className="text-slate-400"> × </span>
                     {effectiveRealizationRate.toFixed(0)}%
                     <span className="text-slate-400"> = </span>
-                    <span className="font-bold text-accent">{formatMoney(results.grossValuePerUnit, 4)}</span>
+                    <span className="font-bold text-[#2C2C2C]">{formatMoney(results.grossValuePerUnit, 4)}</span>
                     <span className="text-slate-400"> / {inputs.unitName}</span>
                   </p>
                 </div>
@@ -634,13 +645,16 @@ export default function App() {
              <SectionHeader title="2. Cost Model" isOpen={expandedSections.costModel} onToggle={() => toggleSection('costModel')} />
              {expandedSections.costModel && <div className="p-5 border-b border-slate-100">
                 {/* Sub-section: Infrastructure (Layer 1) */}
-                <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Infrastructure (Layer 1)</h4>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-xs font-bold font-label text-slate-500 uppercase tracking-wider">Infrastructure (Layer 1)</h4>
+                  <a href="https://aipricinghub.optimnow.io" target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-500 hover:text-blue-700 hover:underline">Token pricing reference &rarr;</a>
+                </div>
                 {mode === 'advanced' && (
                    <div className="mb-4 p-3 bg-slate-50 rounded border border-slate-200">
                       <h5 className="text-xs font-bold text-slate-700 mb-2">Model Routing Strategy</h5>
                       <div className="flex items-center justify-between mb-2">
                          <span className="text-xs text-slate-500">Simple Model</span>
-                         <span className="text-xs font-bold text-accent">{inputs.routingSimplePercent}%</span>
+                         <span className="text-xs font-bold text-[#2C2C2C]">{inputs.routingSimplePercent}%</span>
                       </div>
                       <input
                         type="range" min="0" max="100"
@@ -684,15 +698,15 @@ export default function App() {
 
                     {mode === 'advanced' && (
                         <div className="grid grid-cols-2 gap-3 pt-2">
-                             <PercentInput label="Cache Hit Rate" value={inputs.cacheHitRate} onChange={v => updateInput('cacheHitRate', v)} />
-                             <PercentInput label="Cache Discount" value={inputs.cachedTokenDiscount} onChange={v => updateInput('cachedTokenDiscount', v)} />
+                             <PercentInput label="Cache Hit Rate" value={inputs.cacheHitRate} onChange={v => updateInput('cacheHitRate', v)} tooltip="Percentage of requests that reuse cached tokens from previous queries, reducing inference cost." />
+                             <PercentInput label="Cache Discount" value={inputs.cachedTokenDiscount} onChange={v => updateInput('cachedTokenDiscount', v)} tooltip="Discount applied to cached tokens vs. fresh tokens. Most providers offer 75–90% off for cached input tokens." />
                         </div>
                     )}
                 </div>
 
                 {/* Sub-section: Harness (Layer 2) */}
                 <div className="border-t border-slate-200 mt-5 pt-5">
-                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Harness (Layer 2)</h4>
+                  <h4 className="text-xs font-bold font-label text-slate-500 uppercase tracking-wider mb-3">Harness (Layer 2)</h4>
                   <div className="grid grid-cols-2 gap-3">
                       <MoneyInput label="Orchestration Cost" value={inputs.orchestrationCostPerUnit} onChange={v => updateInput('orchestrationCostPerUnit', v)} precision={4} tooltip="Cost per unit for logic/chains" />
                       <MoneyInput label="Retrieval / Vector DB" value={inputs.retrievalCostPerUnit} onChange={v => updateInput('retrievalCostPerUnit', v)} precision={4} />
@@ -713,7 +727,7 @@ export default function App() {
 
                 {/* Sub-section: One-time Costs */}
                 <div className="border-t border-slate-200 mt-5 pt-5">
-                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">One-time Costs</h4>
+                  <h4 className="text-xs font-bold font-label text-slate-500 uppercase tracking-wider mb-3">One-time Costs</h4>
                   <div className="grid grid-cols-2 gap-3">
                        <MoneyInput label="Integration" value={inputs.integrationCost} onChange={v => updateInput('integrationCost', v)} precision={0} />
                        <MoneyInput label="Training / Tuning" value={inputs.trainingTuningCost} onChange={v => updateInput('trainingTuningCost', v)} precision={0} />
@@ -729,12 +743,12 @@ export default function App() {
         </div>
 
         {/* --- RIGHT COLUMN: RESULTS --- */}
-        <div className="lg:col-span-7 space-y-6 bg-white p-6 rounded-xl" role="region" aria-label="Calculation results">
+        <div className="lg:col-span-7 space-y-6 bg-white p-6 rounded-lg" role="region" aria-label="Calculation results">
 
             {/* Business Value Summary Card */}
-            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+            <div className="bg-white p-4 rounded-lg border border-slate-200">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xs font-bold text-slate-500 uppercase">Value Summary</h3>
+                <h3 className="text-xs font-bold font-label text-slate-500 uppercase">Value Summary</h3>
                 <span className="text-xs px-2 py-0.5 bg-slate-100 rounded-full text-slate-600">
                   {inputs.valueMethod}
                 </span>
@@ -748,7 +762,7 @@ export default function App() {
                 </div>
                 <div>
                   <span className="text-[10px] text-slate-400 uppercase block">Realized / Unit</span>
-                  <span className="text-sm font-bold text-accent">
+                  <span className="text-sm font-bold text-[#2C2C2C]">
                     {formatMoney(results.grossValuePerUnit, 4)}
                   </span>
                 </div>
@@ -769,11 +783,11 @@ export default function App() {
 
             {/* KPI Cards */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4" role="group" aria-label="Key performance indicators">
-                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between" role="article" aria-label="ROI metric">
+                <div className="bg-white p-4 rounded-lg border border-slate-200 flex flex-col justify-between" role="article" aria-label="ROI metric">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-400 uppercase" id="roi-label">ROI</span>
+                      <span className="text-xs font-bold font-label text-slate-400 uppercase" id="roi-label">ROI</span>
                       <button
-                        className="text-slate-300 hover:text-accent transition-colors"
+                        className="text-slate-300 hover:text-[#2C2C2C] transition-colors"
                         title="Return on Investment: Calculated over your Analysis Months period. Shows total value minus total costs, divided by total costs."
                         aria-label="ROI explanation"
                       >
@@ -789,11 +803,11 @@ export default function App() {
                     </span>
                     <span className="text-[10px] text-slate-400">Over {inputs.analysisHorizonMonths} months</span>
                 </div>
-                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between" role="article" aria-label="Net benefit metric">
+                <div className="bg-white p-4 rounded-lg border border-slate-200 flex flex-col justify-between" role="article" aria-label="Net benefit metric">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-400 uppercase" id="netbenefit-label">Net Benefit</span>
+                      <span className="text-xs font-bold font-label text-slate-400 uppercase" id="netbenefit-label">Net Benefit</span>
                       <button
-                        className="text-slate-300 hover:text-accent transition-colors"
+                        className="text-slate-300 hover:text-[#2C2C2C] transition-colors"
                         title="Net Monthly Benefit: Total monthly value generated minus total monthly costs. This is your profit per month."
                         aria-label="Net benefit explanation"
                       >
@@ -809,11 +823,11 @@ export default function App() {
                     </span>
                     <span className="text-[10px] text-slate-400">Per month</span>
                 </div>
-                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between" role="article" aria-label="Payback period metric">
+                <div className="bg-white p-4 rounded-lg border border-slate-200 flex flex-col justify-between" role="article" aria-label="Payback period metric">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-400 uppercase" id="payback-label">Payback</span>
+                      <span className="text-xs font-bold font-label text-slate-400 uppercase" id="payback-label">Payback</span>
                       <button
-                        className="text-slate-300 hover:text-accent transition-colors"
+                        className="text-slate-300 hover:text-[#2C2C2C] transition-colors"
                         title="Payback Period: How many months until cumulative profits cover your fixed costs (integration, training, change management)."
                         aria-label="Payback period explanation"
                       >
@@ -825,11 +839,11 @@ export default function App() {
                     </span>
                     <span className="text-[10px] text-slate-400">Months to recover costs</span>
                 </div>
-                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between" role="article" aria-label="Unit cost metric">
+                <div className="bg-white p-4 rounded-lg border border-slate-200 flex flex-col justify-between" role="article" aria-label="Unit cost metric">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-400 uppercase" id="unitcost-label">Unit Cost</span>
+                      <span className="text-xs font-bold font-label text-slate-400 uppercase" id="unitcost-label">Unit Cost</span>
                       <button
-                        className="text-slate-300 hover:text-accent transition-colors"
+                        className="text-slate-300 hover:text-[#2C2C2C] transition-colors"
                         title="Cost per Unit: Average total cost per transaction, including model inference, harness costs, and amortized fixed costs."
                         aria-label="Unit cost explanation"
                       >
@@ -841,11 +855,11 @@ export default function App() {
                     </span>
                     <span className="text-[10px] text-slate-400">per {inputs.unitName}</span>
                 </div>
-                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between" role="article" aria-label="Break-even metric">
+                <div className="bg-white p-4 rounded-lg border border-slate-200 flex flex-col justify-between" role="article" aria-label="Break-even metric">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-400 uppercase" id="breakeven-label">Break-even</span>
+                      <span className="text-xs font-bold font-label text-slate-400 uppercase" id="breakeven-label">Break-even</span>
                       <button
-                        className="text-slate-300 hover:text-accent transition-colors"
+                        className="text-slate-300 hover:text-[#2C2C2C] transition-colors"
                         title="Break-even Volume: The monthly volume needed for your net benefit to reach $0 (where value equals total costs). This threshold is constant regardless of current volume."
                         aria-label="Break-even explanation"
                       >
@@ -867,7 +881,7 @@ export default function App() {
 
             {/* Break-even Insight Card */}
             {results.breakEvenVolume !== undefined && results.netMonthlyBenefit < 0 && (
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start space-x-3">
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start space-x-3">
                 <div className="flex-shrink-0 mt-0.5">
                   <svg className="w-5 h-5 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
@@ -884,7 +898,7 @@ export default function App() {
             )}
 
             {results.breakEvenVolume !== undefined && results.netMonthlyBenefit >= 0 && (
-              <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-start space-x-3">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start space-x-3">
                 <div className="flex-shrink-0 mt-0.5">
                   <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -901,11 +915,11 @@ export default function App() {
             )}
 
             {/* ROI Curve - Profit Over Time */}
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+            <div className="bg-white rounded-lg border border-slate-200 p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-bold text-slate-800 uppercase">ROI Curve: Cumulative Profit Over Time</h3>
+                  <h3 className="text-sm font-bold font-headline text-slate-800 uppercase">ROI Curve: Cumulative Profit Over Time</h3>
                   <button
-                    className="text-slate-300 hover:text-accent transition-colors"
+                    className="text-slate-300 hover:text-[#2C2C2C] transition-colors"
                     title="ROI Curve: Shows how cumulative profit evolves over your analysis period. The vertical chartreuse line marks when you break even (cumulative profit = $0)."
                     aria-label="ROI curve explanation"
                   >
@@ -922,8 +936,8 @@ export default function App() {
             </div>
 
             {/* Main Visuals Container */}
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-                <h3 className="text-sm font-bold text-slate-800 uppercase mb-6">Financial Overview</h3>
+            <div className="bg-white rounded-lg border border-slate-200 p-6">
+                <h3 className="text-sm font-bold font-headline text-slate-800 uppercase mb-6">Financial Overview</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 h-64">
                     <CostValueChart data={chartDataMonthly} formatMoney={formatMoney} />
                     <CostBreakdownChart data={pieDataCost} colors={COLORS} />
@@ -931,9 +945,9 @@ export default function App() {
             </div>
 
             {/* Detailed Breakdown */}
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                    <h3 className="text-sm font-bold text-slate-700 uppercase">Unit Economics</h3>
+                    <h3 className="text-sm font-bold font-headline text-slate-700 uppercase">Unit Economics</h3>
                 </div>
                 <table className="w-full text-sm text-left">
                     <thead>
@@ -983,16 +997,16 @@ export default function App() {
             </div>
 
             {/* Sensitivity Analysis */}
-            <div className="bg-slate-800 rounded-xl shadow-lg p-6 text-white">
+            <div className="bg-[#2C2C2C] rounded-lg p-6 text-white">
                 <div className="flex items-center space-x-2 mb-4">
                     <Settings size={18} className="text-accent" />
-                    <h3 className="text-sm font-bold uppercase tracking-wider">Sensitivity Simulator</h3>
+                    <h3 className="text-sm font-bold font-headline uppercase tracking-wider">Sensitivity Simulator</h3>
                 </div>
                 <div className="grid grid-cols-2 gap-6">
                     <div>
                         <div className="flex justify-between text-xs mb-2">
                             <span className="text-slate-400">Volume</span>
-                            <span className="font-mono text-accent">x{modifiers.volumeMultiplier}</span>
+                            <span className="font-mono font-bold text-white">x{modifiers.volumeMultiplier}</span>
                         </div>
                         <input 
                             type="range" min="0.5" max="3.0" step="0.1"
@@ -1004,7 +1018,7 @@ export default function App() {
                     <div>
                         <div className="flex justify-between text-xs mb-2">
                             <span className="text-slate-400">Realization Rate</span>
-                            <span className="font-mono text-accent">x{modifiers.successRateMultiplier}</span>
+                            <span className="font-mono font-bold text-white">x{modifiers.successRateMultiplier}</span>
                         </div>
                         <input 
                             type="range" min="0.5" max="1.5" step="0.1"
@@ -1016,7 +1030,7 @@ export default function App() {
                     <div>
                         <div className="flex justify-between text-xs mb-2">
                             <span className="text-slate-400">Cost Factors</span>
-                            <span className="font-mono text-accent">x{modifiers.costMultiplier}</span>
+                            <span className="font-mono font-bold text-white">x{modifiers.costMultiplier}</span>
                         </div>
                         <input 
                             type="range" min="0.5" max="2.0" step="0.1"
@@ -1028,7 +1042,7 @@ export default function App() {
                     <div>
                         <div className="flex justify-between text-xs mb-2">
                             <span className="text-slate-400">Value Factors</span>
-                            <span className="font-mono text-accent">x{modifiers.valueMultiplier}</span>
+                            <span className="font-mono font-bold text-white">x{modifiers.valueMultiplier}</span>
                         </div>
                         <input 
                             type="range" min="0.5" max="2.0" step="0.1"
@@ -1042,7 +1056,7 @@ export default function App() {
                 {/* Tornado Chart - Impact Ranking */}
                 <div className="mt-6">
                     <div className="flex items-center justify-between mb-3">
-                        <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Impact Ranking (±20% Variation)</h4>
+                        <h4 className="text-xs font-bold font-label text-slate-300 uppercase tracking-wider">Impact Ranking (±20% Variation)</h4>
                         <button
                             className="text-slate-400 hover:text-white transition-colors"
                             title="Tornado chart shows which variables have the most impact on ROI when varied by ±20%. Variables are sorted by impact magnitude (largest at top)."

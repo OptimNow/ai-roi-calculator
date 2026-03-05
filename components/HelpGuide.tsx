@@ -11,14 +11,14 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
           <div className="flex items-center space-x-3">
             <div className="bg-accent text-charcoal p-2 rounded-lg">
               <Info size={24} />
             </div>
-            <h2 className="text-2xl font-bold text-slate-800">How to Fill the Calculator</h2>
+            <h2 className="text-2xl font-bold font-headline text-slate-800">How to Fill the Calculator</h2>
           </div>
           <button
             onClick={onClose}
@@ -34,7 +34,7 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
 
           {/* Introduction */}
           <section>
-            <h3 className="text-xl font-bold text-slate-800 mb-3">Overview</h3>
+            <h3 className="text-xl font-bold font-headline text-slate-800 mb-3">Overview</h3>
             <p className="text-slate-600 leading-relaxed">
               This calculator helps you estimate the Return on Investment (ROI) for AI projects using a <strong>3-layer framework</strong>:
             </p>
@@ -60,7 +60,7 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
           <section>
             <div className="flex items-center space-x-2 mb-4">
               <TrendingUp className="text-green-600" size={20} />
-              <h3 className="text-lg font-bold text-slate-800">1. Value & Scope</h3>
+              <h3 className="text-lg font-bold font-headline text-slate-800">1. Value & Scope</h3>
             </div>
             <p className="text-sm text-slate-600 mb-4 ml-7">Define your AI project, its scale, and how it creates business value.</p>
 
@@ -152,6 +152,36 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                 </p>
               </div>
 
+              {/* Preset Cost Assumptions */}
+              <div className="bg-amber-50 p-4 rounded-lg border border-amber-300">
+                <h4 className="font-semibold text-amber-900 mb-2">Preset Cost Assumptions (India-based workforce)</h4>
+                <p className="text-sm text-amber-800 mb-3">
+                  Default baseline costs assume <strong>India-based BPO/KPO workers</strong> with fully loaded rates (salary + benefits + overhead + management):
+                </p>
+                <table className="w-full text-xs text-amber-800 mb-3">
+                  <thead>
+                    <tr className="border-b border-amber-300">
+                      <th className="text-left py-1 pr-2">Use Case</th>
+                      <th className="text-right py-1 pr-2">Cost/Unit</th>
+                      <th className="text-left py-1">Assumption</th>
+                    </tr>
+                  </thead>
+                  <tbody className="space-y-1">
+                    <tr className="border-b border-amber-200"><td className="py-1 pr-2">Customer Support</td><td className="text-right py-1 pr-2">$0.50</td><td className="py-1">L1 agent, ~5 min/ticket @ $6/hr</td></tr>
+                    <tr className="border-b border-amber-200"><td className="py-1 pr-2">Knowledge Q&A</td><td className="text-right py-1 pr-2">$2.00</td><td className="py-1">SME analyst, ~20 min/query @ $6/hr</td></tr>
+                    <tr className="border-b border-amber-200"><td className="py-1 pr-2">Meeting Summary</td><td className="text-right py-1 pr-2">$5.00</td><td className="py-1">Note-taker, ~45 min/meeting @ $6.50/hr</td></tr>
+                    <tr className="border-b border-amber-200"><td className="py-1 pr-2">Marketing Content</td><td className="text-right py-1 pr-2">$10.00</td><td className="py-1">Jr. content writer, ~2 hrs/piece @ $5/hr</td></tr>
+                    <tr className="border-b border-amber-200"><td className="py-1 pr-2">Coding Task</td><td className="text-right py-1 pr-2">$8.00</td><td className="py-1">Jr. developer, ~1 hr/task @ $8/hr</td></tr>
+                    <tr className="border-b border-amber-200"><td className="py-1 pr-2">Invoice Processing</td><td className="text-right py-1 pr-2">$2.50</td><td className="py-1">Data entry clerk, ~25 min/invoice @ $6/hr</td></tr>
+                    <tr className="border-b border-amber-200"><td className="py-1 pr-2">Call Summary</td><td className="text-right py-1 pr-2">$3.00</td><td className="py-1">Agent post-call, ~30 min/call @ $6/hr</td></tr>
+                    <tr><td className="py-1 pr-2">Agent Workflow</td><td className="text-right py-1 pr-2">$15.00</td><td className="py-1">Sr. analyst, ~2 hrs/workflow @ $7.50/hr</td></tr>
+                  </tbody>
+                </table>
+                <p className="text-xs text-amber-700">
+                  Fully loaded hourly rates: BPO/L1 roles $4-6/hr, skilled roles $7-8/hr. Adjust baseline costs upward for US/EU-based teams (3-5x multiplier).
+                </p>
+              </div>
+
               {/* Revenue Uplift */}
               <div className="bg-green-50 p-4 rounded-lg border border-green-200">
                 <h4 className="font-semibold text-green-700 mb-2">📈 Revenue Uplift</h4>
@@ -204,7 +234,7 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
           <section>
             <div className="flex items-center space-x-2 mb-4">
               <DollarSign className="text-blue-500" size={20} />
-              <h3 className="text-lg font-bold text-slate-800">2. Cost Model</h3>
+              <h3 className="text-lg font-bold font-headline text-slate-800">2. Cost Model</h3>
             </div>
             <p className="text-sm text-slate-600 mb-4 ml-7">All costs associated with running your AI — model inference, supporting infrastructure, and one-time implementation costs.</p>
 
@@ -240,13 +270,15 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
               <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                 <h4 className="font-semibold text-slate-700 mb-2">Token Pricing</h4>
                 <p className="text-sm text-slate-600">
-                  Enter the cost per 1 million tokens from your model provider's pricing page:
+                  Enter the cost per 1 million tokens from your model provider's pricing page.
+                  Check <a href="https://aipricinghub.optimnow.io" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">AI Pricing Hub</a> for up-to-date pricing across all providers.
                 </p>
                 <ul className="mt-2 text-sm text-slate-600 list-disc list-inside ml-3">
-                  <li><strong>GPT-4o:</strong> $2.50 / 1M input, $10.00 / 1M output</li>
                   <li><strong>GPT-4o-mini:</strong> $0.15 / 1M input, $0.60 / 1M output</li>
-                  <li><strong>Claude Sonnet 4:</strong> $3.00 / 1M input, $15.00 / 1M output</li>
-                  <li><strong>Claude Haiku:</strong> $0.25 / 1M input, $1.25 / 1M output</li>
+                  <li><strong>Claude Haiku 4.5:</strong> $1.00 / 1M input, $5.00 / 1M output</li>
+                  <li><strong>GPT-4o:</strong> $2.50 / 1M input, $10.00 / 1M output</li>
+                  <li><strong>Claude Sonnet 4.6:</strong> $3.00 / 1M input, $15.00 / 1M output</li>
+                  <li><strong>Gemini 2.0 Flash:</strong> $0.10 / 1M input, $0.40 / 1M output</li>
                 </ul>
               </div>
 
@@ -305,6 +337,65 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                 </p>
               </div>
 
+              <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
+                <h4 className="font-semibold text-amber-900 mb-2">Harness Cost Assumptions</h4>
+                <p className="text-xs text-slate-600 mb-3">
+                  Default values include a buffer for operational overhead (DevOps time, dashboard setup, alerting configuration) beyond raw cloud pricing.
+                  Validated using the <a href="https://github.com/OptimNow/cloud-finops-skills" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">OptimNow Cloud FinOps Skills</a>.
+                </p>
+                <table className="w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-amber-100">
+                      <th className="text-left p-1.5 border border-amber-200">Component</th>
+                      <th className="text-right p-1.5 border border-amber-200">Default</th>
+                      <th className="text-right p-1.5 border border-amber-200">Raw Cloud Cost</th>
+                      <th className="text-left p-1.5 border border-amber-200">Cloud Reference</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-slate-600">
+                    <tr>
+                      <td className="p-1.5 border border-amber-200">Orchestration</td>
+                      <td className="text-right p-1.5 border border-amber-200">$0.0010</td>
+                      <td className="text-right p-1.5 border border-amber-200">$0.0002</td>
+                      <td className="p-1.5 border border-amber-200">AWS Lambda ~$0.000034/req + Step Functions ~$0.0001</td>
+                    </tr>
+                    <tr>
+                      <td className="p-1.5 border border-amber-200">Retrieval / Vector DB</td>
+                      <td className="text-right p-1.5 border border-amber-200">$0.0020</td>
+                      <td className="text-right p-1.5 border border-amber-200">$0.0020</td>
+                      <td className="p-1.5 border border-amber-200">Bedrock KB ~$2/1K queries; OpenSearch amortized</td>
+                    </tr>
+                    <tr>
+                      <td className="p-1.5 border border-amber-200">Logging / Monitoring</td>
+                      <td className="text-right p-1.5 border border-amber-200">$0.0005</td>
+                      <td className="text-right p-1.5 border border-amber-200">$0.00001</td>
+                      <td className="p-1.5 border border-amber-200">CloudWatch $0.50/GB ingested; ~2-5KB per log entry</td>
+                    </tr>
+                    <tr>
+                      <td className="p-1.5 border border-amber-200">Safety / Guardrails</td>
+                      <td className="text-right p-1.5 border border-amber-200">$0.0005</td>
+                      <td className="text-right p-1.5 border border-amber-200">$0.0003</td>
+                      <td className="p-1.5 border border-amber-200">Bedrock Guardrails $0.15/1K text units (Dec 2024 pricing)</td>
+                    </tr>
+                    <tr>
+                      <td className="p-1.5 border border-amber-200">Network Egress</td>
+                      <td className="text-right p-1.5 border border-amber-200">$0.0001</td>
+                      <td className="text-right p-1.5 border border-amber-200">$0.000005</td>
+                      <td className="p-1.5 border border-amber-200">AWS egress $0.09/GB; ~5KB per AI response</td>
+                    </tr>
+                    <tr>
+                      <td className="p-1.5 border border-amber-200">Storage</td>
+                      <td className="text-right p-1.5 border border-amber-200">$0.0001</td>
+                      <td className="text-right p-1.5 border border-amber-200">$0.000005</td>
+                      <td className="p-1.5 border border-amber-200">S3 $0.023/GB/month; ~10KB per unit stored</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p className="text-xs text-slate-500 mt-2">
+                  Defaults are conservative (include ops overhead buffer). Adjust down toward raw cloud costs for optimistic modeling.
+                </p>
+              </div>
+
               {/* One-time Costs */}
               <h4 className="font-bold text-slate-700 text-sm border-b border-slate-200 pb-1 mt-6">One-time Costs</h4>
 
@@ -323,6 +414,120 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                   Number of months to spread one-time costs over (default: 12 months). Used for payback calculation.
                 </p>
               </div>
+
+              <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
+                <h4 className="font-semibold text-amber-900 mb-2">One-time Cost Assumptions by Preset</h4>
+                <p className="text-xs text-slate-600 mb-3">
+                  Based on India-based development teams ($15-25/hr for developers, $8-12/hr for QA/support).
+                  Validated using the <a href="https://github.com/OptimNow/cloud-finops-skills" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">OptimNow Cloud FinOps Skills</a>.
+                  For US/EU teams, multiply by 3-5x.
+                </p>
+                <table className="w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-amber-100">
+                      <th className="text-left p-1.5 border border-amber-200">Preset</th>
+                      <th className="text-right p-1.5 border border-amber-200">Integration</th>
+                      <th className="text-right p-1.5 border border-amber-200">Training</th>
+                      <th className="text-right p-1.5 border border-amber-200">Change Mgmt</th>
+                      <th className="text-right p-1.5 border border-amber-200">Total</th>
+                      <th className="text-left p-1.5 border border-amber-200">Assumption</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-slate-600">
+                    <tr>
+                      <td className="p-1.5 border border-amber-200">Support Bot</td>
+                      <td className="text-right p-1.5 border border-amber-200">$2,000</td>
+                      <td className="text-right p-1.5 border border-amber-200">$1,000</td>
+                      <td className="text-right p-1.5 border border-amber-200">$500</td>
+                      <td className="text-right p-1.5 border border-amber-200 font-semibold">$3,500</td>
+                      <td className="p-1.5 border border-amber-200">Simple chatbot + ticketing API</td>
+                    </tr>
+                    <tr>
+                      <td className="p-1.5 border border-amber-200">Knowledge Q&A</td>
+                      <td className="text-right p-1.5 border border-amber-200">$3,000</td>
+                      <td className="text-right p-1.5 border border-amber-200">$2,000</td>
+                      <td className="text-right p-1.5 border border-amber-200">$500</td>
+                      <td className="text-right p-1.5 border border-amber-200 font-semibold">$5,500</td>
+                      <td className="p-1.5 border border-amber-200">RAG pipeline + doc ingestion</td>
+                    </tr>
+                    <tr>
+                      <td className="p-1.5 border border-amber-200">Meeting Summary</td>
+                      <td className="text-right p-1.5 border border-amber-200">$2,000</td>
+                      <td className="text-right p-1.5 border border-amber-200">$1,000</td>
+                      <td className="text-right p-1.5 border border-amber-200">$500</td>
+                      <td className="text-right p-1.5 border border-amber-200 font-semibold">$3,500</td>
+                      <td className="p-1.5 border border-amber-200">Calendar/conferencing API integration</td>
+                    </tr>
+                    <tr>
+                      <td className="p-1.5 border border-amber-200">Marketing Content</td>
+                      <td className="text-right p-1.5 border border-amber-200">$2,000</td>
+                      <td className="text-right p-1.5 border border-amber-200">$3,000</td>
+                      <td className="text-right p-1.5 border border-amber-200">$1,000</td>
+                      <td className="text-right p-1.5 border border-amber-200 font-semibold">$6,000</td>
+                      <td className="p-1.5 border border-amber-200">Higher training for brand voice tuning</td>
+                    </tr>
+                    <tr>
+                      <td className="p-1.5 border border-amber-200">Coding Task</td>
+                      <td className="text-right p-1.5 border border-amber-200">$5,000</td>
+                      <td className="text-right p-1.5 border border-amber-200">$3,000</td>
+                      <td className="text-right p-1.5 border border-amber-200">$2,000</td>
+                      <td className="text-right p-1.5 border border-amber-200 font-semibold">$10,000</td>
+                      <td className="p-1.5 border border-amber-200">IDE/CI pipeline + code review setup</td>
+                    </tr>
+                    <tr>
+                      <td className="p-1.5 border border-amber-200">Invoice Processing</td>
+                      <td className="text-right p-1.5 border border-amber-200">$5,000</td>
+                      <td className="text-right p-1.5 border border-amber-200">$2,000</td>
+                      <td className="text-right p-1.5 border border-amber-200">$1,000</td>
+                      <td className="text-right p-1.5 border border-amber-200 font-semibold">$8,000</td>
+                      <td className="p-1.5 border border-amber-200">ERP/accounting system integration</td>
+                    </tr>
+                    <tr>
+                      <td className="p-1.5 border border-amber-200">Call Summary</td>
+                      <td className="text-right p-1.5 border border-amber-200">$3,000</td>
+                      <td className="text-right p-1.5 border border-amber-200">$1,000</td>
+                      <td className="text-right p-1.5 border border-amber-200">$500</td>
+                      <td className="text-right p-1.5 border border-amber-200 font-semibold">$4,500</td>
+                      <td className="p-1.5 border border-amber-200">Telephony/CRM integration</td>
+                    </tr>
+                    <tr>
+                      <td className="p-1.5 border border-amber-200">Agent Workflow</td>
+                      <td className="text-right p-1.5 border border-amber-200">$10,000</td>
+                      <td className="text-right p-1.5 border border-amber-200">$5,000</td>
+                      <td className="text-right p-1.5 border border-amber-200">$3,000</td>
+                      <td className="text-right p-1.5 border border-amber-200 font-semibold">$18,000</td>
+                      <td className="p-1.5 border border-amber-200">Complex multi-tool orchestration</td>
+                    </tr>
+                    <tr>
+                      <td className="p-1.5 border border-amber-200">Recommendations</td>
+                      <td className="text-right p-1.5 border border-amber-200">$8,000</td>
+                      <td className="text-right p-1.5 border border-amber-200">$3,000</td>
+                      <td className="text-right p-1.5 border border-amber-200">$1,000</td>
+                      <td className="text-right p-1.5 border border-amber-200 font-semibold">$12,000</td>
+                      <td className="p-1.5 border border-amber-200">E-commerce platform integration</td>
+                    </tr>
+                    <tr>
+                      <td className="p-1.5 border border-amber-200">Retention AI</td>
+                      <td className="text-right p-1.5 border border-amber-200">$8,000</td>
+                      <td className="text-right p-1.5 border border-amber-200">$5,000</td>
+                      <td className="text-right p-1.5 border border-amber-200">$2,000</td>
+                      <td className="text-right p-1.5 border border-amber-200 font-semibold">$15,000</td>
+                      <td className="p-1.5 border border-amber-200">CRM + data pipeline + model tuning</td>
+                    </tr>
+                    <tr>
+                      <td className="p-1.5 border border-amber-200">Premium Features</td>
+                      <td className="text-right p-1.5 border border-amber-200">$15,000</td>
+                      <td className="text-right p-1.5 border border-amber-200">$8,000</td>
+                      <td className="text-right p-1.5 border border-amber-200">$3,000</td>
+                      <td className="text-right p-1.5 border border-amber-200 font-semibold">$26,000</td>
+                      <td className="p-1.5 border border-amber-200">Full product feature build-out</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p className="text-xs text-slate-500 mt-2">
+                  Enterprise deployments typically 3-5x higher. Costs assume India-based dev teams ($15-25/hr developers, $8-12/hr QA).
+                </p>
+              </div>
             </div>
           </section>
 
@@ -332,7 +537,7 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
           <section>
             <div className="flex items-center space-x-2 mb-4">
               <Settings className="text-purple-500" size={20} />
-              <h3 className="text-lg font-bold text-slate-800">3. Advanced Features</h3>
+              <h3 className="text-lg font-bold font-headline text-slate-800">3. Advanced Features</h3>
             </div>
 
             <div className="space-y-4 ml-7">
@@ -373,8 +578,8 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
               </div>
 
               {/* Sensitivity Simulator */}
-              <div className="bg-slate-800 text-white p-4 rounded-lg border border-slate-600">
-                <h4 className="font-semibold text-accent mb-2">⚙️ Sensitivity Simulator</h4>
+              <div className="bg-[#2C2C2C] text-white p-4 rounded-lg border border-[#C1C1C1]">
+                <h4 className="font-semibold text-white mb-2">⚙️ Sensitivity Simulator</h4>
                 <p className="text-sm text-slate-300 mb-3">
                   Found at the bottom of the results column, this lets you test "what-if" scenarios by multiplying key inputs:
                 </p>
@@ -394,14 +599,14 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                   <li>Example: Set Volume to 2x to see ROI if you doubled traffic</li>
                   <li>Click "Reset Simulation" to return to 1x multipliers</li>
                 </ol>
-                <p className="text-xs text-accent mt-2">
+                <p className="text-xs text-slate-300 mt-2">
                   💡 Tip: This does NOT change your base inputs—only multiplies them temporarily for analysis.
                 </p>
               </div>
 
               {/* Tornado Chart Interpretation */}
-              <div className="bg-slate-800 text-white p-4 rounded-lg border border-slate-600">
-                <h4 className="font-semibold text-accent mb-2">🌪️ Tornado Chart - Impact Ranking</h4>
+              <div className="bg-[#2C2C2C] text-white p-4 rounded-lg border border-[#C1C1C1]">
+                <h4 className="font-semibold text-white mb-2">🌪️ Tornado Chart - Impact Ranking</h4>
                 <p className="text-sm text-slate-300 mb-3">
                   The tornado chart visualizes which variables have the most impact on your ROI when varied by ±20%:
                 </p>
@@ -425,7 +630,7 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                   </ul>
                 </div>
 
-                <p className="text-xs text-accent mt-2">
+                <p className="text-xs text-slate-300 mt-2">
                   💡 Key takeaway: Rank variables by impact range, then focus optimization efforts on the top 1-2 variables.
                 </p>
               </div>
@@ -453,30 +658,30 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
 
           {/* Tips & Best Practices */}
           <section className="bg-accent bg-opacity-10 p-6 rounded-lg border border-accent border-opacity-30">
-            <h3 className="text-lg font-bold text-slate-800 mb-3">💡 Pro Tips</h3>
+            <h3 className="text-lg font-bold font-headline text-slate-800 mb-3">💡 Pro Tips</h3>
             <ul className="space-y-2 text-sm text-slate-700">
               <li className="flex items-start">
-                <span className="text-accent mr-2">✓</span>
+                <span className="text-[#2C2C2C] font-bold mr-2">✓</span>
                 <span><strong>Start conservative:</strong> Use lower realization rates and deflection rates initially</span>
               </li>
               <li className="flex items-start">
-                <span className="text-accent mr-2">✓</span>
+                <span className="text-[#2C2C2C] font-bold mr-2">✓</span>
                 <span><strong>Test with presets:</strong> Load example profiles to understand the calculations</span>
               </li>
               <li className="flex items-start">
-                <span className="text-accent mr-2">✓</span>
+                <span className="text-[#2C2C2C] font-bold mr-2">✓</span>
                 <span><strong>Use Simple Mode first:</strong> Hide advanced options until you understand the basics</span>
               </li>
               <li className="flex items-start">
-                <span className="text-accent mr-2">✓</span>
+                <span className="text-[#2C2C2C] font-bold mr-2">✓</span>
                 <span><strong>Play with sensitivity:</strong> Use the sliders at the bottom to test different scenarios</span>
               </li>
               <li className="flex items-start">
-                <span className="text-accent mr-2">✓</span>
+                <span className="text-[#2C2C2C] font-bold mr-2">✓</span>
                 <span><strong>Export and iterate:</strong> Download JSON to save your work, copy markdown for reports</span>
               </li>
               <li className="flex items-start">
-                <span className="text-accent mr-2">✓</span>
+                <span className="text-[#2C2C2C] font-bold mr-2">✓</span>
                 <span><strong>Validate assumptions:</strong> Run small pilots to verify realization rates and costs before scaling</span>
               </li>
             </ul>

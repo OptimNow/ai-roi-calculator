@@ -1,4 +1,5 @@
 import React from 'react';
+import { Info } from 'lucide-react';
 
 interface BaseProps {
   label: string;
@@ -7,6 +8,15 @@ interface BaseProps {
   tooltip?: string;
   disabled?: boolean;
 }
+
+const InfoTooltip: React.FC<{ text: string }> = ({ text }) => (
+  <span className="relative group inline-flex items-center ml-1">
+    <Info size={13} className="text-slate-400 cursor-help" />
+    <span className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 w-52 rounded bg-[#2C2C2C] text-white text-[11px] leading-snug px-2.5 py-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-50 shadow-lg">
+      {text}
+    </span>
+  </span>
+);
 
 export const NumberInput: React.FC<BaseProps & { step?: number, min?: number, max?: number }> = ({ label, value, onChange, tooltip, disabled, step = 1, min = 0, max }) => {
   const [internalValue, setInternalValue] = React.useState<string>(value.toString());
@@ -43,8 +53,8 @@ export const NumberInput: React.FC<BaseProps & { step?: number, min?: number, ma
   return (
     <div className="mb-3">
       <div className="flex items-center justify-between mb-1">
-        <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">{label}</label>
-        {tooltip && <span className="text-xs text-slate-400 cursor-help" title={tooltip}>?</span>}
+        <label className="text-xs font-semibold font-label text-slate-600 uppercase tracking-wide">{label}</label>
+        {tooltip && <InfoTooltip text={tooltip} />}
       </div>
       <input
         type="number"
@@ -90,8 +100,8 @@ export const MoneyInput: React.FC<BaseProps & { precision?: number }> = ({ label
   return (
     <div className="mb-3">
       <div className="flex justify-between items-center mb-1">
-        <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">{label}</label>
-        {tooltip && <span className="text-xs text-slate-400 cursor-help" title={tooltip}>?</span>}
+        <label className="text-xs font-semibold font-label text-slate-600 uppercase tracking-wide">{label}</label>
+        {tooltip && <InfoTooltip text={tooltip} />}
       </div>
       <div className="relative">
         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -147,8 +157,8 @@ export const PercentInput: React.FC<BaseProps> = ({ label, value, onChange, tool
   return (
     <div className="mb-3">
       <div className="flex justify-between items-center mb-1">
-        <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">{label}</label>
-        {tooltip && <span className="text-xs text-slate-400 cursor-help" title={tooltip}>?</span>}
+        <label className="text-xs font-semibold font-label text-slate-600 uppercase tracking-wide">{label}</label>
+        {tooltip && <InfoTooltip text={tooltip} />}
       </div>
       <div className="relative">
         <input
@@ -172,7 +182,7 @@ export const PercentInput: React.FC<BaseProps> = ({ label, value, onChange, tool
 
 export const SectionHeader: React.FC<{ title: string; onToggle?: () => void; isOpen?: boolean }> = ({ title, onToggle, isOpen }) => (
     <div className="flex items-center justify-between bg-slate-100 px-4 py-3 rounded-t-lg border-b border-slate-200 mt-6 cursor-pointer" onClick={onToggle}>
-        <h3 className="text-sm font-bold text-slate-700 uppercase">{title}</h3>
+        <h3 className="text-sm font-bold font-headline text-slate-700 uppercase">{title}</h3>
         {onToggle && <span className="text-slate-500 text-xs">{isOpen ? '▼' : '▶'}</span>}
     </div>
 );

@@ -15,6 +15,11 @@ export default {
         warning: '#C1C1C1', // Dark Grey
         danger: '#dc2626', // Red (keep for errors)
         charcoal: '#2C2C2C', // Charcoal Black
+      },
+      fontFamily: {
+        headline: ['Manrope', 'Arial', 'Helvetica', 'sans-serif'],
+        body: ['Almarai', 'Arial', 'Helvetica', 'sans-serif'],
+        label: ['Ayuthaya', 'Arial', 'Helvetica', 'sans-serif'],
       }
     }
   },
