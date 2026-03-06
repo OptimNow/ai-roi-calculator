@@ -1,34 +1,6 @@
 import { UseCaseInputs, CalculationResults, SensitivityModifiers, ValueMethod, ModelParams } from '../types';
 
 /**
- * Calculates the cost per unit for a single model (token-based or call-based pricing).
- *
- * @param params - Model parameters including token counts and pricing
- * @param modifiers - Sensitivity modifiers to apply to costs
- * @returns Cost per unit in USD
- *
- * @example
- * ```ts
- * const cost = calculateModelCost({
- *   avgInputTokensPerUnit: 1000,
- *   avgOutputTokensPerUnit: 500,
- *   pricePer1MInputTokens: 0.15,
- *   pricePer1MOutputTokens: 0.60,
- *   useCallPricing: false
- * }, { costMultiplier: 1.5, ... });
- * // Returns: 0.000675 (with 1.5x multiplier)
- * ```
- */
-const calculateModelCost = (params: ModelParams, modifiers: SensitivityModifiers): number => {
-  if (params.useCallPricing) {
-    return params.costPerCall * modifiers.costMultiplier;
-  }
-  const inputCost = (params.avgInputTokensPerUnit / 1_000_000) * params.pricePer1MInputTokens;
-  const outputCost = (params.avgOutputTokensPerUnit / 1_000_000) * params.pricePer1MOutputTokens;
-  return (inputCost + outputCost) * modifiers.costMultiplier;
-};
-
-/**
  * Calculates comprehensive ROI metrics for an AI project using a 3-layer framework.
  *
  * ## Framework Layers:
@@ -65,7 +37,7 @@ const calculateModelCost = (params: ModelParams, modifiers: SensitivityModifiers
  * - Cache savings apply only to input tokens, not output tokens
  * - Retry rate multiplies Layer 1 costs only, not harness costs
  * - Success rate affects value realization but not base costs
- * - Payback calculation uses one-time fixed costs / net monthly benefit
+ * - Payback calculation uses one-time fixed costs / net monthly operating benefit (excludes fixed-cost amortization)
  *
  * @see {@link UseCaseInputs} for complete input schema
  * @see {@link CalculationResults} for output schema
@@ -91,29 +63,40 @@ export const calculateROI = (inputs: UseCaseInputs, modifiers: SensitivityModifi
   const effectiveSuccessRate = Math.min(100, Math.max(0, successRate * modifiers.successRateMultiplier));
 
   // --- Layer 1: Model Cost ---
-  const primaryCost = calculateModelCost(primaryModel, modifiers);
-  const secondaryCost = calculateModelCost(secondaryModel, modifiers);
-  
   // Blended Base Cost
   const primaryShare = routingSimplePercent / 100;
   const secondaryShare = 1 - primaryShare;
-  let blendedBaseCost = (primaryCost * primaryShare) + (secondaryCost * secondaryShare);
+  
+  // Apply cache savings only to token-priced model input tokens.
+  // Call-priced models have no token breakdown, so they are unaffected by cache settings.
+  const modelCostComponents = (model: ModelParams) => {
+    if (model.useCallPricing) {
+      return {
+        inputCost: 0,
+        outputCost: 0,
+        callCost: model.costPerCall * modifiers.costMultiplier,
+      };
+    }
 
-  // Apply Cache Savings (only to input tokens, not output)
-  // Calculate input and output costs separately for proper cache handling
-  const primaryInputCost = (primaryModel.avgInputTokensPerUnit / 1_000_000) * primaryModel.pricePer1MInputTokens * modifiers.costMultiplier;
-  const primaryOutputCost = (primaryModel.avgOutputTokensPerUnit / 1_000_000) * primaryModel.pricePer1MOutputTokens * modifiers.costMultiplier;
-  const secondaryInputCost = (secondaryModel.avgInputTokensPerUnit / 1_000_000) * secondaryModel.pricePer1MInputTokens * modifiers.costMultiplier;
-  const secondaryOutputCost = (secondaryModel.avgOutputTokensPerUnit / 1_000_000) * secondaryModel.pricePer1MOutputTokens * modifiers.costMultiplier;
+    return {
+      inputCost: (model.avgInputTokensPerUnit / 1_000_000) * model.pricePer1MInputTokens * modifiers.costMultiplier,
+      outputCost: (model.avgOutputTokensPerUnit / 1_000_000) * model.pricePer1MOutputTokens * modifiers.costMultiplier,
+      callCost: 0,
+    };
+  };
+
+  const primaryCost = modelCostComponents(primaryModel);
+  const secondaryCost = modelCostComponents(secondaryModel);
 
   // Blend by routing
-  const blendedInputCost = (primaryInputCost * primaryShare) + (secondaryInputCost * secondaryShare);
-  const blendedOutputCost = (primaryOutputCost * primaryShare) + (secondaryOutputCost * secondaryShare);
+  const blendedInputCost = (primaryCost.inputCost * primaryShare) + (secondaryCost.inputCost * secondaryShare);
+  const blendedOutputCost = (primaryCost.outputCost * primaryShare) + (secondaryCost.outputCost * secondaryShare);
+  const blendedCallCost = (primaryCost.callCost * primaryShare) + (secondaryCost.callCost * secondaryShare);
 
   // Apply cache savings only to input tokens
   const cacheSavingsFactor = (cacheHitRate / 100) * (cachedTokenDiscount / 100);
   const cachedInputCost = blendedInputCost * (1 - cacheSavingsFactor);
-  const layer1CostPerUnit = cachedInputCost + blendedOutputCost;
+  const layer1CostPerUnit = cachedInputCost + blendedOutputCost + blendedCallCost;
 
   // --- Layer 2: Harness Cost ---
   const harnessSum = (
@@ -206,6 +189,7 @@ export const calculateROI = (inputs: UseCaseInputs, modifiers: SensitivityModifi
 
   const netValuePerUnit = grossValuePerUnit; // Success factor already applied inside cases
   const netMonthlyBenefit = totalMonthlyValue - totalMonthlyCost;
+  const netMonthlyOperatingBenefit = totalMonthlyValue - layer2MonthlyCost;
   
   const roiPercentage = totalMonthlyCost > 0 
     ? (netMonthlyBenefit / totalMonthlyCost) * 100 
@@ -213,13 +197,13 @@ export const calculateROI = (inputs: UseCaseInputs, modifiers: SensitivityModifi
 
   const annualizedNetBenefit = netMonthlyBenefit * 12;
 
-  // Payback: Fixed Costs / Net Benefit (if positive)
+  // Payback: Fixed Costs / Net Monthly Operating Benefit (excluding fixed-cost amortization)
   let paybackMonths: number | string = "Immediate";
   if (totalFixedOneTime > 0) {
-      if (netMonthlyBenefit <= 0) {
+      if (netMonthlyOperatingBenefit <= 0) {
           paybackMonths = "No Payback";
       } else {
-          paybackMonths = (totalFixedOneTime / netMonthlyBenefit).toFixed(1);
+          paybackMonths = (totalFixedOneTime / netMonthlyOperatingBenefit).toFixed(1);
       }
   }
 
