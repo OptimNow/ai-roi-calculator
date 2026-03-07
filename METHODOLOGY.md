@@ -482,17 +482,29 @@ ROI% = (38,000 / 12,000) × 100 = 316.7%
 
 **Formula:**
 ```
-Payback_months = Cf_total / NMB  (if NMB > 0)
+Payback_months = Cf_total / MCNB  (if MCNB > 0)
 ```
 
+**Where:**
+```
+MCNB = Total_Value - C_monthly_var
+```
+
+- `MCNB` = Monthly Cash Net Benefit (value minus variable/operating costs only)
+- `C_monthly_var` = Layer 2 monthly variable cost (excludes amortized fixed costs)
+
+**Why not NMB?** Payback measures how many months of operating surplus are needed to recoup the one-time fixed investment. Using NMB (which already deducts amortized fixed costs) would double-count fixed costs — once in the numerator and once in the denominator.
+
 **Special Cases:**
-- `NMB ≤ 0`: "No Payback" (project never recoups fixed costs)
+- `MCNB ≤ 0`: "No Payback" (project never recoups fixed costs)
 - `Cf_total = 0`: "Immediate" (no upfront investment)
 
 **Example:**
 ```
 Fixed costs = $25,000
-Monthly net benefit = $8,000
+Monthly value = $50,000
+Monthly variable costs = $42,000
+MCNB = 50,000 - 42,000 = $8,000
 Payback = 25,000 / 8,000 = 3.1 months
 ```
 
@@ -502,11 +514,12 @@ Payback = 25,000 / 8,000 = 3.1 months
 
 **Formula:**
 ```
-CP(t) = -Cf_total + (NMB × t)
+CP(t) = -Cf_total + (MCNB × t)
 ```
 
 **Where:**
 - `t` = Number of months elapsed
+- `MCNB` = Monthly Cash Net Benefit (Total_Value - C_monthly_var)
 - `CP(0) = -Cf_total` (initial investment)
 - Break-even occurs when `CP(t) = 0`
 
@@ -564,10 +577,10 @@ V_breakeven = 2,000 / 2.20 = 909 units/month
 
 **Formula:**
 ```
-M_breakeven = Cf_total / NMB  (if NMB > 0)
+M_breakeven = Cf_total / MCNB  (if MCNB > 0)
 ```
 
-**Note:** This is identical to Payback Period. Break-even time = time to recover fixed costs.
+**Note:** This is identical to Payback Period. Break-even time = time to recover fixed costs using the monthly cash net benefit (value minus variable costs only).
 
 ---
 
@@ -744,7 +757,7 @@ Our methodology aligns with standard practices:
 | Metric | Industry Standard | Our Implementation |
 |--------|-------------------|---------------------|
 | ROI Formula | `(Gain - Cost) / Cost × 100` | ✓ Matches |
-| Payback Period | `Investment / Annual Cash Flow` | ✓ Matches (monthly) |
+| Payback Period | `Investment / Monthly Cash Net Benefit` | ✓ Matches (excludes amortized fixed costs) |
 | TCO Components | Capex + Opex + Overhead | ✓ Fixed + Variable + Overhead |
 | Cache Discount | Anthropic: 90%, OpenAI: 50% | ✓ Configurable |
 
@@ -879,13 +892,14 @@ C_monthly_var = 0.00419993 × 1,000 = $4.20
 C_monthly_total = 4.20 + 666.67 = $670.87
 
 Total_Value = 2.565 × 1,000 = $2,565/month
-NMB = 2,565 - 670.87 = $1,894.13/month
+MCNB = 2,565 - 4.20 = $2,560.80/month  (value - variable costs only)
+NMB = 2,565 - 670.87 = $1,894.13/month  (value - total costs incl. amortized fixed)
 ```
 
 **ROI Metrics:**
 ```
 ROI% = (1,894.13 / 670.87) × 100 = 282.3%
-Payback = 8,000 / 1,894.13 = 4.2 months
+Payback = 8,000 / 2,560.80 = 3.1 months  (fixed costs / MCNB)
 ```
 
 **Break-even:**
