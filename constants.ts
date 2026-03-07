@@ -64,7 +64,7 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
   support: {
     useCaseName: 'Customer Support Bot',
     unitName: 'ticket',
-    monthlyVolume: 500,
+    monthlyVolume: 10000,
     successRate: 90,
     integrationCost: 2000,
     trainingTuningCost: 1000,
