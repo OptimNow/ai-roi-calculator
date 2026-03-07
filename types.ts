@@ -107,6 +107,7 @@ export interface CalculationResults {
   totalMonthlyValue: number;
 
   // ROI Metrics
+  monthlyCashNetBenefit: number; // Monthly value - monthly variable costs (excludes fixed-cost amortization)
   netMonthlyBenefit: number;
   annualizedNetBenefit: number;
   roiPercentage: number;
@@ -126,3 +127,4 @@ export interface Scenario {
   createdAt: number;
   color?: string; // For visual differentiation in comparison view
 }
+
