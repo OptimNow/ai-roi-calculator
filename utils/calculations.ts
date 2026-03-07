@@ -186,8 +186,8 @@ export const calculateROI = (inputs: UseCaseInputs, modifiers: SensitivityModifi
         break;
     }
   }
-
   const netValuePerUnit = grossValuePerUnit; // Success factor already applied inside cases
+  const monthlyCashNetBenefit = totalMonthlyValue - layer2MonthlyCost;
   const netMonthlyBenefit = totalMonthlyValue - totalMonthlyCost;
   const netMonthlyOperatingBenefit = totalMonthlyValue - layer2MonthlyCost;
   
@@ -260,6 +260,7 @@ export const calculateROI = (inputs: UseCaseInputs, modifiers: SensitivityModifi
     grossValuePerUnit,
     netValuePerUnit,
     totalMonthlyValue,
+    monthlyCashNetBenefit,
     netMonthlyBenefit,
     annualizedNetBenefit,
     roiPercentage,
