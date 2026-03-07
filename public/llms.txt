@@ -1,0 +1,20 @@
+# AI ROI Calculator by OptimNow
+# https://airoicalculator.optimnow.io
+
+> Free web application to calculate return on investment for AI and LLM implementations.
+
+This is a client-side React application that helps organizations make data-driven decisions about AI implementations by analyzing costs, value generation, break-even scenarios, and sensitivity analysis.
+
+## Features
+
+- 3-layer cost framework: Infrastructure (model inference), Harness (orchestration, retrieval, monitoring), Business Value
+- 4 value measurement methods: Cost Displacement, Revenue Uplift, Retention Uplift, Premium Monetization
+- Break-even analysis with ROI curve visualization
+- Sensitivity analysis with tornado charts
+- Unlimited scenario comparison
+- 11 preset use cases: Customer Support Bot, Knowledge Q&A, Meeting Summary, Marketing Content, Coding Task, Invoice Processing, Call Summary, Agent Workflow, E-commerce Recommendations, Customer Retention AI, AI Premium Features
+- Client-side only — no data collection, fully offline-capable after initial load
+
+## Built by
+
+OptimNow — https://www.optimnow.io

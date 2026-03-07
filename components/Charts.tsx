@@ -51,8 +51,8 @@ export const CostValueChart = memo<CostValueChartProps>(({ data, formatMoney }) 
           cursor={{ fill: 'transparent' }}
           contentStyle={{
             borderRadius: '8px',
-            border: 'none',
-            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+            border: '1px solid #C1C1C1',
+            boxShadow: 'none'
           }}
         />
         <Bar dataKey="value" radius={[4, 4, 0, 0]}>
@@ -135,16 +135,6 @@ export const ROICurveChart = memo<ROICurveChartProps>(({ data, breakEvenMonth, f
   return (
     <ResponsiveContainer width="100%" height="100%">
       <ComposedChart data={data} margin={{ top: 10, right: 30, left: 20, bottom: 20 }}>
-        <defs>
-          <linearGradient id="profitGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3}/>
-            <stop offset="95%" stopColor="#22c55e" stopOpacity={0.05}/>
-          </linearGradient>
-          <linearGradient id="lossGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#ef4444" stopOpacity={0.05}/>
-            <stop offset="95%" stopColor="#ef4444" stopOpacity={0.3}/>
-          </linearGradient>
-        </defs>
         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
         <XAxis
           dataKey="month"
@@ -166,8 +156,8 @@ export const ROICurveChart = memo<ROICurveChartProps>(({ data, breakEvenMonth, f
               return (
                 <div style={{
                   borderRadius: '8px',
-                  border: 'none',
-                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                  border: '1px solid #C1C1C1',
+                  boxShadow: 'none',
                   backgroundColor: 'white',
                   padding: '8px 12px'
                 }}>
@@ -202,7 +192,8 @@ export const ROICurveChart = memo<ROICurveChartProps>(({ data, breakEvenMonth, f
         <Area
           type="monotone"
           dataKey="cumulativeProfit"
-          fill="url(#profitGradient)"
+          fill="#22c55e"
+          fillOpacity={0.1}
           stroke="none"
         />
         <Line
@@ -281,8 +272,8 @@ export const TornadoChart = memo<TornadoChartProps>(({ data }) => {
               return (
                 <div style={{
                   borderRadius: '8px',
-                  border: 'none',
-                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+                  border: '1px solid #C1C1C1',
+                  boxShadow: 'none',
                   backgroundColor: 'white',
                   padding: '8px 12px'
                 }}>

@@ -49,8 +49,27 @@ Deployment:   Vercel
 
 ### Brand Identity
 
-- **Primary Color:** Chartreuse (#ACE849) - OptimNow brand
-- **Visual Hierarchy:** Grey background for inputs, white for results
+The full OptimNow brand identity is defined in `Skills/optimow_branding_skill/SKILL.md` (source of truth).
+
+**Colors:**
+- **Charcoal (#2C2C2C):** Dark sections, headers, all text
+- **Light Grey (#F4F4F4):** Preferred background (over white)
+- **White (#FFFFFF):** Use sparingly
+- **Dark Grey (#C1C1C1):** Borders, dividers
+- **Chartreuse (#ACE849):** Accent ONLY — icons, badges, data highlights
+- **Green rules:** Never for text, never large backgrounds, one accent per element, use like punctuation
+
+**Typography (Google Fonts):**
+- **Headlines:** Manrope Bold
+- **Body:** Almarai Regular
+- **Labels/Callouts:** Ayuthaya
+
+**Visual Style:**
+- No gradients, no shadows, no textures
+- Flat, minimal, system-diagram inspired
+- Clean geometry: circles, lines, bars
+
+**Logo assets:** `Skills/optimow_branding_skill/Ressources/Logos/`
 - **Accessibility:** WCAG 2.1 AA compliant (ARIA labels, keyboard navigation)
 
 ---
@@ -120,16 +139,24 @@ The main component (1500+ lines):
 - Results calculation (memoized with useMemo)
 - UI layout and component composition
 - Export/import JSON functionality
+- Copy-to-clipboard markdown summary with visual feedback
+- Responsive header (icons hidden on mobile, compact spacing)
 
 ### 4. `constants.ts` - Presets
-Predefined use cases:
-- Customer Support Bot
-- Content Generation
-- Data Extraction
-- Conversational AI
-- Custom (empty template)
+11 predefined use cases aligned with [AI Pricing Hub](https://aipricinghub.optimnow.io/):
+- Customer Support Bot (Cost Displacement)
+- Knowledge Q&A (Cost Displacement)
+- Meeting Summary (Cost Displacement)
+- Marketing Content (Cost Displacement)
+- Coding Task (Cost Displacement)
+- Invoice Processing (Cost Displacement)
+- Call Summary (Cost Displacement)
+- Agent Workflow (Cost Displacement)
+- E-commerce Recommendations (Revenue Uplift)
+- Customer Retention AI (Retention Uplift)
+- AI Premium Features (Premium Monetization)
 
-Each preset includes default values for all layers.
+Each preset includes realistic token counts and model pricing mapped to real providers (GPT-4o mini, Claude Haiku 4.5, Claude Sonnet 4.6). India-based cost defaults for harness/labor fields.
 
 ---
 
