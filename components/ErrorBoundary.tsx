@@ -63,8 +63,8 @@ export class ErrorBoundary extends Component<Props, State> {
   render(): ReactNode {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-          <div className="max-w-2xl w-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+        <div className="min-h-screen bg-[#F4F4F4] flex items-center justify-center p-4">
+          <div className="max-w-2xl w-full bg-white rounded-2xl border border-slate-200 overflow-hidden">
             {/* Header */}
             <div className="bg-red-50 border-b border-red-200 px-6 py-4 flex items-center space-x-3">
               <div className="bg-red-500 text-white p-3 rounded-lg">
