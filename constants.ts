@@ -106,7 +106,7 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
   recommendation: {
     useCaseName: 'E-commerce Recommendations',
     unitName: 'session',
-    monthlyVolume: 500000,
+    monthlyVolume: 100000,
     successRate: 100,
     valueMethod: ValueMethod.REVENUE_UPLIFT,
     baselineConversionRate: 3.0,
