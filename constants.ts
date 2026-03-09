@@ -64,7 +64,7 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
   support: {
     useCaseName: 'Customer Support Bot',
     unitName: 'ticket',
-    monthlyVolume: 500,
+    monthlyVolume: 10000,
     successRate: 90,
     integrationCost: 2000,
     trainingTuningCost: 1000,
@@ -83,10 +83,96 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
         pricePer1MOutputTokens: 0.60
     }
   },
+  knowledgeQA: {
+    useCaseName: 'Knowledge Q&A',
+    unitName: 'query',
+    monthlyVolume: 1000,
+    successRate: 90,
+    integrationCost: 4000,
+    trainingTuningCost: 2000,
+    changeManagementCost: 1000,
+    valueMethod: ValueMethod.COST_DISPLACEMENT,
+    baselineHumanCostPerUnit: 8.00,
+    deflectionRate: 60,
+    residualHumanReviewRate: 10,
+    residualReviewCostPerUnit: 3.00,
+    primaryModel: {
+        ...DEFAULT_MODEL_PARAMS,
+        avgInputTokensPerUnit: 1000,
+        avgOutputTokensPerUnit: 500,
+        pricePer1MInputTokens: 0.15,
+        pricePer1MOutputTokens: 0.60
+    },
+    retrievalCostPerUnit: 0.003
+  },
+  meetingSummary: {
+    useCaseName: 'Meeting Summary',
+    unitName: 'meeting',
+    monthlyVolume: 500,
+    successRate: 95,
+    integrationCost: 3000,
+    trainingTuningCost: 1000,
+    changeManagementCost: 500,
+    valueMethod: ValueMethod.COST_DISPLACEMENT,
+    baselineHumanCostPerUnit: 12.00,
+    deflectionRate: 80,
+    residualHumanReviewRate: 15,
+    residualReviewCostPerUnit: 3.00,
+    primaryModel: {
+        ...DEFAULT_MODEL_PARAMS,
+        avgInputTokensPerUnit: 4000,
+        avgOutputTokensPerUnit: 600,
+        pricePer1MInputTokens: 0.15,
+        pricePer1MOutputTokens: 0.60
+    }
+  },
+  marketingContent: {
+    useCaseName: 'Marketing Content',
+    unitName: 'piece',
+    monthlyVolume: 200,
+    successRate: 85,
+    integrationCost: 2000,
+    trainingTuningCost: 1500,
+    changeManagementCost: 500,
+    valueMethod: ValueMethod.COST_DISPLACEMENT,
+    baselineHumanCostPerUnit: 50.00,
+    deflectionRate: 50,
+    residualHumanReviewRate: 40,
+    residualReviewCostPerUnit: 15.00,
+    primaryModel: {
+        ...DEFAULT_MODEL_PARAMS,
+        avgInputTokensPerUnit: 800,
+        avgOutputTokensPerUnit: 1500,
+        pricePer1MInputTokens: 0.50,
+        pricePer1MOutputTokens: 1.50
+    }
+  },
+  codingTask: {
+    useCaseName: 'Coding Task',
+    unitName: 'task',
+    monthlyVolume: 1000,
+    successRate: 85,
+    integrationCost: 3000,
+    trainingTuningCost: 2000,
+    changeManagementCost: 1000,
+    valueMethod: ValueMethod.COST_DISPLACEMENT,
+    baselineHumanCostPerUnit: 25.00,
+    deflectionRate: 45,
+    residualHumanReviewRate: 30,
+    residualReviewCostPerUnit: 8.00,
+    primaryModel: {
+        ...DEFAULT_MODEL_PARAMS,
+        avgInputTokensPerUnit: 1200,
+        avgOutputTokensPerUnit: 800,
+        pricePer1MInputTokens: 0.50,
+        pricePer1MOutputTokens: 1.50
+    },
+    orchestrationCostPerUnit: 0.003
+  },
   invoice: {
     useCaseName: 'Invoice Processing',
     unitName: 'invoice',
-    monthlyVolume: 5000,
+    monthlyVolume: 10000,
     successRate: 98,
     valueMethod: ValueMethod.COST_DISPLACEMENT,
     baselineHumanCostPerUnit: 15.00,
@@ -97,11 +183,56 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
         ...DEFAULT_MODEL_PARAMS,
         avgInputTokensPerUnit: 2500,
         avgOutputTokensPerUnit: 100,
-        pricePer1MInputTokens: 5.00, // Expensive model
+        pricePer1MInputTokens: 5.00,
         pricePer1MOutputTokens: 15.00
     },
     orchestrationCostPerUnit: 0.01,
     retrievalCostPerUnit: 0.005
+  },
+  callSummary: {
+    useCaseName: 'Call Summary',
+    unitName: 'call',
+    monthlyVolume: 500,
+    successRate: 95,
+    integrationCost: 3000,
+    trainingTuningCost: 1000,
+    changeManagementCost: 500,
+    valueMethod: ValueMethod.COST_DISPLACEMENT,
+    baselineHumanCostPerUnit: 10.00,
+    deflectionRate: 85,
+    residualHumanReviewRate: 10,
+    residualReviewCostPerUnit: 2.50,
+    primaryModel: {
+        ...DEFAULT_MODEL_PARAMS,
+        avgInputTokensPerUnit: 4000,
+        avgOutputTokensPerUnit: 600,
+        pricePer1MInputTokens: 0.15,
+        pricePer1MOutputTokens: 0.60
+    }
+  },
+  agentWorkflow: {
+    useCaseName: 'Agent Workflow',
+    unitName: 'workflow',
+    monthlyVolume: 500,
+    successRate: 75,
+    integrationCost: 10000,
+    trainingTuningCost: 5000,
+    changeManagementCost: 2000,
+    valueMethod: ValueMethod.COST_DISPLACEMENT,
+    baselineHumanCostPerUnit: 30.00,
+    deflectionRate: 55,
+    residualHumanReviewRate: 25,
+    residualReviewCostPerUnit: 10.00,
+    primaryModel: {
+        ...DEFAULT_MODEL_PARAMS,
+        avgInputTokensPerUnit: 2000,
+        avgOutputTokensPerUnit: 1000,
+        pricePer1MInputTokens: 0.50,
+        pricePer1MOutputTokens: 1.50
+    },
+    orchestrationCostPerUnit: 0.005,
+    retrievalCostPerUnit: 0.005,
+    toolApiCostPerUnit: 0.01
   },
   recommendation: {
     useCaseName: 'E-commerce Recommendations',
@@ -148,14 +279,14 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
   premium: {
     useCaseName: 'AI Premium Features',
     unitName: 'subscriber',
-    monthlyVolume: 5000,
+    monthlyVolume: 1000,
     successRate: 100,
     integrationCost: 15000,
     trainingTuningCost: 8000,
     changeManagementCost: 3000,
     valueMethod: ValueMethod.PREMIUM_MONETIZATION,
     pricePerSubscriberPerMonth: 15,
-    subscribers: 5000,
+    subscribers: 1000,
     nonAiCOGSPerSubscriber: 3,
     primaryModel: {
         ...DEFAULT_MODEL_PARAMS,
