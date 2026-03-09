@@ -63,6 +63,34 @@ describe('calculateROI', () => {
       expect(result.layer1CostPerUnit).toBeCloseTo(0.0003825, 6);
     });
 
+
+    it('should not apply cache savings to call-priced models', () => {
+      const inputs: UseCaseInputs = {
+        ...DEFAULT_INPUTS,
+        monthlyVolume: 10000,
+        primaryModel: {
+          ...DEFAULT_INPUTS.primaryModel,
+          costPerCall: 0.01,
+          useCallPricing: true,
+        },
+        secondaryModel: {
+          ...DEFAULT_INPUTS.secondaryModel,
+          costPerCall: 0.03,
+          useCallPricing: true,
+        },
+        routingSimplePercent: 60,
+        cacheHitRate: 80,
+        cachedTokenDiscount: 90,
+        retryRate: 0,
+        overheadMultiplier: 1,
+      };
+
+      const result = calculateROI(inputs, defaultModifiers);
+
+      // Blended call-cost only: 0.01 * 0.6 + 0.03 * 0.4 = 0.018
+      expect(result.layer1CostPerUnit).toBeCloseTo(0.018, 6);
+    });
+
     it('should blend primary and secondary model costs correctly', () => {
       const inputs: UseCaseInputs = {
         ...DEFAULT_INPUTS,
@@ -312,9 +340,10 @@ describe('calculateROI', () => {
       const result = calculateROI(inputs, defaultModifiers);
 
       // Total fixed: 8000
-      // Payback = 8000 / netMonthlyBenefit
-      if (result.netMonthlyBenefit > 0) {
-        const expectedPayback = 8000 / result.netMonthlyBenefit;
+      // Payback = fixed costs / monthly operating benefit (value - variable monthly cost)
+      const monthlyOperatingBenefit = result.totalMonthlyValue - result.layer2MonthlyCost;
+      if (monthlyOperatingBenefit > 0) {
+        const expectedPayback = 8000 / monthlyOperatingBenefit;
         expect(parseFloat(result.paybackMonths as string)).toBeCloseTo(expectedPayback, 1);
       }
     });

@@ -19,6 +19,7 @@
     <meta property="og:title" content="AI ROI Calculator - Calculate Return on Investment for AI Projects" />
     <meta property="og:description" content="Free web app to calculate ROI for AI and LLM implementations. Analyze costs, value generation, and break-even scenarios with our 3-layer framework." />
     <meta property="og:image" content="https://airoicalculator.optimnow.io/images/Logo.png" />
+    <meta property="og:image:alt" content="OptimNow AI ROI Calculator" />
     <meta property="og:site_name" content="AI ROI Calculator" />
     <meta property="og:locale" content="en_US" />
 
@@ -32,6 +33,11 @@
     <!-- Favicons -->
     <link rel="icon" type="image/x-icon" href="/images/favicon.jpg" />
     <link rel="apple-touch-icon" href="/images/Logo.png" />
+
+    <!-- Google Fonts: Brand Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&family=Almarai:wght@300;400;700&family=Ayuthaya&display=swap" rel="stylesheet">
 
     <!-- Theme Color -->
     <meta name="theme-color" content="#ACE849" />
@@ -48,11 +54,6 @@
         "@type": "Offer",
         "price": "0",
         "priceCurrency": "USD"
-      },
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "5.0",
-        "ratingCount": "1"
       },
       "description": "Free web application to calculate return on investment for AI and LLM implementations. Features 3-layer cost framework, break-even analysis, sensitivity analysis, and scenario comparison.",
       "url": "https://airoicalculator.optimnow.io/",
@@ -85,6 +86,11 @@
               warning: '#C1C1C1', // Dark Grey
               danger: '#dc2626', // Red (keep for errors)
               charcoal: '#2C2C2C', // Charcoal Black
+            },
+            fontFamily: {
+              headline: ['Manrope', 'Arial', 'Helvetica', 'sans-serif'],
+              body: ['Almarai', 'Arial', 'Helvetica', 'sans-serif'],
+              label: ['Ayuthaya', 'Arial', 'Helvetica', 'sans-serif'],
             }
           }
         }
@@ -106,6 +112,31 @@
 </head>
   <body class="bg-slate-50 text-slate-900 antialiased">
     <div id="root"></div>
+    <noscript>
+      <h1>AI ROI Calculator by OptimNow</h1>
+      <p>Free web application to calculate return on investment for AI and LLM implementations using a 3-layer cost framework.</p>
+      <h2>Features</h2>
+      <ul>
+        <li><strong>Layer 1 - Infrastructure:</strong> Model inference costs with token-based pricing, cache optimization, and multi-model routing.</li>
+        <li><strong>Layer 2 - Harness:</strong> Orchestration, retrieval, monitoring, tool APIs, and operational overhead.</li>
+        <li><strong>Layer 3 - Business Value:</strong> Four methods - Cost Displacement, Revenue Uplift, Retention Uplift, and Premium Monetization.</li>
+      </ul>
+      <h2>Use Case Presets</h2>
+      <ul>
+        <li>Customer Support Bot</li>
+        <li>Knowledge Q&amp;A</li>
+        <li>Meeting Summary</li>
+        <li>Marketing Content</li>
+        <li>Coding Task</li>
+        <li>Invoice Processing</li>
+        <li>Call Summary</li>
+        <li>Agent Workflow</li>
+        <li>E-commerce Recommendations</li>
+        <li>Customer Retention AI</li>
+        <li>AI Premium Features</li>
+      </ul>
+      <p>Built by <a href="https://www.optimnow.io">OptimNow</a>. This application requires JavaScript to run.</p>
+    </noscript>
   <script type="module" src="/index.tsx"></script>
 </body>
 </html>

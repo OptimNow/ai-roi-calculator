@@ -75,11 +75,11 @@ export const ScenarioComparison: React.FC<ScenarioComparisonProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col my-8">
+      <div className="bg-white rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col my-8">
         {/* Header */}
-        <div className="bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-4 flex items-center justify-between">
+        <div className="bg-[#2C2C2C] px-6 py-4 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold text-white">Scenario Comparison</h2>
+            <h2 className="text-xl font-bold font-headline text-white">Scenario Comparison</h2>
             <p className="text-sm text-white text-opacity-90">Comparing {scenarios.length} scenarios side-by-side</p>
           </div>
           <button
@@ -94,8 +94,8 @@ export const ScenarioComparison: React.FC<ScenarioComparisonProps> = ({
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Visual Comparison Chart */}
-          <section className="bg-white rounded-xl border border-slate-200 p-6">
-            <h3 className="text-sm font-bold text-slate-700 uppercase mb-4">Visual Comparison</h3>
+          <section className="bg-white rounded-lg border border-slate-200 p-6">
+            <h3 className="text-sm font-bold font-headline text-slate-700 uppercase mb-4">Visual Comparison</h3>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
@@ -119,9 +119,9 @@ export const ScenarioComparison: React.FC<ScenarioComparisonProps> = ({
           </section>
 
           {/* Results Comparison Table */}
-          <section className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+          <section className="bg-white rounded-lg border border-slate-200 overflow-hidden">
             <div className="px-6 py-4 bg-slate-50 border-b border-slate-200">
-              <h3 className="text-sm font-bold text-slate-700 uppercase">Results Comparison</h3>
+              <h3 className="text-sm font-bold font-headline text-slate-700 uppercase">Results Comparison</h3>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -165,9 +165,9 @@ export const ScenarioComparison: React.FC<ScenarioComparisonProps> = ({
           </section>
 
           {/* Input Parameters Comparison */}
-          <section className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+          <section className="bg-white rounded-lg border border-slate-200 overflow-hidden">
             <div className="px-6 py-4 bg-slate-50 border-b border-slate-200">
-              <h3 className="text-sm font-bold text-slate-700 uppercase">Input Parameters</h3>
+              <h3 className="text-sm font-bold font-headline text-slate-700 uppercase">Input Parameters</h3>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
