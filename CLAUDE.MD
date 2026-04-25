@@ -1,9 +1,9 @@
 # CLAUDE.MD - AI Assistant Project Guide
 
-**Last Updated:** January 11, 2026
+**Last Updated:** April 25, 2026
 **Project:** AI ROI Calculator
 **Version:** v1.1
-**Live Demo:** https://ai-roi-calculator.vercel.app
+**Live Demo:** https://airoicalculator.optimnow.io (custom domain) / https://ai-roi-calculator.vercel.app (Vercel default)
 
 ---
 
@@ -98,8 +98,14 @@ ai-roi-calculator/
 ├── types.ts                    # TypeScript interfaces (UseCaseInputs, Scenario, etc.)
 ├── constants.ts                # Presets for common use cases (support, content, etc.)
 ├── index.tsx                   # React app entry point
-├── index.css                   # Tailwind directives + custom CSS
-├── index.html                  # HTML shell with metadata
+├── index.css                   # Tailwind v4 import + @config + custom CSS
+├── index.html                  # HTML shell with metadata (OG, Twitter, JSON-LD, manifest)
+├── public/
+│   ├── robots.txt              # Crawler directives + sitemap reference
+│   ├── sitemap.xml             # Search engine sitemap
+│   ├── llms.txt                # LLM-discoverability descriptor
+│   ├── manifest.webmanifest    # PWA manifest
+│   └── images/                 # Logo.png, favicon.jpg
 ├── vite.config.ts              # Vite build configuration
 ├── tailwind.config.js          # Tailwind v4 configuration
 ├── postcss.config.js           # PostCSS with Tailwind plugin
