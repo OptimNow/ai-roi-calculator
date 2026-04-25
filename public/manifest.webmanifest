@@ -1,0 +1,21 @@
+{
+  "name": "AI ROI Calculator",
+  "short_name": "AI ROI Calc",
+  "description": "Calculate ROI for AI and LLM implementations using a 3-layer cost framework.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F4F4F4",
+  "theme_color": "#ACE849",
+  "lang": "en-US",
+  "categories": ["business", "finance", "productivity"],
+  "icons": [
+    {
+      "src": "/images/favicon.jpg",
+      "sizes": "400x400",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ]
+}

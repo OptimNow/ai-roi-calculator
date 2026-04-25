@@ -37,7 +37,7 @@ import { UseCaseInputs, CalculationResults, SensitivityModifiers, ValueMethod, M
  * - Cache savings apply only to input tokens, not output tokens
  * - Retry rate multiplies Layer 1 costs only, not harness costs
  * - Success rate affects value realization but not base costs
- * - Payback calculation uses one-time fixed costs / net monthly operating benefit (excludes fixed-cost amortization)
+ * - Payback calculation uses one-time fixed costs / monthly cash net benefit (before fixed-cost amortization)
  *
  * @see {@link UseCaseInputs} for complete input schema
  * @see {@link CalculationResults} for output schema
@@ -189,7 +189,6 @@ export const calculateROI = (inputs: UseCaseInputs, modifiers: SensitivityModifi
   const netValuePerUnit = grossValuePerUnit; // Success factor already applied inside cases
   const monthlyCashNetBenefit = totalMonthlyValue - layer2MonthlyCost;
   const netMonthlyBenefit = totalMonthlyValue - totalMonthlyCost;
-  const netMonthlyOperatingBenefit = totalMonthlyValue - layer2MonthlyCost;
   
   const roiPercentage = totalMonthlyCost > 0 
     ? (netMonthlyBenefit / totalMonthlyCost) * 100 
@@ -197,13 +196,13 @@ export const calculateROI = (inputs: UseCaseInputs, modifiers: SensitivityModifi
 
   const annualizedNetBenefit = netMonthlyBenefit * 12;
 
-  // Payback: Fixed Costs / Net Monthly Operating Benefit (excluding fixed-cost amortization)
+  // Payback (cash): one-time fixed costs / monthly cash net benefit (before amortization)
   let paybackMonths: number | string = "Immediate";
   if (totalFixedOneTime > 0) {
-      if (netMonthlyOperatingBenefit <= 0) {
+      if (monthlyCashNetBenefit <= 0) {
           paybackMonths = "No Payback";
       } else {
-          paybackMonths = (totalFixedOneTime / netMonthlyOperatingBenefit).toFixed(1);
+          paybackMonths = (totalFixedOneTime / monthlyCashNetBenefit).toFixed(1);
       }
   }
 
@@ -269,3 +268,4 @@ export const calculateROI = (inputs: UseCaseInputs, modifiers: SensitivityModifi
     breakEvenMonths
   };
 };
+

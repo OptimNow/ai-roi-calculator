@@ -220,14 +220,14 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
     trainingTuningCost: 1000,
     changeManagementCost: 500,
     valueMethod: ValueMethod.COST_DISPLACEMENT,
-    baselineHumanCostPerUnit: 3.00,
+    baselineHumanCostPerUnit: 10.00,
     deflectionRate: 85,
     residualHumanReviewRate: 10,
-    residualReviewCostPerUnit: 0.75,
+    residualReviewCostPerUnit: 2.50,
     primaryModel: {
         ...DEFAULT_MODEL_PARAMS,
-        avgInputTokensPerUnit: 2000,
-        avgOutputTokensPerUnit: 700,
+        avgInputTokensPerUnit: 4000,
+        avgOutputTokensPerUnit: 600,
         pricePer1MInputTokens: 0.15,
         pricePer1MOutputTokens: 0.60
     }
@@ -236,25 +236,25 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
     useCaseName: 'Agent Workflow',
     unitName: 'workflow',
     monthlyVolume: 500,
-    successRate: 80,
+    successRate: 75,
     integrationCost: 10000,
     trainingTuningCost: 5000,
-    changeManagementCost: 3000,
+    changeManagementCost: 2000,
     valueMethod: ValueMethod.COST_DISPLACEMENT,
-    baselineHumanCostPerUnit: 15.00,
+    baselineHumanCostPerUnit: 30.00,
     deflectionRate: 55,
     residualHumanReviewRate: 25,
-    residualReviewCostPerUnit: 4.00,
+    residualReviewCostPerUnit: 10.00,
     primaryModel: {
         ...DEFAULT_MODEL_PARAMS,
-        avgInputTokensPerUnit: 6000,
-        avgOutputTokensPerUnit: 3000,
-        pricePer1MInputTokens: 2.50,
-        pricePer1MOutputTokens: 10.00
+        avgInputTokensPerUnit: 2000,
+        avgOutputTokensPerUnit: 1000,
+        pricePer1MInputTokens: 0.50,
+        pricePer1MOutputTokens: 1.50
     },
-    orchestrationCostPerUnit: 0.01,
+    orchestrationCostPerUnit: 0.005,
     retrievalCostPerUnit: 0.005,
-    toolApiCostPerUnit: 0.02
+    toolApiCostPerUnit: 0.01
   },
   recommendation: {
     useCaseName: 'E-commerce Recommendations',

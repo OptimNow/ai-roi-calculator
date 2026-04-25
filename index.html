@@ -20,6 +20,9 @@
     <meta property="og:description" content="Free web app to calculate ROI for AI and LLM implementations. Analyze costs, value generation, and break-even scenarios with our 3-layer framework." />
     <meta property="og:image" content="https://airoicalculator.optimnow.io/images/Logo.png" />
     <meta property="og:image:alt" content="OptimNow AI ROI Calculator" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1323" />
+    <meta property="og:image:height" content="270" />
     <meta property="og:site_name" content="AI ROI Calculator" />
     <meta property="og:locale" content="en_US" />
 
@@ -33,6 +36,9 @@
     <!-- Favicons -->
     <link rel="icon" type="image/x-icon" href="/images/favicon.jpg" />
     <link rel="apple-touch-icon" href="/images/Logo.png" />
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.webmanifest" />
 
     <!-- Google Fonts: Brand Typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -73,29 +79,6 @@
     }
     </script>
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              primary: '#ACE849', // Chartreuse
-              secondary: '#F4F4F4', // Light Grey
-              accent: '#ACE849', // Chartreuse (brand primary)
-              success: '#ACE849', // Use brand color
-              warning: '#C1C1C1', // Dark Grey
-              danger: '#dc2626', // Red (keep for errors)
-              charcoal: '#2C2C2C', // Charcoal Black
-            },
-            fontFamily: {
-              headline: ['Manrope', 'Arial', 'Helvetica', 'sans-serif'],
-              body: ['Almarai', 'Arial', 'Helvetica', 'sans-serif'],
-              label: ['Ayuthaya', 'Arial', 'Helvetica', 'sans-serif'],
-            }
-          }
-        }
-      }
-    </script>
     <link rel="stylesheet" href="/index.css">
   <script type="importmap">
 {

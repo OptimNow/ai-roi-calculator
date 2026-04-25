@@ -779,6 +779,59 @@ export default function App() {
                   </span>
                 </div>
               </div>
+              <p className="text-[10px] text-slate-400 mt-3">
+                Realized = Gross × {inputs.successRate}% success rate.{' '}
+                <a
+                  href="https://github.com/OptimNow/ai-roi-calculator/blob/main/METHODOLOGY.md"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-accent hover:underline"
+                >
+                  Full methodology →
+                </a>
+              </p>
+            </div>
+
+            {/* Unit Economics — placed right after Value Summary for context */}
+            <div className="grid grid-cols-2 gap-4" role="group" aria-label="Unit economics">
+                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between" role="article" aria-label="Unit cost metric">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-400 uppercase" id="unitcost-label">Unit Cost</span>
+                      <button
+                        className="text-slate-300 hover:text-accent transition-colors"
+                        title="Cost per Unit: Average total cost per transaction, including model inference, harness costs, and amortized fixed costs."
+                        aria-label="Unit cost explanation"
+                      >
+                        <Info size={12} />
+                      </button>
+                    </div>
+                    <span className="text-2xl font-extrabold text-slate-800" aria-labelledby="unitcost-label" aria-live="polite">
+                        {formatMoney(results.totalCostPerUnit, 3)}
+                    </span>
+                    <span className="text-[10px] text-slate-400">per {inputs.unitName}</span>
+                </div>
+                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between" role="article" aria-label="Break-even metric">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-400 uppercase" id="breakeven-label">Unit Break-even</span>
+                      <button
+                        className="text-slate-300 hover:text-accent transition-colors"
+                        title="Break-even Volume: The monthly volume needed for your net benefit to reach $0 (where value equals total costs). This threshold is constant regardless of current volume."
+                        aria-label="Break-even explanation"
+                      >
+                        <Info size={12} />
+                      </button>
+                    </div>
+                    <span className="text-2xl font-extrabold text-slate-800" aria-labelledby="breakeven-label" aria-live="polite">
+                        {results.breakEvenVolume !== undefined
+                          ? formatNumber(results.breakEvenVolume)
+                          : 'N/A'}
+                    </span>
+                    <span className="text-[10px] text-slate-400">
+                      {results.breakEvenVolume !== undefined
+                        ? `${inputs.unitName}s/mo needed`
+                        : 'Negative margin'}
+                    </span>
+                </div>
             </div>
 
             {/* KPI Cards */}
