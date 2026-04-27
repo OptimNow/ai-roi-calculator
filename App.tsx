@@ -101,6 +101,7 @@ export default function App() {
   };
 
   const loadPreset = (key: string) => {
+    (window as any).trackEvent?.('preset_loaded', { preset_key: key });
     if (PRESETS[key]) {
       setInputs(prev => {
         const nextInputs = { ...prev, ...PRESETS[key] } as UseCaseInputs;
@@ -113,6 +114,10 @@ export default function App() {
   };
 
   const handleExportJSON = () => {
+    (window as any).trackEvent?.('results_exported', {
+      format: 'json',
+      use_case: inputs.useCaseName
+    });
     const dataStr = JSON.stringify({ inputs, results }, null, 2);
     const blob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -123,6 +128,10 @@ export default function App() {
   };
 
   const handleCopyMarkdown = async () => {
+    (window as any).trackEvent?.('results_exported', {
+      format: 'markdown',
+      use_case: inputs.useCaseName
+    });
     const paybackAsNumber = Number(results.paybackMonths);
     const paybackDisplay = Number.isFinite(paybackAsNumber)
       ? `${paybackAsNumber} months`
@@ -356,6 +365,11 @@ export default function App() {
               rel="noopener noreferrer"
               className="hover:opacity-80 transition-opacity"
               aria-label="Visit OptimNow website"
+              onClick={() => {
+                (window as any).trackEvent?.('optimnow_cta_clicked', {
+                  source: 'airoicalculator_header'
+                });
+              }}
             >
               <img
                 src="/images/Logo.png"
@@ -376,7 +390,10 @@ export default function App() {
           <div className="flex items-center space-x-1 sm:space-x-3 flex-shrink-0" role="toolbar" aria-label="Calculator controls">
              <div className="flex bg-slate-100 rounded-lg p-0.5 sm:p-1" role="group" aria-label="Display mode toggle">
                 <button
-                  onClick={() => setMode('simple')}
+                  onClick={() => {
+                    setMode('simple');
+                    (window as any).trackEvent?.('mode_switched', { mode: 'simple' });
+                  }}
                   className={`px-2 sm:px-3 py-1 text-[10px] sm:text-xs font-medium rounded-md transition-all ${mode === 'simple' ? 'bg-white text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
                   aria-pressed={mode === 'simple'}
                   aria-label="Switch to simple mode"
@@ -384,7 +401,10 @@ export default function App() {
                   Simple
                 </button>
                 <button
-                  onClick={() => setMode('advanced')}
+                  onClick={() => {
+                    setMode('advanced');
+                    (window as any).trackEvent?.('mode_switched', { mode: 'advanced' });
+                  }}
                   className={`px-2 sm:px-3 py-1 text-[10px] sm:text-xs font-medium rounded-md transition-all ${mode === 'advanced' ? 'bg-white text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
                   aria-pressed={mode === 'advanced'}
                   aria-label="Switch to advanced mode"
