@@ -1,6 +1,6 @@
 # CLAUDE.MD - AI Assistant Project Guide
 
-**Last Updated:** April 25, 2026
+**Last Updated:** April 27, 2026
 **Project:** AI ROI Calculator
 **Version:** v1.1
 **Live Demo:** https://airoicalculator.optimnow.io (custom domain) / https://ai-roi-calculator.vercel.app (Vercel default)
@@ -99,7 +99,7 @@ ai-roi-calculator/
 ├── constants.ts                # Presets for common use cases (support, content, etc.)
 ├── index.tsx                   # React app entry point
 ├── index.css                   # Tailwind v4 import + @config + custom CSS
-├── index.html                  # HTML shell with metadata (OG, Twitter, JSON-LD, manifest)
+├── index.html                  # HTML shell: metadata (OG, Twitter, JSON-LD, manifest) + GA4 with hostname guard
 ├── public/
 │   ├── robots.txt              # Crawler directives + sitemap reference
 │   ├── sitemap.xml             # Search engine sitemap
@@ -312,9 +312,30 @@ See `METHODOLOGY.md` for complete formulas for all 4 value methods.
 
 - **No Backend:** All calculations run in browser
 - **LocalStorage:** Scenarios saved locally, never sent to servers
-- **No Analytics:** No tracking or data collection
-- **No API Calls:** Completely offline-capable after initial load
+- **Analytics:** GA4 (`G-188H55KPFM`) + Vercel Analytics. Both track anonymous usage events (page views, mode toggle, preset loads, exports, OptimNow CTA clicks). **No input values, no scenario data, no PII** are ever sent — only event names and the use-case label (which is a preset name like "Customer Support Bot", not user-entered content).
+- **GA4 hostname guard:** GA4 `config` and `event` calls are gated by a regex matching only `optimnow.io` (and subdomains) + `localhost`. Forks deployed elsewhere will load `gtag.js` but never fire any tracking — protects shared OptimNow analytics from pollution.
 - **Export Only:** User manually exports data as JSON if desired
+
+---
+
+## Analytics & Event Tracking
+
+GA4 is wired in `index.html` via `window.trackEvent(eventName, params)`. From TypeScript, always call it with optional chaining to avoid runtime errors and TS complaints:
+
+```ts
+(window as any).trackEvent?.('event_name', { key: 'value' });
+```
+
+**Currently tracked events** (App.tsx):
+
+| Event | Trigger | Params |
+|---|---|---|
+| `optimnow_cta_clicked` | OptimNow logo click in header | `{ source: 'airoicalculator_header' }` |
+| `mode_switched` | Simple/Advanced toggle | `{ mode: 'simple' \| 'advanced' }` |
+| `preset_loaded` | Preset dropdown selection | `{ preset_key: string }` |
+| `results_exported` | JSON download or Markdown copy | `{ format: 'json' \| 'markdown', use_case: string }` |
+
+When adding new tracking: keep events business-meaningful (decision points, conversions, drop-offs), never log raw input values, and stick to the `(window as any).trackEvent?.(...)` pattern — do **not** add a global `window.trackEvent` TS declaration.
 
 ---
 
