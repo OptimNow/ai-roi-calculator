@@ -128,29 +128,48 @@ C₁_blended = (C₁_primary × Rp) + (C₁_secondary × Rs)
 - `Rs` = 1 - Rp (routing to secondary model)
 
 **Example:**
-- Primary: GPT-3.5 Turbo @ $0.0005/1K tokens → 70% traffic
-- Secondary: GPT-4 @ $0.03/1K tokens → 30% traffic
+- Primary: Claude Haiku 4.5 @ $1.00/1M input tokens → 70% traffic
+- Secondary: Claude Sonnet 5 @ $2.00/1M input tokens → 30% traffic
 - Blended cost reduces overall spend while maintaining quality for complex queries
+
+---
+
+### Batch Processing (Async Workloads)
+
+When the workload tolerates delayed responses (document processing, summaries, scoring),
+most providers offer a batch API at roughly -50%. When batch processing is enabled and the
+selected model has published batch rates (sourced from the AI Pricing Hub), those rates
+replace the list prices:
+
+```
+Pi_base = Pi_batch  (if batch enabled and published, else Pi)
+Po_base = Po_batch  (if batch enabled and published, else Po)
+```
+
+Models without published batch rates keep list prices even when batch is enabled.
 
 ---
 
 ### Cache Optimization
 
-**Formula:**
+**Formula (aligned with the AI Pricing Hub's optimized cost):**
 ```
-C₁_input_cached = C₁_input × [1 - (Hr × Dr)]
-C₁_cached = C₁_input_cached + C₁_output
+P_cache_read = published cache-read price     (halved again under batch)
+             | Pi_base × (1 - Dr)             (manual fallback when no published rate)
+
+Pi_effective = P_cache_read × Hr + Pi_base × (1 - Hr)
+C₁_cached    = (Ti / 1M) × Pi_effective + (To / 1M) × Po_base
 ```
 
 **Where:**
-- `Hr` = Cache hit rate (%, 0-100)
-- `Dr` = Cached token discount rate (%, 0-100)
-- Example: 50% hit rate with 90% discount → 45% input cost reduction
+- `Hr` = Cache hit rate (share of input tokens served from the prompt cache, 0-100%)
+- `Dr` = Manual cached-token discount (%, 0-100) — used **only** when the model carries no published cache-read price
+- Example: Claude Haiku 4.5 lists input at $1.00/1M and cache reads at $0.10/1M (90% off); with a 50% hit rate the effective input price is $0.55/1M
 
 **Rationale:**
 - **Input tokens** can be cached (prompt templates, system instructions)
 - **Output tokens** cannot be cached (unique responses)
-- Providers like Anthropic offer 90% discount for cached prompt tokens
+- When a model is picked from the AI Pricing Hub catalog, its published cache-read price is used; providers apply the batch discount to cache reads too, hence the halving under batch
 
 ---
 
@@ -482,17 +501,23 @@ ROI% = (38,000 / 12,000) × 100 = 316.7%
 
 **Formula:**
 ```
-Payback_months = Cf_total / NMB  (if NMB > 0)
+NCB = V_total_monthly - C₂_monthly          (monthly cash net benefit, before amortization)
+Payback_months = Cf_total / NCB  (if NCB > 0)
 ```
 
+**Why NCB and not NMB:** `NMB` already subtracts the amortized fixed costs. Dividing
+`Cf_total` by `NMB` would count the fixed costs twice (once in the numerator, once inside
+the denominator). Payback is a cash metric: one-time investment divided by the monthly
+cash the project generates before amortization.
+
 **Special Cases:**
-- `NMB ≤ 0`: "No Payback" (project never recoups fixed costs)
+- `NCB ≤ 0`: "No Payback" (project never recoups fixed costs)
 - `Cf_total = 0`: "Immediate" (no upfront investment)
 
 **Example:**
 ```
 Fixed costs = $25,000
-Monthly net benefit = $8,000
+Monthly cash net benefit = $8,000
 Payback = 25,000 / 8,000 = 3.1 months
 ```
 
@@ -502,7 +527,7 @@ Payback = 25,000 / 8,000 = 3.1 months
 
 **Formula:**
 ```
-CP(t) = -Cf_total + (NMB × t)
+CP(t) = -Cf_total + (NCB × t)
 ```
 
 **Where:**
@@ -693,7 +718,7 @@ If "Costs" has a smaller impact range (15%):
 
 1. **Linear Scaling:** Costs and value scale linearly with volume (no economies/diseconomies of scale)
 2. **Constant Realization Rate:** AI quality remains stable over time (no model drift)
-3. **Static Pricing:** API pricing doesn't change during analysis period
+3. **Static Pricing:** API pricing doesn't change during analysis period. Model prices are sourced live from the [AI Pricing Hub](https://aipricinghub.optimnow.io) catalog (refreshed daily); the price date is recorded with each selection (`pricedAt`).
 4. **Independent Variables:** Sensitivity multipliers don't interact (e.g., higher volume doesn't reduce unit costs)
 5. **Immediate Value Realization:** Benefits accrue immediately when AI succeeds (no lag)
 6. **API-Based Deployment:** Currently assumes pay-per-token pricing (self-hosted GPU pricing in v1.2)

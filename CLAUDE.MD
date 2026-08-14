@@ -82,19 +82,19 @@ ai-roi-calculator/
 │                               # Contains all state management and orchestration
 ├── components/
 │   ├── Charts.tsx              # Memoized ROICurveChart & TornadoChart
-│   ├── FixedCostsSection.tsx   # Integration, training, change management costs
-│   ├── GeneralInputsSection.tsx # Volume, success rate, horizon, unit name
-│   ├── HarnessSection.tsx      # Layer 2: orchestration, retrieval, tools, monitoring
+│   ├── ErrorBoundary.tsx       # Top-level error boundary
 │   ├── HelpGuide.tsx           # Comprehensive modal with step-by-step instructions
-│   ├── InfrastructureSection.tsx # Layer 1: model costs, tokens, cache, routing
-│   ├── ResultsDashboard.tsx    # 5 KPI cards + cost breakdown + insights + charts
+│   ├── InputComponents.tsx     # MoneyInput, NumberInput, PercentInput, SectionHeader
+│   ├── ModelPicker.tsx         # Searchable model dropdown fed by the AI Pricing Hub catalog
 │   ├── ScenarioComparison.tsx  # Side-by-side comparison with bar charts
-│   ├── ScenarioManager.tsx     # Save/load/delete/export/import scenarios
-│   ├── SensitivitySimulator.tsx # Multiplier-based what-if testing
-│   └── ValueSection.tsx        # Layer 3: 4 value method forms
+│   └── ScenarioManager.tsx     # Save/load/delete/export/import scenarios
+│                               # NOTE: form sections (value, cost model) and the results
+│                               # dashboard are inline JSX in App.tsx, not separate components
 ├── utils/
-│   └── calculations.ts         # Core ROI calculation logic (20KB, 600+ lines)
-│                               # All formulas for costs, value, break-even, sensitivity
+│   ├── calculations.ts         # Core ROI calculation logic
+│   │                           # All formulas for costs, value, break-even, sensitivity
+│   └── modelCatalog.ts         # Model price catalog: live fetch from AI Pricing Hub API,
+│                               # localStorage cache, embedded snapshot fallback, preset helper
 ├── types.ts                    # TypeScript interfaces (UseCaseInputs, Scenario, etc.)
 ├── constants.ts                # Presets for common use cases (support, content, etc.)
 ├── index.tsx                   # React app entry point
@@ -311,6 +311,7 @@ See `METHODOLOGY.md` for complete formulas for all 4 value methods.
 ## Data Privacy & Security
 
 - **No Backend:** All calculations run in browser
+- **Model prices (read-only fetch):** The app fetches the public model-price catalog from `https://aipricinghub.optimnow.io/api/llm-models` (anonymous GET, CORS-open, no user data sent) and caches it in localStorage for 24h. An embedded snapshot in `utils/modelCatalog.ts` is the offline fallback.
 - **LocalStorage:** Scenarios saved locally, never sent to servers
 - **Analytics:** GA4 (`G-188H55KPFM`) + Vercel Analytics. Both track anonymous usage events (page views, mode toggle, preset loads, exports, OptimNow CTA clicks). **No input values, no scenario data, no PII** are ever sent — only event names and the use-case label (which is a preset name like "Customer Support Bot", not user-entered content).
 - **GA4 hostname guard:** GA4 `config` and `event` calls are gated by a regex matching only `optimnow.io` (and subdomains) + `localhost`. Forks deployed elsewhere will load `gtag.js` but never fire any tracking — protects shared OptimNow analytics from pollution.
@@ -334,6 +335,7 @@ GA4 is wired in `index.html` via `window.trackEvent(eventName, params)`. From Ty
 | `mode_switched` | Simple/Advanced toggle | `{ mode: 'simple' \| 'advanced' }` |
 | `preset_loaded` | Preset dropdown selection | `{ preset_key: string }` |
 | `results_exported` | JSON download or Markdown copy | `{ format: 'json' \| 'markdown', use_case: string }` |
+| `model_selected` | Model picked from the AI Pricing Hub catalog | `{ model_id: string, slot: 'primary' \| 'secondary' }` |
 
 When adding new tracking: keep events business-meaningful (decision points, conversions, drop-offs), never log raw input values, and stick to the `(window as any).trackEvent?.(...)` pattern — do **not** add a global `window.trackEvent` TS declaration.
 

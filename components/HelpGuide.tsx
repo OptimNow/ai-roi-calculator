@@ -270,16 +270,21 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
               <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                 <h4 className="font-semibold text-slate-700 mb-2">Token Pricing</h4>
                 <p className="text-sm text-slate-600">
-                  Enter the cost per 1 million tokens from your model provider's pricing page.
-                  Check <a href="https://aipricinghub.optimnow.io" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">AI Pricing Hub</a> for up-to-date pricing across all providers.
+                  Pick a model from the dropdown: prices per 1M tokens are filled automatically from the{' '}
+                  <a href="https://aipricinghub.optimnow.io" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">AI Pricing Hub</a>{' '}
+                  (live catalog, refreshed daily), including published cache-read and batch rates.
                 </p>
-                <ul className="mt-2 text-sm text-slate-600 list-disc list-inside ml-3">
-                  <li><strong>GPT-4o-mini:</strong> $0.15 / 1M input, $0.60 / 1M output</li>
-                  <li><strong>Claude Haiku 4.5:</strong> $1.00 / 1M input, $5.00 / 1M output</li>
-                  <li><strong>GPT-4o:</strong> $2.50 / 1M input, $10.00 / 1M output</li>
-                  <li><strong>Claude Sonnet 4.6:</strong> $3.00 / 1M input, $15.00 / 1M output</li>
-                  <li><strong>Gemini 2.0 Flash:</strong> $0.10 / 1M input, $0.40 / 1M output</li>
-                </ul>
+                <p className="text-xs text-slate-500 mt-2">
+                  💡 Choose "Custom pricing" to enter negotiated or unlisted prices by hand. Editing a price field also switches to custom pricing, so a scenario never claims a model's name with prices it no longer uses.
+                </p>
+              </div>
+
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <h4 className="font-semibold text-slate-700 mb-2">Async Batch Processing</h4>
+                <p className="text-sm text-slate-600">
+                  If your workload tolerates delayed responses (document processing, summaries, scoring), enable batch processing:
+                  most providers offer ~50% off via their batch API. The calculator applies the provider's published batch rates where they exist.
+                </p>
               </div>
 
               <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
@@ -289,18 +294,18 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                   Adjust the slider to set what percentage goes to the "simple" model.
                 </p>
                 <p className="text-xs text-slate-500 mt-2">
-                  Example: 70% to GPT-4o-mini ($0.15 input), 30% to GPT-4o ($2.50 input) = blended cost of $0.855 per 1M input tokens.
+                  Example: 70% to a $0.15/1M-input model, 30% to a $2.50/1M-input model = blended cost of $0.855 per 1M input tokens.
                 </p>
               </div>
 
               <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                 <h4 className="font-semibold text-slate-700 mb-2">Cache Settings (Advanced)</h4>
                 <p className="text-sm text-slate-600">
-                  <strong>Cache Hit Rate:</strong> % of requests that can reuse cached prompts<br />
-                  <strong>Cache Discount:</strong> % discount on input tokens when cached (e.g., 90% = 10x cheaper)
+                  <strong>Cache Hit Rate:</strong> % of input tokens served from the prompt cache (repeated system prompts, shared context)<br />
+                  <strong>Cache Discount:</strong> manual fallback used only when the selected model has no published cache-read price
                 </p>
                 <p className="text-xs text-slate-500 mt-2">
-                  💡 Only applies to input tokens. Leave at 0% if not using prompt caching.
+                  💡 When you pick a model from the catalog, its published cache-read price is used automatically (e.g. Anthropic cache reads cost 10% of the input price). Caching only applies to input tokens. Set the hit rate to 0% if not using prompt caching.
                 </p>
               </div>
 

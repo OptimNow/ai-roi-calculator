@@ -1,0 +1,249 @@
+import { ModelParams } from '../types';
+
+/**
+ * Model pricing catalog sourced from the AI Pricing Hub (https://aipricinghub.optimnow.io).
+ *
+ * The catalog is fetched live from the hub's public JSON endpoint (CORS-open,
+ * CDN-cached 24h) and cached in localStorage. When the fetch fails (offline,
+ * API down), an embedded snapshot is used so the picker always works.
+ */
+
+export interface CatalogModel {
+  provider: string;
+  model: string;
+  inputPricePer1M: number;
+  outputPricePer1M: number;
+  batchInputPricePer1M?: number;
+  batchOutputPricePer1M?: number;
+  cachedInputPricePer1M?: number;
+  contextWindow?: string;
+  category?: string;
+  eloScore?: number;
+  releaseDate?: string;
+}
+
+export interface ModelCatalog {
+  models: CatalogModel[];
+  /** Where the prices came from: live API, localStorage cache, or embedded snapshot */
+  source: 'live' | 'cache' | 'snapshot';
+  /** ISO date the prices were published (from the hub's meta.timestamp) */
+  pricedAt: string;
+}
+
+export const PRICING_HUB_URL = 'https://aipricinghub.optimnow.io';
+const API_URL = `${PRICING_HUB_URL}/api/llm-models`;
+const STORAGE_KEY = 'ai-roi-model-catalog-v1';
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // matches the hub's CDN cache
+const FETCH_TIMEOUT_MS = 8000;
+const MIN_MODELS = 20; // reject suspiciously small responses
+
+/** Date of the embedded snapshot below (refreshed manually from the hub API) */
+export const SNAPSHOT_DATE = '2026-08-14';
+
+// [provider, model, $/1M in, $/1M out, batch in, batch out, cache read, context, category, ELO, released]
+// null = the provider publishes no batch/cache rate for that model.
+type SnapshotRow = [string, string, number, number, number | null, number | null, number | null, string, string, number, string];
+
+const SNAPSHOT_ROWS: SnapshotRow[] = [
+  ['Anthropic', 'Claude Fable 5', 10, 50, 5, 25, 1, '1M', 'Frontier', 1495, '2026-06'],
+  ['OpenAI', 'GPT-5.5 Pro', 30, 180, 15, 90, null, '1M', 'Frontier', 1485, '2026-04'],
+  ['Anthropic', 'Claude Opus 4.8', 5, 25, 2.5, 12.5, 0.5, '1M', 'Frontier', 1483, '2026-05'],
+  ['Google', 'Gemini 3.1 Pro Preview', 2, 12, 1, 6, 0.2, '1M', 'Mid-tier', 1480, '2026-02'],
+  ['Anthropic', 'Claude Opus 5', 5, 25, 2.5, 12.5, 0.5, '1M', 'Frontier', 1478, '2026-07'],
+  ['Google', 'Gemini 3.5 Flash', 1.5, 9, 0.75, 4.5, 0.15, '1M', 'Mid-tier', 1472, '2026-05'],
+  ['OpenAI', 'GPT-5.4', 2.5, 15, 1.25, 7.5, 0.25, '1M', 'Frontier', 1470, '2026-02'],
+  ['Anthropic', 'Claude Opus 4.6', 5, 25, 2.5, 12.5, 0.5, '1M', 'Frontier', 1470, '2026-02'],
+  ['OpenAI', 'GPT-5.5', 5, 30, 2.5, 15, 0.5, '1M', 'Frontier', 1468, '2026-04'],
+  ['Alibaba', 'Qwen3.7 Max', 1.475, 4.425, null, null, 0.295, '1M', 'Open Weights', 1466, '2026-05'],
+  ['Anthropic', 'Claude Opus 4.7', 5, 25, 2.5, 12.5, 0.5, '1M', 'Frontier', 1465, '2026-04'],
+  ['Google', 'Gemini 3.6 Flash', 0.75, 3.75, 0.375, 1.875, 0.075, '1M', 'Mid-tier', 1462, '2026-06'],
+  ['Alibaba', 'Qwen3.7 Plus', 0.32, 1.28, null, null, 0.064, '1M', 'Open Weights', 1460, '2026-06'],
+  ['Google', 'Gemini 3.7 Flash', 0.375, 1.875, 0.1875, 0.9375, 0.0375, '1M', 'Budget', 1458, '2026-07'],
+  ['Anthropic', 'Claude Sonnet 4.6', 3, 15, 1.5, 7.5, 0.3, '1M', 'Frontier', 1457, '2026-02'],
+  ['Anthropic', 'Claude Sonnet 5', 2, 10, 1, 5, 0.2, '1M', 'Mid-tier', 1455, '2026-06'],
+  ['xAI', 'Grok 4.20', 1.25, 2.5, null, null, 0.2, '2M', 'Mid-tier', 1455, '2026-04'],
+  ['Moonshot', 'Kimi K2.6', 0.5605, 2.36, null, null, 0.0944, '262K', 'Mid-tier', 1452, '2026-03'],
+  ['xAI', 'Grok 4.20 Multi-Agent', 1.25, 2.5, null, null, 0.2, '2M', 'Mid-tier', 1450, '2026-04'],
+  ['Anthropic', 'Claude Opus 4.5', 5, 25, 2.5, 12.5, 0.5, '200K', 'Frontier', 1450, '2025-09'],
+  ['DeepSeek', 'DeepSeek V4 Pro', 1.168, 2.336, null, null, 0.0986, '1M', 'Open Weights', 1449, '2026-04'],
+  ['xAI', 'Grok 4.6', 2, 6, null, null, 0.5, '500K', 'Mid-tier', 1445, '2026-07'],
+  ['Moonshot', 'Kimi K3', 3, 15, null, null, 0.3, '1M', 'Frontier', 1445, '2026-06'],
+  ['xAI', 'Grok 4.5', 2, 6, null, null, 0.3, '500K', 'Mid-tier', 1440, '2026-06'],
+  ['OpenAI', 'GPT-5.2', 1.75, 14, 0.875, 7, 0.175, '400K', 'Mid-tier', 1440, '2025-12'],
+  ['Anthropic', 'Claude Sonnet 4.5', 3, 15, 1.5, 7.5, 0.3, '1M', 'Frontier', 1438, '2025-09'],
+  ['DeepSeek', 'DeepSeek V4 Flash 0423', 0.14, 0.28, null, null, 0.028, '1M', 'Open Weights', 1431, '2026-04'],
+  ['Zhipu', 'GLM 5.2', 1.19, 3.74, 0.7, 2.2, 0.221, '1M', 'Mid-tier', 1430, '2026-06'],
+  ['OpenAI', 'GPT-5.1', 1.25, 10, 0.625, 5, 0.125, '400K', 'Mid-tier', 1428, '2025-11'],
+  ['Zhipu', 'GLM 5.1', 1.4, 4.4, null, null, 0.26, '205K', 'Mid-tier', 1420, '2026-04'],
+  ['Zhipu', 'GLM 5', 0.95, 2.55, null, null, 0.2, '205K', 'Mid-tier', 1412, '2026-02'],
+  ['Anthropic', 'Claude Haiku 4.5', 1, 5, 0.5, 2.5, 0.1, '200K', 'Mid-tier', 1392, '2025-10'],
+  ['Google', 'Gemini 2.5 Pro Preview', 1.25, 10, null, null, 0.125, '1M', 'Mid-tier', 1392, '2025-06'],
+  ['MiniMax', 'MiniMax M3', 0.3, 1.2, 0.15, 0.6, 0.06, '1M', 'Budget', 1390, '2026-06'],
+  ['Google', 'Gemini 3 Flash Preview', 0.5, 3, 0.25, 1.5, 0.05, '1M', 'Mid-tier', 1385, '2025-12'],
+  ['Anthropic', 'Claude Opus 4', 15, 75, null, null, 1.5, '200K', 'Frontier', 1381, '2025-05'],
+  ['Alibaba', 'Qwen3.5 397B A17B', 0.39, 2.34, null, null, null, '262K', 'Open Weights', 1380, '2026-03'],
+  ['Alibaba', 'Qwen3 Max Thinking', 0.78, 3.9, null, null, null, '262K', 'Open Weights', 1370, '2026-02'],
+  ['DeepSeek', 'DeepSeek V3.2', 0.269, 0.4, null, null, 0.1345, '164K', 'Open Weights', 1370, '2025-10'],
+  ['OpenAI', 'GPT-5', 1.25, 10, 0.625, 5, 0.125, '400K', 'Mid-tier', 1370, '2025-06'],
+  ['Anthropic', 'Claude Sonnet 4', 3, 15, null, null, 0.3, '1M', 'Frontier', 1363, '2025-05'],
+  ['DeepSeek', 'R1', 0.7, 2.5, null, null, null, '64K', 'Open Weights', 1358, '2025-01'],
+  ['OpenAI', 'o3', 2, 8, 1, 4, 0.5, '200K', 'Mid-tier', 1350, '2025-04'],
+  ['OpenAI', 'o1', 15, 60, 7.5, 30, 7.5, '200K', 'Frontier', 1350, '2024-12'],
+  ['Moonshot', 'Kimi K2.5', 0.57, 2.85, null, null, 0.095, '262K', 'Mid-tier', 1345, '2025-12'],
+  ['OpenAI', 'o4 Mini High', 1.1, 4.4, 0.55, 2.2, 0.275, '200K', 'Mid-tier', 1345, '2025-04'],
+  ['Alibaba', 'Qwen3.5-122B-A10B', 0.29, 2.4, null, null, null, '262K', 'Open Weights', 1340, '2026-03'],
+  ['OpenAI', 'o4 Mini', 1.1, 4.4, 0.55, 2.2, 0.275, '200K', 'Mid-tier', 1340, '2025-04'],
+  ['OpenAI', 'o3 Mini High', 1.1, 4.4, 0.55, 2.2, 0.55, '200K', 'Mid-tier', 1337, '2025-02'],
+  ['OpenAI', 'o3 Mini', 1.1, 4.4, 0.55, 2.2, 0.55, '200K', 'Mid-tier', 1337, '2025-01'],
+  ['Moonshot', 'Kimi K2 0711', 0.57, 2.3, null, null, null, '131K', 'Mid-tier', 1330, '2025-07'],
+  ['Meta', 'Llama 4 Maverick', 0.2, 0.8, null, null, null, '1M', 'Open Weights', 1325, '2025-04'],
+  ['Alibaba', 'Qwen3.5-27B', 0.195, 1.56, null, null, null, '262K', 'Open Weights', 1310, '2026-03'],
+  ['OpenAI', 'GPT-5 Mini', 0.25, 2, 0.125, 1, 0.025, '400K', 'Mid-tier', 1310, '2025-09'],
+  ['OpenAI', 'GPT-4.1', 2, 8, 1, 4, 0.5, '1M', 'Mid-tier', 1305, '2025-04'],
+  ['OpenAI', 'GPT-4o-mini', 0.15, 0.6, 0.075, 0.3, 0.075, '128K', 'Budget', 1219, '2024-07'],
+  ['Mistral', 'Mistral Nemo', 0.019, 0.03, null, null, null, '131K', 'Budget', 1177, '2024-07'],
+];
+
+export const SNAPSHOT_MODELS: CatalogModel[] = SNAPSHOT_ROWS.map(
+  ([provider, model, input, output, batchIn, batchOut, cacheRead, contextWindow, category, eloScore, releaseDate]) => ({
+    provider,
+    model,
+    inputPricePer1M: input,
+    outputPricePer1M: output,
+    ...(batchIn !== null && batchOut !== null
+      ? { batchInputPricePer1M: batchIn, batchOutputPricePer1M: batchOut }
+      : {}),
+    ...(cacheRead !== null ? { cachedInputPricePer1M: cacheRead } : {}),
+    contextWindow,
+    category,
+    eloScore,
+    releaseDate,
+  })
+);
+
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+/** Stable id matching the hub's model page URLs, e.g. "anthropic/claude-haiku-4-5" */
+export const toModelId = (m: Pick<CatalogModel, 'provider' | 'model'>) => `${slug(m.provider)}/${slug(m.model)}`;
+
+/**
+ * ModelParams patch produced when a catalog model is selected.
+ * Undefined values intentionally overwrite stale cache/batch prices from a previous selection.
+ */
+export const catalogModelToParams = (m: CatalogModel, pricedAt: string): Partial<ModelParams> => ({
+  modelId: toModelId(m),
+  modelName: m.model,
+  provider: m.provider,
+  pricedAt,
+  pricePer1MInputTokens: m.inputPricePer1M,
+  pricePer1MOutputTokens: m.outputPricePer1M,
+  cachedInputPricePer1M: m.cachedInputPricePer1M,
+  batchInputPricePer1M: m.batchInputPricePer1M,
+  batchOutputPricePer1M: m.batchOutputPricePer1M,
+  useCallPricing: false,
+});
+
+/** Build preset ModelParams from the embedded snapshot. Throws at module init if the model is missing. */
+export const presetModel = (
+  provider: string,
+  model: string,
+  avgInputTokensPerUnit: number,
+  avgOutputTokensPerUnit: number
+): ModelParams => {
+  const found = SNAPSHOT_MODELS.find(m => m.provider === provider && m.model === model);
+  if (!found) {
+    throw new Error(`presetModel: "${provider} / ${model}" not found in the embedded model snapshot`);
+  }
+  return {
+    avgInputTokensPerUnit,
+    avgOutputTokensPerUnit,
+    costPerCall: 0.005,
+    useCallPricing: false,
+    ...catalogModelToParams(found, SNAPSHOT_DATE),
+  } as ModelParams;
+};
+
+const isValidModel = (m: any): m is CatalogModel =>
+  m &&
+  typeof m.provider === 'string' &&
+  typeof m.model === 'string' &&
+  typeof m.inputPricePer1M === 'number' &&
+  typeof m.outputPricePer1M === 'number' &&
+  m.inputPricePer1M >= 0 &&
+  m.outputPricePer1M >= 0;
+
+const sortByElo = (models: CatalogModel[]) =>
+  [...models].sort((a, b) => (b.eloScore ?? 0) - (a.eloScore ?? 0));
+
+const snapshotCatalog = (): ModelCatalog => ({
+  models: sortByElo(SNAPSHOT_MODELS),
+  source: 'snapshot',
+  pricedAt: SNAPSHOT_DATE,
+});
+
+interface StoredCatalog {
+  fetchedAt: number;
+  pricedAt: string;
+  models: CatalogModel[];
+}
+
+const readStoredCatalog = (): StoredCatalog | null => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed.models) || parsed.models.length < MIN_MODELS) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Resolve the model catalog: fresh localStorage cache first, then the live hub API,
+ * then a stale cache, then the embedded snapshot. Never rejects.
+ */
+export const fetchModelCatalog = async (forceRefresh = false): Promise<ModelCatalog> => {
+  const stored = readStoredCatalog();
+  if (!forceRefresh && stored && Date.now() - stored.fetchedAt < CACHE_TTL_MS) {
+    return { models: sortByElo(stored.models), source: 'cache', pricedAt: stored.pricedAt };
+  }
+
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+    const response = await fetch(API_URL, { signal: controller.signal });
+    clearTimeout(timer);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    const models: CatalogModel[] = (Array.isArray(data.models) ? data.models : [])
+      .filter(isValidModel)
+      .map((m: CatalogModel) => ({
+        provider: m.provider,
+        model: m.model,
+        inputPricePer1M: m.inputPricePer1M,
+        outputPricePer1M: m.outputPricePer1M,
+        batchInputPricePer1M: m.batchInputPricePer1M,
+        batchOutputPricePer1M: m.batchOutputPricePer1M,
+        cachedInputPricePer1M: m.cachedInputPricePer1M,
+        contextWindow: m.contextWindow,
+        category: m.category,
+        eloScore: m.eloScore,
+        releaseDate: m.releaseDate,
+      }));
+    if (models.length < MIN_MODELS) throw new Error(`only ${models.length} models returned`);
+
+    const pricedAt = typeof data.meta?.timestamp === 'string' ? data.meta.timestamp : new Date().toISOString();
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ fetchedAt: Date.now(), pricedAt, models }));
+    } catch {
+      // storage full or unavailable — live data still usable
+    }
+    return { models: sortByElo(models), source: 'live', pricedAt };
+  } catch {
+    if (stored) {
+      return { models: sortByElo(stored.models), source: 'cache', pricedAt: stored.pricedAt };
+    }
+    return snapshotCatalog();
+  }
+};
