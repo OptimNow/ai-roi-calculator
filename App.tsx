@@ -2,9 +2,10 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Download, Copy, Check, RefreshCw, Settings, HelpCircle, FolderOpen, Info, BookOpen } from 'lucide-react';
 
 import { UseCaseInputs, CalculationResults, ValueMethod, SensitivityModifiers, ModelParams, Scenario } from './types';
-import { DEFAULT_INPUTS, PRESETS, DEFAULT_MODEL_PARAMS } from './constants';
+import { DEFAULT_INPUTS, PRESETS } from './constants';
 import { calculateROI } from './utils/calculations';
 import { MoneyInput, NumberInput, PercentInput, SectionHeader } from './components/InputComponents';
+import { CatalogStatus, ModelPicker, useModelCatalog } from './components/ModelPicker';
 import { HelpGuide } from './components/HelpGuide';
 import { CostValueChart, CostBreakdownChart, ROICurveChart, TornadoChart } from './components/Charts';
 import { ScenarioManager } from './components/ScenarioManager';
@@ -37,6 +38,7 @@ export default function App() {
     costModel: false,
   });
   const [copied, setCopied] = useState(false);
+  const { catalog, loading: catalogLoading, refresh: refreshCatalog } = useModelCatalog();
 
   // Load scenarios from localStorage on mount
   useEffect(() => {
@@ -100,16 +102,42 @@ export default function App() {
     }));
   };
 
+  // Bulk patch used by the model picker (fills prices + identity in one shot)
+  const patchModelParams = (model: 'primaryModel' | 'secondaryModel', patch: Partial<ModelParams>) => {
+    setInputs(prev => ({
+      ...prev,
+      [model]: { ...prev[model], ...patch }
+    }));
+  };
+
+  // Manual price edits detach the field values from the selected catalog model,
+  // so a scenario never claims "Claude Haiku 4.5" pricing it no longer uses.
+  const updateModelPrice = (model: 'primaryModel' | 'secondaryModel', field: 'pricePer1MInputTokens' | 'pricePer1MOutputTokens', value: number) => {
+    setInputs(prev => ({
+      ...prev,
+      [model]: {
+        ...prev[model],
+        [field]: value,
+        modelId: undefined,
+        modelName: undefined,
+        provider: undefined,
+        pricedAt: undefined,
+        cachedInputPricePer1M: undefined,
+        batchInputPricePer1M: undefined,
+        batchOutputPricePer1M: undefined,
+      }
+    }));
+  };
+
   const loadPreset = (key: string) => {
     (window as any).trackEvent?.('preset_loaded', { preset_key: key });
     if (PRESETS[key]) {
-      setInputs(prev => {
-        const nextInputs = { ...prev, ...PRESETS[key] } as UseCaseInputs;
-        if (nextInputs.valueMethod === ValueMethod.PREMIUM_MONETIZATION) {
-          nextInputs.subscribers = nextInputs.monthlyVolume;
-        }
-        return nextInputs;
-      });
+      // Merge over defaults (not previous state) so nothing lingers from the last preset
+      const nextInputs = { ...DEFAULT_INPUTS, ...PRESETS[key] } as UseCaseInputs;
+      if (nextInputs.valueMethod === ValueMethod.PREMIUM_MONETIZATION) {
+        nextInputs.subscribers = nextInputs.monthlyVolume;
+      }
+      setInputs(nextInputs);
     }
   };
 
@@ -150,6 +178,7 @@ export default function App() {
 ## Inputs
 - Volume: ${formatNumber(inputs.monthlyVolume)} ${inputs.unitName}s/mo
 - Realization Rate: ${inputs.successRate}%
+- Primary Model: ${inputs.primaryModel.modelName ? `${inputs.primaryModel.modelName} (${inputs.primaryModel.provider}, prices via AI Pricing Hub)` : 'Custom pricing'}
 - Model: Simple/Complex split ${inputs.routingSimplePercent}% / ${100 - inputs.routingSimplePercent}%
     `.trim();
     try {
@@ -667,7 +696,7 @@ export default function App() {
                 {/* Sub-section: Infrastructure (Layer 1) */}
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-xs font-bold font-label text-slate-500 uppercase tracking-wider">Infrastructure (Layer 1)</h4>
-                  <a href="https://aipricinghub.optimnow.io" target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-500 hover:text-blue-700 hover:underline">Token pricing reference &rarr;</a>
+                  <CatalogStatus catalog={catalog} loading={catalogLoading} onRefresh={() => refreshCatalog(true)} />
                 </div>
                 {mode === 'advanced' && (
                    <div className="mb-4 p-3 bg-slate-50 rounded border border-slate-200">
@@ -691,35 +720,82 @@ export default function App() {
 
                 <div className="space-y-4">
                     <div className="border-l-2 border-accent pl-3">
-                        <h5 className="text-xs font-bold text-slate-900 mb-2">{mode === 'advanced' ? 'Primary Model (Simple)' : 'Model Parameters'}</h5>
+                        <h5 className="text-xs font-bold text-slate-900 mb-2">{mode === 'advanced' ? 'Primary Model (Simple)' : 'Model'}</h5>
+                        <ModelPicker
+                          slot="primary"
+                          value={inputs.primaryModel}
+                          catalog={catalog}
+                          onSelect={patch => patchModelParams('primaryModel', patch)}
+                        />
                         <div className="grid grid-cols-2 gap-3">
                             <NumberInput label="Avg Input Tokens" value={inputs.primaryModel.avgInputTokensPerUnit} onChange={v => updateModelParam('primaryModel', 'avgInputTokensPerUnit', v)} />
                             <NumberInput label="Avg Output Tokens" value={inputs.primaryModel.avgOutputTokensPerUnit} onChange={v => updateModelParam('primaryModel', 'avgOutputTokensPerUnit', v)} />
                         </div>
                         <div className="grid grid-cols-2 gap-3">
-                            <MoneyInput label="$ / 1M Input" value={inputs.primaryModel.pricePer1MInputTokens} onChange={v => updateModelParam('primaryModel', 'pricePer1MInputTokens', v)} precision={4} />
-                            <MoneyInput label="$ / 1M Output" value={inputs.primaryModel.pricePer1MOutputTokens} onChange={v => updateModelParam('primaryModel', 'pricePer1MOutputTokens', v)} precision={4} />
+                            <MoneyInput label="$ / 1M Input" value={inputs.primaryModel.pricePer1MInputTokens} onChange={v => updateModelPrice('primaryModel', 'pricePer1MInputTokens', v)} precision={4} />
+                            <MoneyInput label="$ / 1M Output" value={inputs.primaryModel.pricePer1MOutputTokens} onChange={v => updateModelPrice('primaryModel', 'pricePer1MOutputTokens', v)} precision={4} />
                         </div>
+                        {inputs.primaryModel.pricedAt && (
+                          <p className="text-[10px] text-slate-400 mt-1">
+                            {inputs.primaryModel.modelName} list prices as of {new Date(inputs.primaryModel.pricedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}. Editing a price switches to custom pricing.
+                          </p>
+                        )}
                     </div>
 
                     {mode === 'advanced' && inputs.routingSimplePercent < 100 && (
                         <div className="border-l-2 border-purple-500 pl-3 mt-4 pt-4 border-t border-dashed border-slate-200">
                             <h5 className="text-xs font-bold text-slate-900 mb-2">Secondary Model (Complex)</h5>
+                            <ModelPicker
+                              slot="secondary"
+                              value={inputs.secondaryModel}
+                              catalog={catalog}
+                              onSelect={patch => patchModelParams('secondaryModel', patch)}
+                            />
                             <div className="grid grid-cols-2 gap-3">
                                 <NumberInput label="Avg Input Tokens" value={inputs.secondaryModel.avgInputTokensPerUnit} onChange={v => updateModelParam('secondaryModel', 'avgInputTokensPerUnit', v)} />
                                 <NumberInput label="Avg Output Tokens" value={inputs.secondaryModel.avgOutputTokensPerUnit} onChange={v => updateModelParam('secondaryModel', 'avgOutputTokensPerUnit', v)} />
                             </div>
                             <div className="grid grid-cols-2 gap-3">
-                                <MoneyInput label="$ / 1M Input" value={inputs.secondaryModel.pricePer1MInputTokens} onChange={v => updateModelParam('secondaryModel', 'pricePer1MInputTokens', v)} precision={4} />
-                                <MoneyInput label="$ / 1M Output" value={inputs.secondaryModel.pricePer1MOutputTokens} onChange={v => updateModelParam('secondaryModel', 'pricePer1MOutputTokens', v)} precision={4} />
+                                <MoneyInput label="$ / 1M Input" value={inputs.secondaryModel.pricePer1MInputTokens} onChange={v => updateModelPrice('secondaryModel', 'pricePer1MInputTokens', v)} precision={4} />
+                                <MoneyInput label="$ / 1M Output" value={inputs.secondaryModel.pricePer1MOutputTokens} onChange={v => updateModelPrice('secondaryModel', 'pricePer1MOutputTokens', v)} precision={4} />
                             </div>
                         </div>
                     )}
 
+                    <label className="flex items-start gap-2 pt-1 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={inputs.batchProcessing === true}
+                          onChange={e => updateInput('batchProcessing', e.target.checked)}
+                          className="mt-0.5 accent-[#ACE849]"
+                          aria-describedby="batch-hint"
+                        />
+                        <span className="text-xs">
+                          <span className="font-semibold text-slate-700">Async batch processing</span>
+                          <span id="batch-hint" className="block text-[10px] text-slate-400">
+                            {inputs.primaryModel.batchInputPricePer1M !== undefined
+                              ? `Uses the provider's batch API rates (≈ -50%) — e.g. ${inputs.primaryModel.modelName}: $${inputs.primaryModel.batchInputPricePer1M} / $${inputs.primaryModel.batchOutputPricePer1M} per 1M.`
+                              : inputs.batchProcessing && inputs.primaryModel.modelId
+                                ? 'Selected model has no published batch rates — list prices are used.'
+                                : 'For workloads that tolerate delayed responses. Applies published batch rates where they exist.'}
+                          </span>
+                        </span>
+                    </label>
+
                     {mode === 'advanced' && (
-                        <div className="grid grid-cols-2 gap-3 pt-2">
-                             <PercentInput label="Cache Hit Rate" value={inputs.cacheHitRate} onChange={v => updateInput('cacheHitRate', v)} tooltip="Percentage of requests that reuse cached tokens from previous queries, reducing inference cost." />
-                             <PercentInput label="Cache Discount" value={inputs.cachedTokenDiscount} onChange={v => updateInput('cachedTokenDiscount', v)} tooltip="Discount applied to cached tokens vs. fresh tokens. Most providers offer 75–90% off for cached input tokens." />
+                        <div className="pt-2">
+                          <div className="grid grid-cols-2 gap-3">
+                             <PercentInput label="Cache Hit Rate" value={inputs.cacheHitRate} onChange={v => updateInput('cacheHitRate', v)} tooltip="Percentage of input tokens served from the prompt cache (repeated system prompts, shared context)." />
+                             {inputs.primaryModel.cachedInputPricePer1M === undefined && (
+                               <PercentInput label="Cache Discount" value={inputs.cachedTokenDiscount} onChange={v => updateInput('cachedTokenDiscount', v)} tooltip="Discount applied to cached tokens vs. fresh tokens. Most providers offer 75–90% off for cached input tokens. Ignored when the selected model has a published cache-read price." />
+                             )}
+                          </div>
+                          {inputs.primaryModel.cachedInputPricePer1M !== undefined && (
+                            <p className="text-[10px] text-slate-400 mt-1">
+                              Cache reads priced at {inputs.primaryModel.modelName}'s published rate: ${inputs.primaryModel.cachedInputPricePer1M} / 1M input
+                              ({Math.round((1 - inputs.primaryModel.cachedInputPricePer1M / inputs.primaryModel.pricePer1MInputTokens) * 100)}% off).
+                            </p>
+                          )}
                         </div>
                     )}
                 </div>
@@ -861,7 +937,7 @@ export default function App() {
                       <span className="text-xs font-bold font-label text-slate-400 uppercase" id="roi-label">ROI</span>
                       <button
                         className="text-slate-300 hover:text-[#2C2C2C] transition-colors"
-                        title="Return on Investment: Calculated over your Analysis Months period. Shows total value minus total costs, divided by total costs."
+                        title="Return on Investment: net monthly benefit (monthly value minus total monthly cost, incl. amortized fixed costs) divided by total monthly cost."
                         aria-label="ROI explanation"
                       >
                         <Info size={12} />
@@ -874,7 +950,7 @@ export default function App() {
                     >
                         {results.roiPercentage.toFixed(0)}%
                     </span>
-                    <span className="text-[10px] text-slate-400">Over {inputs.analysisHorizonMonths} months</span>
+                    <span className="text-[10px] text-slate-400">Monthly value vs. cost</span>
                 </div>
                 <div className="bg-white p-4 rounded-lg border border-slate-200 flex flex-col justify-between" role="article" aria-label="Net benefit metric">
                     <div className="flex items-center justify-between">

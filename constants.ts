@@ -1,13 +1,10 @@
 import { UseCaseInputs, ValueMethod } from './types';
+import { presetModel } from './utils/modelCatalog';
 
-export const DEFAULT_MODEL_PARAMS = {
-  avgInputTokensPerUnit: 1000,
-  avgOutputTokensPerUnit: 500,
-  pricePer1MInputTokens: 0.15,
-  pricePer1MOutputTokens: 0.60,
-  costPerCall: 0.005,
-  useCallPricing: false,
-};
+// Preset model params come from the embedded AI Pricing Hub snapshot (utils/modelCatalog.ts),
+// so every preset carries a real model identity (modelId, provider, pricedAt) and its
+// published cache-read / batch prices. Token profiles (in/out) and cache hit rates are
+// aligned with the hub's business use-case profiles (USE_CASE_PROFILES).
 
 export const DEFAULT_INPUTS: UseCaseInputs = {
   useCaseName: 'Customer Support Bot',
@@ -21,11 +18,12 @@ export const DEFAULT_INPUTS: UseCaseInputs = {
   changeManagementCost: 1500,
   amortizationMonths: 12,
 
-  primaryModel: { ...DEFAULT_MODEL_PARAMS, avgInputTokensPerUnit: 1500, avgOutputTokensPerUnit: 500 },
-  secondaryModel: { ...DEFAULT_MODEL_PARAMS, pricePer1MInputTokens: 2.5, pricePer1MOutputTokens: 10 },
+  primaryModel: presetModel('Anthropic', 'Claude Haiku 4.5', 1500, 500),
+  secondaryModel: presetModel('Anthropic', 'Claude Sonnet 5', 1500, 500),
   routingSimplePercent: 100,
-  cacheHitRate: 10,
+  cacheHitRate: 60,
   cachedTokenDiscount: 90,
+  batchProcessing: false,
 
   orchestrationCostPerUnit: 0.002,
   retrievalCostPerUnit: 0.0015,
@@ -76,13 +74,9 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
     residualHumanReviewRate: 5,
     residualReviewCostPerUnit: 0.10,
     retryRate: 0.1,
-    primaryModel: {
-        ...DEFAULT_MODEL_PARAMS,
-        avgInputTokensPerUnit: 1500,
-        avgOutputTokensPerUnit: 500,
-        pricePer1MInputTokens: 0.15,
-        pricePer1MOutputTokens: 0.60
-    },
+    primaryModel: presetModel('Anthropic', 'Claude Haiku 4.5', 1500, 500),
+    cacheHitRate: 60,
+    batchProcessing: false,
     // Harness assumptions: bot orchestration, KB retrieval, observability and baseline safety controls
     orchestrationCostPerUnit: 0.002,
     retrievalCostPerUnit: 0.0015,
@@ -105,13 +99,9 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
     deflectionRate: 60,
     residualHumanReviewRate: 10,
     residualReviewCostPerUnit: 0.75,
-    primaryModel: {
-        ...DEFAULT_MODEL_PARAMS,
-        avgInputTokensPerUnit: 2000,
-        avgOutputTokensPerUnit: 800,
-        pricePer1MInputTokens: 0.15,
-        pricePer1MOutputTokens: 0.60
-    },
+    primaryModel: presetModel('Anthropic', 'Claude Haiku 4.5', 2000, 800),
+    cacheHitRate: 70,
+    batchProcessing: false,
     retrievalCostPerUnit: 0.005
   },
   meetingSummary: {
@@ -127,13 +117,9 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
     deflectionRate: 80,
     residualHumanReviewRate: 20,
     residualReviewCostPerUnit: 1.00,
-    primaryModel: {
-        ...DEFAULT_MODEL_PARAMS,
-        avgInputTokensPerUnit: 10000,
-        avgOutputTokensPerUnit: 1200,
-        pricePer1MInputTokens: 0.15,
-        pricePer1MOutputTokens: 0.60
-    }
+    primaryModel: presetModel('Google', 'Gemini 3.7 Flash', 10000, 1200),
+    cacheHitRate: 10,
+    batchProcessing: true // transcripts are processed async — batch API rates apply
   },
   marketingContent: {
     useCaseName: 'Marketing Content',
@@ -148,13 +134,9 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
     deflectionRate: 60,
     residualHumanReviewRate: 40,
     residualReviewCostPerUnit: 3.00,
-    primaryModel: {
-        ...DEFAULT_MODEL_PARAMS,
-        avgInputTokensPerUnit: 2500,
-        avgOutputTokensPerUnit: 1800,
-        pricePer1MInputTokens: 3.00,
-        pricePer1MOutputTokens: 15.00
-    }
+    primaryModel: presetModel('Anthropic', 'Claude Sonnet 5', 2500, 1800),
+    cacheHitRate: 20,
+    batchProcessing: false
   },
   codingTask: {
     useCaseName: 'Coding Task',
@@ -169,13 +151,9 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
     deflectionRate: 50,
     residualHumanReviewRate: 30,
     residualReviewCostPerUnit: 3.00,
-    primaryModel: {
-        ...DEFAULT_MODEL_PARAMS,
-        avgInputTokensPerUnit: 3000,
-        avgOutputTokensPerUnit: 2000,
-        pricePer1MInputTokens: 2.50,
-        pricePer1MOutputTokens: 10.00
-    },
+    primaryModel: presetModel('Anthropic', 'Claude Sonnet 5', 3000, 2000),
+    cacheHitRate: 50,
+    batchProcessing: false,
     orchestrationCostPerUnit: 0.005,
     toolApiCostPerUnit: 0.01
   },
@@ -194,13 +172,10 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
     integrationCost: 15000,
     trainingTuningCost: 6000,
     changeManagementCost: 4000,
-    primaryModel: {
-        ...DEFAULT_MODEL_PARAMS,
-        avgInputTokensPerUnit: 2500,
-        avgOutputTokensPerUnit: 350,
-        pricePer1MInputTokens: 5.00, // Expensive model
-        pricePer1MOutputTokens: 15.00
-    },
+    // Vision-capable frontier model for document extraction accuracy
+    primaryModel: presetModel('OpenAI', 'GPT-5.4', 1500, 600),
+    cacheHitRate: 30,
+    batchProcessing: true, // invoices are processed in async batches
     // Harness assumptions for enterprise document workflow:
     // orchestration (state + retries), OCR/RAG retrieval, compliance logging, storage and egress
     orchestrationCostPerUnit: 0.004,
@@ -224,13 +199,9 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
     deflectionRate: 85,
     residualHumanReviewRate: 10,
     residualReviewCostPerUnit: 2.50,
-    primaryModel: {
-        ...DEFAULT_MODEL_PARAMS,
-        avgInputTokensPerUnit: 4000,
-        avgOutputTokensPerUnit: 600,
-        pricePer1MInputTokens: 0.15,
-        pricePer1MOutputTokens: 0.60
-    }
+    primaryModel: presetModel('Google', 'Gemini 3.7 Flash', 2000, 700),
+    cacheHitRate: 10,
+    batchProcessing: true // call recordings are summarized async
   },
   agentWorkflow: {
     useCaseName: 'Agent Workflow',
@@ -245,13 +216,9 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
     deflectionRate: 55,
     residualHumanReviewRate: 25,
     residualReviewCostPerUnit: 10.00,
-    primaryModel: {
-        ...DEFAULT_MODEL_PARAMS,
-        avgInputTokensPerUnit: 2000,
-        avgOutputTokensPerUnit: 1000,
-        pricePer1MInputTokens: 0.50,
-        pricePer1MOutputTokens: 1.50
-    },
+    primaryModel: presetModel('Moonshot', 'Kimi K2.6', 6000, 3000),
+    cacheHitRate: 70, // agent loops re-send large shared context
+    batchProcessing: false,
     orchestrationCostPerUnit: 0.005,
     retrievalCostPerUnit: 0.005,
     toolApiCostPerUnit: 0.01
@@ -270,13 +237,9 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
     integrationCost: 30000,
     trainingTuningCost: 12000,
     changeManagementCost: 8000,
-    primaryModel: {
-        ...DEFAULT_MODEL_PARAMS,
-        avgInputTokensPerUnit: 1200,
-        avgOutputTokensPerUnit: 300,
-        pricePer1MInputTokens: 0.15,
-        pricePer1MOutputTokens: 0.60
-    },
+    primaryModel: presetModel('DeepSeek', 'DeepSeek V4 Flash 0423', 1200, 300),
+    cacheHitRate: 20,
+    batchProcessing: false, // real-time recommendations
     // Harness assumptions: ranking orchestration, retrieval over product/session features, monitoring and safety
     orchestrationCostPerUnit: 0.003,
     retrievalCostPerUnit: 0.004,
@@ -300,13 +263,9 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
     churnReductionAbsolute: 0.5,
     annualValuePerCustomer: 1200,
     customersImpactedPerMonth: 10000,
-    primaryModel: {
-        ...DEFAULT_MODEL_PARAMS,
-        avgInputTokensPerUnit: 1200,
-        avgOutputTokensPerUnit: 400,
-        pricePer1MInputTokens: 0.15,
-        pricePer1MOutputTokens: 0.60
-    },
+    primaryModel: presetModel('MiniMax', 'MiniMax M3', 1200, 400),
+    cacheHitRate: 20,
+    batchProcessing: true, // churn scoring runs as async batches
     // Harness assumptions: journey orchestration, customer-history retrieval, messaging tooling, and governance
     orchestrationCostPerUnit: 0.003,
     retrievalCostPerUnit: 0.004,
@@ -329,13 +288,9 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
     pricePerSubscriberPerMonth: 15,
     subscribers: 1000,
     nonAiCOGSPerSubscriber: 3,
-    primaryModel: {
-        ...DEFAULT_MODEL_PARAMS,
-        avgInputTokensPerUnit: 2000,
-        avgOutputTokensPerUnit: 800,
-        pricePer1MInputTokens: 1.00,
-        pricePer1MOutputTokens: 5.00
-    },
+    primaryModel: presetModel('Anthropic', 'Claude Haiku 4.5', 2000, 800),
+    cacheHitRate: 30,
+    batchProcessing: false,
     // Harness assumptions: entitlement-aware orchestration, retrieval/tool calls, observability and safety at scale
     orchestrationCostPerUnit: 0.006,
     retrievalCostPerUnit: 0.008,

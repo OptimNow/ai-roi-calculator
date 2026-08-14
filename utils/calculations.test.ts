@@ -10,6 +10,16 @@ describe('calculateROI', () => {
     valueMultiplier: 1,
   };
 
+  // Plain manual-priced model (no catalog identity, no published cache/batch rates)
+  const basicModel = {
+    avgInputTokensPerUnit: 1000,
+    avgOutputTokensPerUnit: 500,
+    pricePer1MInputTokens: 0.15,
+    pricePer1MOutputTokens: 0.60,
+    costPerCall: 0.005,
+    useCallPricing: false,
+  };
+
   describe('Layer 1: Model Cost Calculations', () => {
     it('should calculate basic token-based cost correctly', () => {
       const inputs: UseCaseInputs = {
@@ -154,10 +164,83 @@ describe('calculateROI', () => {
 
       const result = calculateROI(inputs, defaultModifiers);
 
-      // Layer 1: 0.00045 * 1.2 (retry) = 0.00054
+      // Layer 1: 0.00045 * 1.2 (retry) = 0.00054 — retries are attributed to Layer 1 (METHODOLOGY C₁)
+      expect(result.layer1CostPerUnit).toBeCloseTo(0.00054, 6);
       // Harness: 0.001 + 0.002 = 0.003
       // Layer 2: (0.00054 + 0.003) * 1 = 0.00354
       expect(result.layer2CostPerUnit).toBeCloseTo(0.00354, 6);
+    });
+
+    it('should use the published cache-read price over the manual discount', () => {
+      const inputs: UseCaseInputs = {
+        ...DEFAULT_INPUTS,
+        monthlyVolume: 10000,
+        primaryModel: {
+          ...basicModel,
+          pricePer1MInputTokens: 1.0,
+          pricePer1MOutputTokens: 5.0,
+          cachedInputPricePer1M: 0.1, // published rate (90% off input)
+        },
+        routingSimplePercent: 100,
+        cacheHitRate: 50,
+        cachedTokenDiscount: 0, // manual discount must be ignored
+        batchProcessing: false,
+        retryRate: 0,
+        overheadMultiplier: 1,
+      };
+
+      const result = calculateROI(inputs, defaultModifiers);
+
+      // Effective input price: 0.1 * 0.5 + 1.0 * 0.5 = 0.55 per 1M
+      // Input: 1000/1M * 0.55 = 0.00055; Output: 500/1M * 5 = 0.0025
+      expect(result.layer1CostPerUnit).toBeCloseTo(0.00305, 6);
+    });
+
+    it('should apply batch prices and halve the cache-read price under batch', () => {
+      const inputs: UseCaseInputs = {
+        ...DEFAULT_INPUTS,
+        monthlyVolume: 10000,
+        primaryModel: {
+          ...basicModel,
+          pricePer1MInputTokens: 1.0,
+          pricePer1MOutputTokens: 5.0,
+          batchInputPricePer1M: 0.5,
+          batchOutputPricePer1M: 2.5,
+          cachedInputPricePer1M: 0.1,
+        },
+        routingSimplePercent: 100,
+        cacheHitRate: 50,
+        cachedTokenDiscount: 0,
+        batchProcessing: true,
+        retryRate: 0,
+        overheadMultiplier: 1,
+      };
+
+      const result = calculateROI(inputs, defaultModifiers);
+
+      // Batch base: 0.5 in / 2.5 out; cache read halved: 0.05
+      // Effective input price: 0.05 * 0.5 + 0.5 * 0.5 = 0.275 per 1M
+      // Input: 1000/1M * 0.275 = 0.000275; Output: 500/1M * 2.5 = 0.00125
+      expect(result.layer1CostPerUnit).toBeCloseTo(0.001525, 6);
+    });
+
+    it('should keep list prices when batch is enabled but the model has no batch rates', () => {
+      const inputs: UseCaseInputs = {
+        ...DEFAULT_INPUTS,
+        monthlyVolume: 10000,
+        primaryModel: { ...basicModel },
+        routingSimplePercent: 100,
+        cacheHitRate: 0,
+        cachedTokenDiscount: 0,
+        batchProcessing: true,
+        retryRate: 0,
+        overheadMultiplier: 1,
+      };
+
+      const result = calculateROI(inputs, defaultModifiers);
+
+      // No published batch rates → list prices: (1000/1M * 0.15) + (500/1M * 0.60) = 0.00045
+      expect(result.layer1CostPerUnit).toBeCloseTo(0.00045, 6);
     });
   });
 
@@ -166,6 +249,11 @@ describe('calculateROI', () => {
       const inputs: UseCaseInputs = {
         ...DEFAULT_INPUTS,
         monthlyVolume: 10000,
+        primaryModel: { ...basicModel },
+        routingSimplePercent: 100,
+        cacheHitRate: 0,
+        cachedTokenDiscount: 0,
+        batchProcessing: false,
         orchestrationCostPerUnit: 0.001,
         retrievalCostPerUnit: 0.002,
         toolApiCostPerUnit: 0.0005,
@@ -188,6 +276,11 @@ describe('calculateROI', () => {
       const inputs: UseCaseInputs = {
         ...DEFAULT_INPUTS,
         monthlyVolume: 10000,
+        primaryModel: { ...basicModel },
+        routingSimplePercent: 100,
+        cacheHitRate: 0,
+        cachedTokenDiscount: 0,
+        batchProcessing: false,
         orchestrationCostPerUnit: 0.001,
         retrievalCostPerUnit: 0.002,
         toolApiCostPerUnit: 0,
