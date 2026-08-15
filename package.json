@@ -1,13 +1,14 @@
 {
   "name": "ai-roi-calculator",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "refresh:models": "node scripts/refresh-model-snapshot.mjs"
   },
   "dependencies": {
     "@vercel/analytics": "^1.6.1",

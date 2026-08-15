@@ -1,0 +1,46 @@
+name: Refresh model snapshot
+
+# The app fetches live prices from the AI Pricing Hub at runtime; this keeps the
+# embedded fallback in utils/modelCatalog.ts (which also seeds the presets) from
+# going stale. The script refuses to write a snapshot that drops a preset model.
+
+on:
+  schedule:
+    - cron: '0 6 * * 1' # Mondays 06:00 UTC, after the hub's own daily refresh
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Refresh snapshot from AI Pricing Hub
+        run: node scripts/refresh-model-snapshot.mjs
+
+      - name: Verify the app still builds with the new snapshot
+        run: |
+          npm test
+          npm run build
+
+      - name: Commit if the snapshot changed
+        run: |
+          if git diff --quiet -- utils/modelCatalog.ts; then
+            echo "Snapshot unchanged — nothing to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add utils/modelCatalog.ts
+          git commit -m "chore: refresh embedded model price snapshot"
+          git push

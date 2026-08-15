@@ -6,6 +6,7 @@ import { DEFAULT_INPUTS, PRESETS } from './constants';
 import { calculateROI } from './utils/calculations';
 import { MoneyInput, NumberInput, PercentInput, SectionHeader } from './components/InputComponents';
 import { CatalogStatus, ModelPicker, useModelCatalog } from './components/ModelPicker';
+import { repriceModels } from './utils/modelCatalog';
 import { HelpGuide } from './components/HelpGuide';
 import { CostValueChart, CostBreakdownChart, ROICurveChart, TornadoChart } from './components/Charts';
 import { ScenarioManager } from './components/ScenarioManager';
@@ -60,6 +61,14 @@ export default function App() {
       console.error('Failed to save scenarios to localStorage:', error);
     }
   }, [scenarios]);
+
+  // Keep the form's model prices in sync with the AI Pricing Hub catalog.
+  // Runs when the catalog resolves on mount and when the user hits refresh.
+  // Custom-priced models are never touched; a scenario loaded from storage keeps its
+  // recorded prices, since loading it does not change the catalog.
+  useEffect(() => {
+    setInputs(prev => repriceModels(prev, catalog));
+  }, [catalog]);
 
   const toggleSection = (key: string) => setExpandedSections(prev => ({...prev, [key]: !prev[key]}));
 
@@ -137,7 +146,8 @@ export default function App() {
       if (nextInputs.valueMethod === ValueMethod.PREMIUM_MONETIZATION) {
         nextInputs.subscribers = nextInputs.monthlyVolume;
       }
-      setInputs(nextInputs);
+      // Presets carry embedded-snapshot prices; lift them to the current catalog
+      setInputs(repriceModels(nextInputs, catalog));
     }
   };
 
@@ -509,7 +519,7 @@ export default function App() {
                 </button>
               ))}
               <button
-                onClick={() => setInputs(DEFAULT_INPUTS)}
+                onClick={() => setInputs(repriceModels(DEFAULT_INPUTS, catalog))}
                 className="px-3 py-1.5 text-xs font-medium text-slate-400 hover:text-[#2C2C2C] hover:bg-slate-100 transition-colors ml-auto rounded-md"
                 title="Reset to defaults"
                 aria-label="Reset calculator to default values"

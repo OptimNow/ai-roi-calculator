@@ -311,13 +311,29 @@ See `METHODOLOGY.md` for complete formulas for all 4 value methods.
 ## Data Privacy & Security
 
 - **No Backend:** All calculations run in browser
-- **Model prices (read-only fetch):** The app fetches the public model-price catalog from `https://aipricinghub.optimnow.io/api/llm-models` (anonymous GET, CORS-open, no user data sent) and caches it in localStorage for 24h. An embedded snapshot in `utils/modelCatalog.ts` is the offline fallback.
+- **Model prices (read-only fetch):** The app fetches the public model-price catalog from `https://optimtoken.optimnow.io/api/llm-models` (anonymous GET, CORS-open, no user data sent) and caches it in localStorage for 24h. An embedded snapshot in `utils/modelCatalog.ts` is the offline fallback. See "Model Price Freshness" below.
 - **LocalStorage:** Scenarios saved locally, never sent to servers
 - **Analytics:** GA4 (`G-188H55KPFM`) + Vercel Analytics. Both track anonymous usage events (page views, mode toggle, preset loads, exports, OptimNow CTA clicks). **No input values, no scenario data, no PII** are ever sent — only event names and the use-case label (which is a preset name like "Customer Support Bot", not user-entered content).
 - **GA4 hostname guard:** GA4 `config` and `event` calls are gated by a regex matching only `optimnow.io` (and subdomains) + `localhost`. Forks deployed elsewhere will load `gtag.js` but never fire any tracking — protects shared OptimNow analytics from pollution.
 - **Export Only:** User manually exports data as JSON if desired
 
 ---
+
+## Model Price Freshness
+
+Prices come from the [AI Pricing Hub](https://aipricinghub.optimnow.io), which refreshes daily. Three layers keep the calculator in sync:
+
+1. **Runtime fetch** (`utils/modelCatalog.ts`): `fetchModelCatalog()` resolves in this order — fresh localStorage cache (< 24h) → live API → stale cache → embedded snapshot. It never rejects; `catalog.source` reports which layer answered, and the UI shows it ("Live prices · AI Pricing Hub · <date>").
+
+   **Domain gotcha:** `aipricinghub.optimnow.io` 308-redirects to `optimtoken.optimnow.io` (configured in Vercel, not in the hub repo). The redirect response carries no `Access-Control-Allow-Origin` header, so a cross-origin fetch aimed at the old domain fails outright — only the final response sets the header. `API_URLS` therefore lists the canonical domain first and the old one as a fallback, in case the domains are swapped back. Human-facing links still use `PRICING_HUB_URL` (the redirect is transparent for navigation).
+
+2. **Auto-repricing** (`repriceModels()`): whenever the catalog resolves, every model in the form carrying a `modelId` is repriced against it — input/output, cache-read and batch prices, plus `pricedAt`. Applied on mount, on manual refresh, on preset load and on reset. Two deliberate exceptions:
+   - **Custom-priced models** (no `modelId`) are never touched — that's how negotiated rates survive.
+   - **Scenarios loaded from storage** keep their recorded prices, because loading one doesn't change the catalog. A scenario is the record of a decision at a point in time. (Hitting refresh afterwards *will* reprice it — that's an explicit user action.)
+
+3. **Snapshot refresh** (`npm run refresh:models`): regenerates the embedded fallback between the `SNAPSHOT-START` / `SNAPSHOT-END` markers. Run weekly by `.github/workflows/refresh-model-snapshot.yml`. The script parses `presetModel()` calls out of `constants.ts` and **aborts if any preset's model has left the catalog** — otherwise `presetModel()` would throw at import and take the app down. Never hand-edit the snapshot block.
+
+When adding a preset, use `presetModel('Provider', 'Model Name', inTokens, outTokens)` so it inherits a real identity and published cache/batch rates.
 
 ## Analytics & Event Tracking
 
