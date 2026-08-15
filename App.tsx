@@ -1225,7 +1225,7 @@ export default function App() {
                   <h3 className="text-sm font-bold font-headline text-slate-800 uppercase">ROI Curve: Cumulative Profit Over Time</h3>
                   <button
                     className="text-slate-300 hover:text-[#2C2C2C] transition-colors"
-                    title="ROI Curve: cumulative profit over the analysis horizon, starting at minus the one-time fixed costs. The vertical chartreuse line marks the break-even estimate — how long it would take to reach break-even volume at the current growth, not the month cumulative profit turns positive."
+                    title="ROI Curve: cumulative profit over the analysis horizon, starting at minus the one-time fixed costs. The vertical chartreuse line marks the month cumulative profit turns positive, at today's volume. No volume growth is assumed; if volume does grow, break-even arrives sooner."
                     aria-label="ROI curve explanation"
                   >
                     <Info size={14} />

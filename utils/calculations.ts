@@ -231,38 +231,32 @@ export const calculateROI = (inputs: UseCaseInputs, modifiers: SensitivityModifi
   // volume = monthlyAmortizedFixedCost / (grossValuePerUnit - layer2CostPerUnit)
 
   let breakEvenVolume: number | undefined = undefined;
-  let breakEvenMonths: number | undefined = undefined;
 
   const unitMargin = grossValuePerUnit - layer2CostPerUnit;
 
   if (unitMargin > 0 && monthlyAmortizedFixedCost > 0) {
     // Calculate the exact volume where net benefit = 0
     breakEvenVolume = Math.ceil(monthlyAmortizedFixedCost / unitMargin);
-
-    // If current volume exceeds break-even, we're already profitable
-    if (effectiveVolume >= breakEvenVolume) {
-      breakEvenMonths = 0; // Already at or above break-even
-    } else {
-      // Calculate months to reach break-even volume (assuming linear growth)
-      const volumeGap = breakEvenVolume - effectiveVolume;
-      // This is a simplified estimate - assumes you can grow volume
-      breakEvenMonths = volumeGap > 0 ? (volumeGap / effectiveVolume) * 12 : 0;
-    }
-  } else if (monthlyAmortizedFixedCost === 0) {
-    // No fixed costs - break-even is immediate if unit margin > 0
-    if (unitMargin > 0) {
-      breakEvenVolume = 0;
-      breakEvenMonths = 0;
-    } else {
-      // Negative or zero margin with no fixed costs - no break-even
-      breakEvenVolume = undefined;
-      breakEvenMonths = undefined;
-    }
-  } else {
-    // Negative or zero unit margin - no break-even possible
-    breakEvenVolume = undefined;
-    breakEvenMonths = undefined;
+  } else if (monthlyAmortizedFixedCost === 0 && unitMargin > 0) {
+    // No fixed costs to cover — profitable from the first unit
+    breakEvenVolume = 0;
   }
+
+  // Months until cumulative cash flow crosses zero, at today's volume. This is
+  // the month the ROI curve crosses the axis, which is what the chart marker
+  // points at.
+  //
+  // It used to extrapolate volume growth instead: (gap / volume) x 12, whose
+  // implied growth rate is volume/12 per month — a doubling every year that
+  // nobody chose and no input expresses. On a stable-volume project that
+  // threshold is never reached, yet a month was still displayed, on an axis
+  // measuring something else entirely.
+  const breakEvenMonths: number | undefined =
+    totalFixedOneTime === 0
+      ? (monthlyCashNetBenefit > 0 ? 0 : undefined)
+      : monthlyCashNetBenefit > 0
+        ? totalFixedOneTime / monthlyCashNetBenefit
+        : undefined; // never recovers at this volume
 
   return {
     effectiveMonthlyVolume: effectiveVolume,
