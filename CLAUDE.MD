@@ -45,7 +45,7 @@ Deployment:   Vercel
 2. **Client-Side State:** Uses React hooks (useState, useMemo, useCallback)
 3. **LocalStorage Persistence:** Scenarios saved in browser storage
 4. **Memoization:** Charts wrapped in React.memo for performance
-5. **TypeScript Strict Mode:** Full type safety throughout
+5. **TypeScript Strict Mode:** `"strict": true` in tsconfig.json, and it passes clean. Nothing in the build enforces it — Vite strips types without checking them — so `npm run typecheck` is the only gate.
 
 ### Brand Identity
 
@@ -204,6 +204,7 @@ npm run preview    # Preview production build
 
 ```bash
 npm test           # Run unit + component tests (95 cases)
+npm run typecheck  # tsc --noEmit under strict. Vite does NOT typecheck, so run this before pushing
 ```
 
 ### Making Changes
@@ -587,6 +588,7 @@ npm run preview                # Preview production build
 
 # Testing
 npm test                       # Run tests (vitest run)
+npm run typecheck              # tsc --noEmit under strict
 
 # Model prices
 npm run refresh:models         # Regenerate the embedded price snapshot
