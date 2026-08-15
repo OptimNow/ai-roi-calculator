@@ -113,7 +113,7 @@ ai-roi-calculator/
 │   └── refresh-model-snapshot.mjs  # Regenerates the embedded price snapshot (weekly CI)
 ├── .github/workflows/          # refresh-model-snapshot.yml
 ├── vite.config.ts              # Vite build configuration (dev server on port 3000)
-├── vitest.config.ts            # Test config — include is utils/ only, see "Testing Philosophy"
+├── vitest.config.ts            # Test config — node by default, jsdom per-file, see "Testing Philosophy"
 ├── tailwind.config.js          # Tailwind v4 configuration
 ├── postcss.config.js           # PostCSS with Tailwind plugin
 ├── tsconfig.json               # TypeScript configuration
@@ -189,7 +189,7 @@ npm run preview    # Preview production build
 ### Testing
 
 ```bash
-npm test           # 73 cases, utils/ only — see "Testing Philosophy" for what is NOT covered
+npm test           # Run unit + component tests (95 cases)
 ```
 
 ### Making Changes
@@ -419,17 +419,28 @@ When adding new tracking: keep events business-meaningful (decision points, conv
 
 1. **Unit Tests:** the pure modules under `utils/`
 2. **Edge Cases:** Zero, negative, NaN, Infinity handling
-3. **Manual Testing:** Use UAT_SCENARIOS.md for acceptance testing
+3. **Component Tests:** Input validation and accessibility, rendered with React Testing Library
+4. **Manual Testing:** Use UAT_SCENARIOS.md for acceptance testing
 
-**What runs:** 73 tests in 4 files, all under `utils/` — `calculations` (33), `deepLink` (18),
-`format` (11), `modelCatalog` (11). They cover the 4 value methods, break-even, the deep-link
-parser, the shared formatters, and snapshot integrity.
+**Test Coverage:** 95 tests across 5 files — `calculations` (33), `deepLink` (18), `format`
+(11), `modelCatalog` (11) under `utils/`, plus `InputComponents` (22) under `components/`:
+- All 4 value methods
+- Break-even calculations
+- Sensitivity analysis
+- Edge cases and error conditions
+- Clamping, blur normalization and label association in `components/InputComponents.tsx`
 
-**What does not run:** `components/InputComponents.test.tsx` (22 tests) is deliberately
-excluded by `vitest.config.ts`, whose `include` is `utils/**/*.test.ts`. That file was written
-against `@testing-library/react` and `jest.fn()`, and neither RTL nor jsdom is installed, so it
-would fail if collected. Treat component behaviour as **untested** until someone installs
-`@testing-library/react` + `jsdom`, switches `jest.fn()` to `vi.fn()`, and widens the include.
+**Two environments, one config.** `vitest.config.ts` runs everything in `node` by default and
+`include`s both `utils/**/*.test.ts` and `components/**/*.test.tsx`. A component test opts into
+a DOM with a `// @vitest-environment jsdom` docblock on its first line — jsdom costs real
+startup time, so the pure calculation tests are deliberately left out of it. Component test
+files also need `import '@testing-library/jest-dom/vitest'` for the `toBeInTheDocument` /
+`toHaveValue` matchers. Use `vi.fn()`, never `jest.fn()` — there is no jest here.
+
+**Input validation is lenient on change, strict on blur.** `NumberInput`, `MoneyInput` and
+`PercentInput` only call `onChange` for a parseable value, and normalize an empty or
+out-of-range field on blur. Assert clearing and negative-value behaviour with
+`fireEvent.blur`, not `fireEvent.change` — clamping mid-keystroke would fight the user.
 
 ---
 
@@ -470,7 +481,7 @@ recurring.
 
 **Current state (August 2026, v0.5.0).** Live model prices from OptimToken with automatic
 repricing, per-token and per-call billing, published cache-read and batch rates, deep links
-from the hub, per-1,000 harness entry, 73 tests, WCAG 2.1 AA.
+from the hub, per-1,000 harness entry, 95 tests, WCAG 2.1 AA.
 
 **Not built.** Self-hosted GPU cost modelling, Monte Carlo confidence intervals, Excel export,
 user accounts, sharing.

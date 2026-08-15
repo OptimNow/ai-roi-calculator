@@ -3,9 +3,9 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     globals: true,
+    // Node by default — the calculation tests are pure and need no DOM.
+    // Component tests opt into jsdom with a `@vitest-environment jsdom` docblock.
     environment: 'node',
-    // Component tests (components/*.test.tsx) need @testing-library/react + jsdom,
-    // which are not installed yet — only the pure calculation tests run for now.
-    include: ['utils/**/*.test.ts'],
+    include: ['utils/**/*.test.ts', 'components/**/*.test.tsx'],
   },
 });
