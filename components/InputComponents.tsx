@@ -19,6 +19,7 @@ const InfoTooltip: React.FC<{ text: string }> = ({ text }) => (
 );
 
 export const NumberInput: React.FC<BaseProps & { step?: number, min?: number, max?: number }> = ({ label, value, onChange, tooltip, disabled, step = 1, min = 0, max }) => {
+  const id = React.useId();
   const [internalValue, setInternalValue] = React.useState<string>(value.toString());
 
   React.useEffect(() => {
@@ -53,10 +54,11 @@ export const NumberInput: React.FC<BaseProps & { step?: number, min?: number, ma
   return (
     <div className="mb-3">
       <div className="flex items-center justify-between mb-1">
-        <label className="text-xs font-semibold font-label text-slate-600 uppercase tracking-wide">{label}</label>
+        <label htmlFor={id} className="text-xs font-semibold font-label text-slate-600 uppercase tracking-wide">{label}</label>
         {tooltip && <InfoTooltip text={tooltip} />}
       </div>
       <input
+        id={id}
         type="number"
         value={internalValue}
         onChange={(e) => handleChange(e.target.value)}
@@ -72,6 +74,7 @@ export const NumberInput: React.FC<BaseProps & { step?: number, min?: number, ma
 };
 
 export const MoneyInput: React.FC<BaseProps & { precision?: number }> = ({ label, value, onChange, tooltip, disabled, precision = 2 }) => {
+  const id = React.useId();
   const [internalValue, setInternalValue] = React.useState<string>(value.toString());
 
   React.useEffect(() => {
@@ -100,7 +103,7 @@ export const MoneyInput: React.FC<BaseProps & { precision?: number }> = ({ label
   return (
     <div className="mb-3">
       <div className="flex justify-between items-center mb-1">
-        <label className="text-xs font-semibold font-label text-slate-600 uppercase tracking-wide">{label}</label>
+        <label htmlFor={id} className="text-xs font-semibold font-label text-slate-600 uppercase tracking-wide">{label}</label>
         {tooltip && <InfoTooltip text={tooltip} />}
       </div>
       <div className="relative">
@@ -108,6 +111,7 @@ export const MoneyInput: React.FC<BaseProps & { precision?: number }> = ({ label
           <span className="text-slate-500 sm:text-sm">$</span>
         </div>
         <input
+          id={id}
           type="number"
           value={internalValue}
           onChange={(e) => handleChange(e.target.value)}
@@ -123,6 +127,7 @@ export const MoneyInput: React.FC<BaseProps & { precision?: number }> = ({ label
 };
 
 export const PercentInput: React.FC<BaseProps> = ({ label, value, onChange, tooltip, disabled }) => {
+  const id = React.useId();
   const [internalValue, setInternalValue] = React.useState<string>(value.toString());
 
   React.useEffect(() => {
@@ -157,11 +162,12 @@ export const PercentInput: React.FC<BaseProps> = ({ label, value, onChange, tool
   return (
     <div className="mb-3">
       <div className="flex justify-between items-center mb-1">
-        <label className="text-xs font-semibold font-label text-slate-600 uppercase tracking-wide">{label}</label>
+        <label htmlFor={id} className="text-xs font-semibold font-label text-slate-600 uppercase tracking-wide">{label}</label>
         {tooltip && <InfoTooltip text={tooltip} />}
       </div>
       <div className="relative">
         <input
+          id={id}
           type="number"
           value={internalValue}
           onChange={(e) => handleChange(e.target.value)}

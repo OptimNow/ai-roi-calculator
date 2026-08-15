@@ -186,7 +186,7 @@ npm run preview    # Preview production build
 ### Testing
 
 ```bash
-npm test           # Run unit tests (73 cases)
+npm test           # Run unit + component tests (95 cases)
 ```
 
 ### Making Changes
@@ -397,14 +397,28 @@ When adding new tracking: keep events business-meaningful (decision points, conv
 
 1. **Unit Tests:** All calculation functions in calculations.ts
 2. **Edge Cases:** Zero, negative, NaN, Infinity handling
-3. **Integration Tests:** Component input validation
+3. **Component Tests:** Input validation and accessibility, rendered with React Testing Library
 4. **Manual Testing:** Use UAT_SCENARIOS.md for acceptance testing
 
-**Test Coverage:** 73 tests covering:
+**Test Coverage:** 95 tests across 5 files — 73 pure calculation/utility tests and 22
+component tests:
 - All 4 value methods
 - Break-even calculations
 - Sensitivity analysis
 - Edge cases and error conditions
+- Clamping, blur normalization and label association in `components/InputComponents.tsx`
+
+**Two environments, one config.** `vitest.config.ts` runs everything in `node` by default and
+`include`s both `utils/**/*.test.ts` and `components/**/*.test.tsx`. A component test opts into
+a DOM with a `// @vitest-environment jsdom` docblock on its first line — jsdom costs real
+startup time, so the pure calculation tests are deliberately left out of it. Component test
+files also need `import '@testing-library/jest-dom/vitest'` for the `toBeInTheDocument` /
+`toHaveValue` matchers. Use `vi.fn()`, never `jest.fn()` — there is no jest here.
+
+**Input validation is lenient on change, strict on blur.** `NumberInput`, `MoneyInput` and
+`PercentInput` only call `onChange` for a parseable value, and normalize an empty or
+out-of-range field on blur. Assert clearing and negative-value behaviour with
+`fireEvent.blur`, not `fireEvent.change` — clamping mid-keystroke would fight the user.
 
 ---
 
@@ -445,7 +459,7 @@ recurring.
 
 **Current state (August 2026, v0.5.0).** Live model prices from OptimToken with automatic
 repricing, per-token and per-call billing, published cache-read and batch rates, deep links
-from the hub, per-1,000 harness entry, 73 tests, WCAG 2.1 AA.
+from the hub, per-1,000 harness entry, 95 tests, WCAG 2.1 AA.
 
 **Not built.** Self-hosted GPU cost modelling, Monte Carlo confidence intervals, Excel export,
 user accounts, sharing.

@@ -854,7 +854,9 @@ The `calculations.ts` module has ~28 test cases covering:
 - Sensitivity multiplier interactions
 
 **Test Suites:** `utils/calculations.test.ts`, plus `utils/modelCatalog.test.ts` (catalog
-resolution, repricing) and `utils/deepLink.test.ts` (hub handover parsing).
+resolution, repricing) and `utils/deepLink.test.ts` (hub handover parsing). Input handling —
+the clamping that keeps these formulas fed valid numbers — is covered separately in
+`components/InputComponents.test.tsx`.
 
 ---
 

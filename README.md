@@ -79,7 +79,7 @@ npm install
 npm run dev        # http://localhost:3000
 npm run build      # production build to dist/
 npm run preview    # serve the production build
-npm test           # 73 tests
+npm test           # 95 tests
 ```
 
 Requires Node.js 20+. No API keys, no backend, no account.
@@ -150,7 +150,8 @@ Tests sit beside the code they cover, as `*.test.ts`.
 
 ## Testing
 
-73 tests run under Vitest, covering the calculation engine and the modules around it:
+95 tests run under Vitest, covering the calculation engine, the modules around it, and the
+shared input components:
 
 ```bash
 npm test
@@ -160,6 +161,10 @@ They cover all 4 value methods, cache-read and batch pricing, per-call billing, 
 blends, retry attribution, break-even and payback, deep-link parsing and validation, catalog
 repricing, and display formatting. Edge cases include zero volume, 0% and 100% realization,
 negative margins and models that have left the catalog.
+
+The component tests render `NumberInput`, `MoneyInput`, `PercentInput` and `SectionHeader`
+with React Testing Library in a jsdom environment, covering min/max clamping, blur
+normalization of empty and negative fields, and label-to-input association.
 
 [UAT_SCENARIOS.md](UAT_SCENARIOS.md) holds 11 manual acceptance scenarios for interface work.
 

@@ -1,11 +1,20 @@
+// @vitest-environment jsdom
 import React from 'react';
+import '@testing-library/jest-dom/vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { NumberInput, MoneyInput, PercentInput, SectionHeader } from './InputComponents';
 
+/**
+ * The inputs are deliberately lenient while you type and strict when you leave:
+ * `onChange` fires only for a parseable value, and blur is what normalises an
+ * empty or out-of-range field. That is why the clearing/negative cases below
+ * assert on blur rather than on change — clamping mid-keystroke would fight the
+ * user (typing "-" or clearing to retype would snap the field back to 0).
+ */
 describe('InputComponents', () => {
   describe('NumberInput', () => {
     it('should render with label', () => {
-      const onChange = jest.fn();
+      const onChange = vi.fn();
       render(<NumberInput label="Test Input" value={100} onChange={onChange} />);
 
       expect(screen.getByText('Test Input')).toBeInTheDocument();
@@ -13,7 +22,7 @@ describe('InputComponents', () => {
     });
 
     it('should call onChange when value changes', () => {
-      const onChange = jest.fn();
+      const onChange = vi.fn();
       render(<NumberInput label="Test Input" value={100} onChange={onChange} />);
 
       const input = screen.getByRole('spinbutton');
@@ -23,7 +32,7 @@ describe('InputComponents', () => {
     });
 
     it('should validate minimum value', () => {
-      const onChange = jest.fn();
+      const onChange = vi.fn();
       render(<NumberInput label="Test Input" value={100} onChange={onChange} min={50} />);
 
       const input = screen.getByRole('spinbutton');
@@ -33,7 +42,7 @@ describe('InputComponents', () => {
     });
 
     it('should validate maximum value', () => {
-      const onChange = jest.fn();
+      const onChange = vi.fn();
       render(<NumberInput label="Test Input" value={100} onChange={onChange} max={200} />);
 
       const input = screen.getByRole('spinbutton');
@@ -43,25 +52,27 @@ describe('InputComponents', () => {
     });
 
     it('should handle NaN values', () => {
-      const onChange = jest.fn();
+      const onChange = vi.fn();
       render(<NumberInput label="Test Input" value={100} onChange={onChange} />);
 
       const input = screen.getByRole('spinbutton');
       fireEvent.change(input, { target: { value: '' } });
+      expect(onChange).not.toHaveBeenCalled(); // Clearing the field mid-edit is allowed
 
-      expect(onChange).toHaveBeenCalledWith(0); // Should default to 0
+      fireEvent.blur(input);
+      expect(onChange).toHaveBeenCalledWith(0); // Blur falls back to min, which defaults to 0
+      expect(input).toHaveValue(0);
     });
 
     it('should render tooltip when provided', () => {
-      const onChange = jest.fn();
+      const onChange = vi.fn();
       render(<NumberInput label="Test Input" value={100} onChange={onChange} tooltip="Help text" />);
 
-      const tooltip = screen.getByTitle('Help text');
-      expect(tooltip).toBeInTheDocument();
+      expect(screen.getByText('Help text')).toBeInTheDocument();
     });
 
     it('should disable input when disabled prop is true', () => {
-      const onChange = jest.fn();
+      const onChange = vi.fn();
       render(<NumberInput label="Test Input" value={100} onChange={onChange} disabled />);
 
       const input = screen.getByRole('spinbutton');
@@ -71,7 +82,7 @@ describe('InputComponents', () => {
 
   describe('MoneyInput', () => {
     it('should render with dollar sign prefix', () => {
-      const onChange = jest.fn();
+      const onChange = vi.fn();
       render(<MoneyInput label="Price" value={99.99} onChange={onChange} />);
 
       expect(screen.getByText('$')).toBeInTheDocument();
@@ -79,29 +90,33 @@ describe('InputComponents', () => {
     });
 
     it('should prevent negative values', () => {
-      const onChange = jest.fn();
+      const onChange = vi.fn();
       render(<MoneyInput label="Price" value={50} onChange={onChange} />);
 
       const input = screen.getByRole('spinbutton');
       fireEvent.change(input, { target: { value: '-10' } });
+      expect(onChange).not.toHaveBeenCalled(); // A negative is never propagated
 
+      fireEvent.blur(input);
       expect(onChange).toHaveBeenCalledWith(0); // Should not allow negative
+      expect(input).toHaveValue(0);
     });
 
     it('should handle precision correctly', () => {
-      const onChange = jest.fn();
-      const { rerender } = render(<MoneyInput label="Price" value={1.2345} onChange={onChange} precision={4} />);
+      const onChange = vi.fn();
+      render(<MoneyInput label="Price" value={1.2345} onChange={onChange} precision={4} />);
 
       const input = screen.getByRole('spinbutton');
       expect(input).toHaveAttribute('step', '0.0001');
     });
 
     it('should handle NaN and default to 0', () => {
-      const onChange = jest.fn();
+      const onChange = vi.fn();
       render(<MoneyInput label="Price" value={50} onChange={onChange} />);
 
       const input = screen.getByRole('spinbutton');
       fireEvent.change(input, { target: { value: '' } });
+      fireEvent.blur(input);
 
       expect(onChange).toHaveBeenCalledWith(0);
     });
@@ -109,7 +124,7 @@ describe('InputComponents', () => {
 
   describe('PercentInput', () => {
     it('should render with percentage sign suffix', () => {
-      const onChange = jest.fn();
+      const onChange = vi.fn();
       render(<PercentInput label="Rate" value={75} onChange={onChange} />);
 
       expect(screen.getByText('%')).toBeInTheDocument();
@@ -117,7 +132,7 @@ describe('InputComponents', () => {
     });
 
     it('should enforce 0-100 range', () => {
-      const onChange = jest.fn();
+      const onChange = vi.fn();
       render(<PercentInput label="Rate" value={50} onChange={onChange} />);
 
       const input = screen.getByRole('spinbutton');
@@ -132,14 +147,14 @@ describe('InputComponents', () => {
     });
 
     it('should handle decimal percentages', () => {
-      const onChange = jest.fn();
+      const onChange = vi.fn();
       render(<PercentInput label="Rate" value={75.5} onChange={onChange} />);
 
       expect(screen.getByRole('spinbutton')).toHaveValue(75.5);
     });
 
     it('should have correct step attribute', () => {
-      const onChange = jest.fn();
+      const onChange = vi.fn();
       render(<PercentInput label="Rate" value={50} onChange={onChange} />);
 
       const input = screen.getByRole('spinbutton');
@@ -155,23 +170,22 @@ describe('InputComponents', () => {
     });
 
     it('should call onToggle when clicked', () => {
-      const onToggle = jest.fn();
+      const onToggle = vi.fn();
       render(<SectionHeader title="Test Section" onToggle={onToggle} isOpen={true} />);
 
-      const header = screen.getByText('Test Section').closest('div');
-      fireEvent.click(header!);
+      fireEvent.click(screen.getByRole('button', { name: /test section/i }));
 
       expect(onToggle).toHaveBeenCalled();
     });
 
     it('should show correct icon when open', () => {
-      render(<SectionHeader title="Test Section" onToggle={jest.fn()} isOpen={true} />);
+      render(<SectionHeader title="Test Section" onToggle={vi.fn()} isOpen={true} />);
 
       expect(screen.getByText('▼')).toBeInTheDocument();
     });
 
     it('should show correct icon when closed', () => {
-      render(<SectionHeader title="Test Section" onToggle={jest.fn()} isOpen={false} />);
+      render(<SectionHeader title="Test Section" onToggle={vi.fn()} isOpen={false} />);
 
       expect(screen.getByText('▶')).toBeInTheDocument();
     });
@@ -186,23 +200,21 @@ describe('InputComponents', () => {
 
   describe('Accessibility', () => {
     it('all inputs should have proper ARIA labels', () => {
-      const onChange = jest.fn();
+      const onChange = vi.fn();
 
       render(<NumberInput label="Test Number" value={100} onChange={onChange} />);
-      const numberInput = screen.getByRole('spinbutton');
-      expect(numberInput).toHaveAccessibleName();
+      expect(screen.getByRole('spinbutton')).toHaveAccessibleName('Test Number');
+      screen.getByLabelText('Test Number');
 
       render(<MoneyInput label="Test Money" value={50} onChange={onChange} />);
-      const moneyInputs = screen.getAllByRole('spinbutton');
-      expect(moneyInputs[moneyInputs.length - 1]).toHaveAccessibleName();
+      expect(screen.getByLabelText('Test Money')).toHaveAccessibleName('Test Money');
 
       render(<PercentInput label="Test Percent" value={75} onChange={onChange} />);
-      const percentInputs = screen.getAllByRole('spinbutton');
-      expect(percentInputs[percentInputs.length - 1]).toHaveAccessibleName();
+      expect(screen.getByLabelText('Test Percent')).toHaveAccessibleName('Test Percent');
     });
 
     it('should support keyboard navigation', () => {
-      const onChange = jest.fn();
+      const onChange = vi.fn();
       render(<NumberInput label="Test Input" value={100} onChange={onChange} step={10} />);
 
       const input = screen.getByRole('spinbutton');
