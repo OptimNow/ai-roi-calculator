@@ -1,8 +1,8 @@
 # CLAUDE.MD - AI Assistant Project Guide
 
-**Last Updated:** April 27, 2026
+**Last Updated:** August 15, 2026
 **Project:** AI ROI Calculator
-**Version:** v1.1
+**Version:** 0.5.0
 **Live Demo:** https://airoicalculator.optimnow.io (custom domain) / https://ai-roi-calculator.vercel.app (Vercel default)
 
 ---
@@ -35,7 +35,7 @@ Build:        Vite
 Styling:      Tailwind CSS (PostCSS config)
 Charts:       Recharts
 Icons:        Lucide React
-Testing:      Vitest + React Testing Library
+Testing:      Vitest
 Deployment:   Vercel
 ```
 
@@ -85,7 +85,7 @@ ai-roi-calculator/
 │   ├── ErrorBoundary.tsx       # Top-level error boundary
 │   ├── HelpGuide.tsx           # Comprehensive modal with step-by-step instructions
 │   ├── InputComponents.tsx     # MoneyInput, NumberInput, PercentInput, SectionHeader
-│   ├── ModelPicker.tsx         # Searchable model dropdown fed by the AI Pricing Hub catalog
+│   ├── ModelPicker.tsx         # Searchable model dropdown fed by the OptimToken catalog
 │   ├── ScenarioComparison.tsx  # Side-by-side comparison with bar charts
 │   └── ScenarioManager.tsx     # Save/load/delete/export/import scenarios
 │                               # NOTE: form sections (value, cost model) and the results
@@ -93,8 +93,10 @@ ai-roi-calculator/
 ├── utils/
 │   ├── calculations.ts         # Core ROI calculation logic
 │   │                           # All formulas for costs, value, break-even, sensitivity
-│   └── modelCatalog.ts         # Model price catalog: live fetch from AI Pricing Hub API,
-│                               # localStorage cache, embedded snapshot fallback, preset helper
+│   ├── modelCatalog.ts         # Model price catalog: live fetch from OptimToken API,
+│   │                           # localStorage cache, embedded snapshot fallback, preset helper
+│   ├── deepLink.ts             # Scenario handover from OptimToken (?useCase=&volume=&model=&batch=)
+│   └── format.ts               # pluralize() + Intl money formatters, SHARED with the MCP server
 ├── types.ts                    # TypeScript interfaces (UseCaseInputs, Scenario, etc.)
 ├── constants.ts                # Presets for common use cases (support, content, etc.)
 ├── index.tsx                   # React app entry point
@@ -106,6 +108,9 @@ ai-roi-calculator/
 │   ├── llms.txt                # LLM-discoverability descriptor
 │   ├── manifest.webmanifest    # PWA manifest
 │   └── images/                 # Logo.png, favicon.jpg
+├── scripts/
+│   └── refresh-model-snapshot.mjs  # Regenerates the embedded price snapshot (weekly CI)
+├── .github/workflows/          # refresh-model-snapshot.yml
 ├── vite.config.ts              # Vite build configuration
 ├── tailwind.config.js          # Tailwind v4 configuration
 ├── postcss.config.js           # PostCSS with Tailwind plugin
@@ -128,14 +133,15 @@ All TypeScript interfaces:
 - `ModelTier`: Primary, secondary, fallback (for advanced multi-model routing)
 
 ### 2. `calculations.ts` - Business Logic
-Core calculation functions (pure functions, fully tested):
-- `calculateROI()`: Main entry point, returns all metrics
-- `calculateModelCost()`: Layer 1 with cache optimization and routing
-- `calculateHarnessCost()`: Layer 2 with retry overhead
-- `calculateValuePerUnit()`: Layer 3 based on selected value method
-- `calculateBreakEvenVolume()`: Volume needed for positive ROI
-- `calculateBreakEvenMonths()`: Months to recoup fixed costs
-- `calculateSensitivityAnalysis()`: ±20% variable impact on ROI
+Exports exactly one pure function, `calculateROI(inputs, modifiers)`. Everything else is
+internal to it: Layer 1 blending with cache and batch pricing, Layer 2 harness sum with the
+overhead multiplier, the four value methods, break-even volume and payback.
+
+Sensitivity is not a separate function either. App.tsx calls `calculateROI` repeatedly with
+different `modifiers` and compares the results.
+
+**This module is shared verbatim with the MCP server** (see "Sister projects"). A change here
+ripples there through its sync script, so it needs a test and a METHODOLOGY update.
 
 ### 3. `App.tsx` - Orchestration
 The main component (1500+ lines):
@@ -149,7 +155,7 @@ The main component (1500+ lines):
 - Responsive header (icons hidden on mobile, compact spacing)
 
 ### 4. `constants.ts` - Presets
-11 predefined use cases aligned with [AI Pricing Hub](https://aipricinghub.optimnow.io/):
+11 predefined use cases aligned with [OptimToken](https://optimtoken.optimnow.io/):
 - Customer Support Bot (Cost Displacement)
 - Knowledge Q&A (Cost Displacement)
 - Meeting Summary (Cost Displacement)
@@ -162,7 +168,7 @@ The main component (1500+ lines):
 - Customer Retention AI (Retention Uplift)
 - AI Premium Features (Premium Monetization)
 
-Each preset includes realistic token counts and model pricing mapped to real providers (GPT-4o mini, Claude Haiku 4.5, Claude Sonnet 4.6). India-based cost defaults for harness/labor fields.
+Every preset is bound to a real catalog model through `presetModel(provider, model, inTokens, outTokens)`, so it carries a `modelId`, a `pricedAt` date and the provider's published cache and batch rates. Current bindings: Claude Haiku 4.5, Claude Sonnet 5, Gemini 3.7 Flash, GPT-5.4, Kimi K2.6, DeepSeek V4 Flash 0423, MiniMax M3. Token profiles and cache hit rates match OptimToken's own use-case profiles. India-based cost defaults for harness and labour fields.
 
 ---
 
@@ -172,7 +178,7 @@ Each preset includes realistic token counts and model pricing mapped to real pro
 
 ```bash
 npm install
-npm run dev        # Start dev server on http://localhost:5173
+npm run dev        # Start dev server on http://localhost:3000
 npm run build      # Production build to dist/
 npm run preview    # Preview production build
 ```
@@ -180,7 +186,7 @@ npm run preview    # Preview production build
 ### Testing
 
 ```bash
-npm test           # Run unit tests (30+ test cases)
+npm test           # Run unit tests (73 cases)
 ```
 
 ### Making Changes
@@ -229,8 +235,8 @@ npm test           # Run unit tests (30+ test cases)
 ### Task: Add a New Value Method
 
 1. **Update types.ts:** Add new value method to ValueMethod type
-2. **Update ValueSection.tsx:** Create new form section with switch case
-3. **Update calculations.ts:** Add new calculateValuePerUnit case
+2. **Update App.tsx:** Add the form branch in the inline value section (there is no ValueSection component)
+3. **Update calculations.ts:** Add a case to the `switch (inputs.valueMethod)` inside `calculateROI` (there is no separate calculateValuePerUnit function)
 4. **Update constants.ts:** Add preset examples using new method
 5. **Update METHODOLOGY.md:** Document formula and theory
 6. **Add tests:** Create test cases in calculations.test.ts
@@ -321,11 +327,11 @@ See `METHODOLOGY.md` for complete formulas for all 4 value methods.
 
 ## Model Price Freshness
 
-Prices come from the [AI Pricing Hub](https://aipricinghub.optimnow.io), which refreshes daily. Three layers keep the calculator in sync:
+Prices come from the [OptimToken](https://optimtoken.optimnow.io), which refreshes daily. Three layers keep the calculator in sync:
 
-1. **Runtime fetch** (`utils/modelCatalog.ts`): `fetchModelCatalog()` resolves in this order — fresh localStorage cache (< 24h) → live API → stale cache → embedded snapshot. It never rejects; `catalog.source` reports which layer answered, and the UI shows it ("Live prices · AI Pricing Hub · <date>").
+1. **Runtime fetch** (`utils/modelCatalog.ts`): `fetchModelCatalog()` resolves in this order — fresh localStorage cache (< 24h) → live API → stale cache → embedded snapshot. It never rejects; `catalog.source` reports which layer answered, and the UI shows it ("Live prices · OptimToken · <date>").
 
-   **Domain gotcha:** `aipricinghub.optimnow.io` 308-redirects to `optimtoken.optimnow.io` (configured in Vercel, not in the hub repo). The redirect response carries no `Access-Control-Allow-Origin` header, so a cross-origin fetch aimed at the old domain fails outright — only the final response sets the header. `API_URLS` therefore lists the canonical domain first and the old one as a fallback, in case the domains are swapped back. Human-facing links still use `PRICING_HUB_URL` (the redirect is transparent for navigation).
+   **Domain gotcha:** the hub was renamed to **OptimToken** at `optimtoken.optimnow.io`. The former `aipricinghub.optimnow.io` 308-redirects there (configured in Vercel, not in the hub repo). That redirect response carries no `Access-Control-Allow-Origin` header, so a cross-origin fetch aimed at the old domain fails outright — only the final response sets the header. `API_URLS` therefore lists the current domain first and the old one as a fallback, in case the two are ever swapped back. Human-facing links use `PRICING_HUB_URL`.
 
 2. **Auto-repricing** (`repriceModels()`): whenever the catalog resolves, every model in the form carrying a `modelId` is repriced against it — input/output, cache-read and batch prices, plus `pricedAt`. Applied on mount, on manual refresh, on preset load and on reset. Two deliberate exceptions:
    - **Custom-priced models** (no `modelId`) are never touched — that's how negotiated rates survive.
@@ -335,7 +341,7 @@ Prices come from the [AI Pricing Hub](https://aipricinghub.optimnow.io), which r
 
 When adding a preset, use `presetModel('Provider', 'Model Name', inTokens, outTokens)` so it inherits a real identity and published cache/batch rates.
 
-## Deep Links from the AI Pricing Hub
+## Deep Links from the OptimToken
 
 The hub hands a scenario over so the calculator opens on the same footing (`utils/deepLink.ts`):
 
@@ -380,7 +386,7 @@ GA4 is wired in `index.html` via `window.trackEvent(eventName, params)`. From Ty
 | `mode_switched` | Simple/Advanced toggle | `{ mode: 'simple' \| 'advanced' }` |
 | `preset_loaded` | Preset dropdown selection | `{ preset_key: string }` |
 | `results_exported` | JSON download or Markdown copy | `{ format: 'json' \| 'markdown', use_case: string }` |
-| `model_selected` | Model picked from the AI Pricing Hub catalog | `{ model_id: string, slot: 'primary' \| 'secondary' }` |
+| `model_selected` | Model picked from the OptimToken catalog | `{ model_id: string, slot: 'primary' \| 'secondary' }` |
 | `deeplink_loaded` | Arrived from the hub with a scenario in the URL | `{ source: 'aipricinghub', use_case: string, model_id: string, volume: number }` |
 
 When adding new tracking: keep events business-meaningful (decision points, conversions, drop-offs), never log raw input values, and stick to the `(window as any).trackEvent?.(...)` pattern — do **not** add a global `window.trackEvent` TS declaration.
@@ -394,7 +400,7 @@ When adding new tracking: keep events business-meaningful (decision points, conv
 3. **Integration Tests:** Component input validation
 4. **Manual Testing:** Use UAT_SCENARIOS.md for acceptance testing
 
-**Test Coverage:** 30+ test cases covering:
+**Test Coverage:** 73 tests covering:
 - All 4 value methods
 - Break-even calculations
 - Sensitivity analysis
@@ -416,24 +422,33 @@ When adding new tracking: keep events business-meaningful (decision points, conv
 
 ---
 
+## Sister projects
+
+This repository does not stand alone. Two other projects depend on it, and one feeds it.
+
+| Project | Relationship |
+|---|---|
+| [OptimToken](https://optimtoken.optimnow.io) (repo: `cloud-sparkle-compare`) | **Feeds this one.** Publishes the model price catalog consumed by `modelCatalog.ts`, and links here with a prefilled scenario. |
+| [ai-roi-calculator-mcp](https://github.com/OptimNow/ai-roi-calculator-mcp) | **Consumes this one.** Copies `calculations.ts`, `types.ts`, `constants.ts`, `modelCatalog.ts` and `format.ts` verbatim through its `scripts/sync-engine.mjs`. |
+
+**What this means when you edit the engine.** Those five files are the contract. Change one
+and the MCP is stale until someone runs `npm run sync:engine` there; its CI checks on every PR
+and weekly, so the drift surfaces on its own. They also compile under a stricter `tsconfig`
+(`verbatimModuleSyntax`, `noUnusedLocals`) and run on Node, so keep type-only imports explicit
+and do not assume browser globals exist.
+
+The two once drifted apart, and the same preset returned a 7-point different ROI depending on
+which tool you asked. The sync script and the golden-scenario suite exist to stop that
+recurring.
+
 ## Roadmap Context
 
-### Current Version: v1.1 (January 2026)
-**Status:** Phase 1 Complete
-- ✅ Core 3-layer ROI calculator
-- ✅ 4 value methods
-- ✅ What-If scenarios with unlimited comparisons
-- ✅ Break-even analysis with ROI curve
-- ✅ Sensitivity analysis with tornado chart
-- ✅ 30+ unit tests
-- ✅ WCAG 2.1 AA accessibility
+**Current state (August 2026, v0.5.0).** Live model prices from OptimToken with automatic
+repricing, per-token and per-call billing, published cache-read and batch rates, deep links
+from the hub, per-1,000 harness entry, 73 tests, WCAG 2.1 AA.
 
-### Next Version: v1.2 (Q2 2026)
-**Focus:** Advanced Projections
-- 🚀 Self-hosted model pricing (GPU cost modeling)
-- 🚀 Confidence intervals (Monte Carlo simulation)
-- 🚀 Export to Excel with formulas
-- 🚀 Preset customization
+**Not built.** Self-hosted GPU cost modelling, Monte Carlo confidence intervals, Excel export,
+user accounts, sharing.
 
 See `ROADMAP.md` for full details.
 
@@ -441,13 +456,13 @@ See `ROADMAP.md` for full details.
 
 ## Known Limitations
 
-1. **API-Only Pricing:** Currently assumes token-based API pricing (OpenAI, Anthropic, etc.). Self-hosted GPU pricing coming in v1.2.
+1. **No self-hosted GPU pricing.** Token-based and flat per-request billing are both supported; amortising your own GPUs is not.
 
 2. **Fixed Analysis Horizon:** No dynamic month selection yet (uses input field).
 
 3. **No User Accounts:** LocalStorage only, no cross-device sync.
 
-4. **Limited Export:** JSON only, Excel export coming in v1.2.
+4. **Limited Export:** JSON and Markdown only, no Excel.
 
 5. **No Collaboration:** Single-user application, no sharing features.
 
