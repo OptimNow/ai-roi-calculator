@@ -196,10 +196,13 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
     trainingTuningCost: 1000,
     changeManagementCost: 500,
     valueMethod: ValueMethod.COST_DISPLACEMENT,
-    baselineHumanCostPerUnit: 10.00,
+    // A few minutes of agent time at a support-team loaded rate. Writing up a call
+    // is a short task, unlike summarising a 45-minute meeting.
+    baselineHumanCostPerUnit: 1.00,
     deflectionRate: 85,
     residualHumanReviewRate: 10,
-    residualReviewCostPerUnit: 2.50,
+    // Skimming a summary costs a quarter of writing one from scratch
+    residualReviewCostPerUnit: 0.25,
     primaryModel: presetModel('Google', 'Gemini 3.7 Flash', 2000, 700),
     cacheHitRate: 10,
     batchProcessing: true // call recordings are summarized async

@@ -173,7 +173,7 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                     <tr className="border-b border-amber-200"><td className="py-1 pr-2">Marketing Content</td><td className="text-right py-1 pr-2">$10.00</td><td className="py-1">Jr. content writer, ~2 hrs/piece @ $5/hr</td></tr>
                     <tr className="border-b border-amber-200"><td className="py-1 pr-2">Coding Task</td><td className="text-right py-1 pr-2">$8.00</td><td className="py-1">Jr. developer, ~1 hr/task @ $8/hr</td></tr>
                     <tr className="border-b border-amber-200"><td className="py-1 pr-2">Invoice Processing</td><td className="text-right py-1 pr-2">$0.40</td><td className="py-1">AP clerk, ~10 invoices/hr @ $4/hr</td></tr>
-                    <tr className="border-b border-amber-200"><td className="py-1 pr-2">Call Summary</td><td className="text-right py-1 pr-2">$10.00</td><td className="py-1">Agent post-call write-up + QA, ~1.5 hrs/call @ $6.50/hr</td></tr>
+                    <tr className="border-b border-amber-200"><td className="py-1 pr-2">Call Summary</td><td className="text-right py-1 pr-2">$1.00</td><td className="py-1">Agent post-call write-up, a few minutes at a loaded support rate</td></tr>
                     <tr><td className="py-1 pr-2">Agent Workflow</td><td className="text-right py-1 pr-2">$30.00</td><td className="py-1">Sr. analyst, ~4 hrs/workflow @ $7.50/hr</td></tr>
                   </tbody>
                 </table>
