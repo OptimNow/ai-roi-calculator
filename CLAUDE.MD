@@ -335,6 +335,27 @@ Prices come from the [AI Pricing Hub](https://aipricinghub.optimnow.io), which r
 
 When adding a preset, use `presetModel('Provider', 'Model Name', inTokens, outTokens)` so it inherits a real identity and published cache/batch rates.
 
+## Deep Links from the AI Pricing Hub
+
+The hub hands a scenario over so the calculator opens on the same footing (`utils/deepLink.ts`):
+
+```
+https://airoicalculator.optimnow.io/?useCase=supportTicket&volume=100000&model=anthropic/claude-haiku-4-5&batch=1
+```
+
+| Param | Meaning | Validation |
+|---|---|---|
+| `useCase` (or `preset`) | Hub use-case key, mapped to a preset key | Unknown key ignored. Two keys diverge: `supportTicket`→`support`, `invoiceProcessing`→`invoice` |
+| `volume` | Monthly volume | Positive number, capped at 1e9; junk ignored |
+| `model` | `modelId` (`provider-slug/model-slug`, same as hub model page URLs) | Must match the slug pattern; unknown model falls back to the preset's, with a notice |
+| `batch` | Async batch processing | `1`/`true`/`0`/`false` |
+
+Everything is optional and independently validated — a malformed value is ignored rather than failing the load. Applied at mount for preset/volume/batch; the model waits for the catalog, since the embedded snapshot only carries the top models and one picked from the hub's full catalog may not exist until the live fetch lands.
+
+Two UI consequences: a dismissible banner confirms what carried over, and the Cost Model section starts expanded when a model was deep-linked (otherwise the handover is invisible — that section is collapsed by default).
+
+**When adding a preset**, check `HUB_USE_CASE_TO_PRESET` in `utils/deepLink.ts` if the hub has a matching use case under a different key.
+
 ## Analytics & Event Tracking
 
 GA4 is wired in `index.html` via `window.trackEvent(eventName, params)`. From TypeScript, always call it with optional chaining to avoid runtime errors and TS complaints:
@@ -352,6 +373,7 @@ GA4 is wired in `index.html` via `window.trackEvent(eventName, params)`. From Ty
 | `preset_loaded` | Preset dropdown selection | `{ preset_key: string }` |
 | `results_exported` | JSON download or Markdown copy | `{ format: 'json' \| 'markdown', use_case: string }` |
 | `model_selected` | Model picked from the AI Pricing Hub catalog | `{ model_id: string, slot: 'primary' \| 'secondary' }` |
+| `deeplink_loaded` | Arrived from the hub with a scenario in the URL | `{ source: 'aipricinghub', use_case: string, model_id: string, volume: number }` |
 
 When adding new tracking: keep events business-meaningful (decision points, conversions, drop-offs), never log raw input values, and stick to the `(window as any).trackEvent?.(...)` pattern — do **not** add a global `window.trackEvent` TS declaration.
 

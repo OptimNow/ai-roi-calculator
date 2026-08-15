@@ -24,6 +24,8 @@ export const useModelCatalog = () => {
     pricedAt: SNAPSHOT_DATE,
   });
   const [loading, setLoading] = useState(false);
+  /** False until the first resolve completes, so callers can avoid acting on the placeholder */
+  const [settled, setSettled] = useState(false);
 
   const refresh = async (force = false) => {
     setLoading(true);
@@ -31,6 +33,7 @@ export const useModelCatalog = () => {
       setCatalog(await fetchModelCatalog(force));
     } finally {
       setLoading(false);
+      setSettled(true);
     }
   };
 
@@ -39,7 +42,7 @@ export const useModelCatalog = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { catalog, loading, refresh };
+  return { catalog, loading, settled, refresh };
 };
 
 const formatPrice = (v: number) => (v >= 1 ? `$${v.toFixed(2)}` : `$${v.toPrecision(2)}`);

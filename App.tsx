@@ -1,12 +1,13 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { Download, Copy, Check, RefreshCw, Settings, HelpCircle, FolderOpen, Info, BookOpen } from 'lucide-react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { Download, Copy, Check, RefreshCw, Settings, HelpCircle, FolderOpen, Info, BookOpen, X } from 'lucide-react';
 
 import { UseCaseInputs, CalculationResults, ValueMethod, SensitivityModifiers, ModelParams, Scenario } from './types';
 import { DEFAULT_INPUTS, PRESETS } from './constants';
 import { calculateROI } from './utils/calculations';
 import { MoneyInput, NumberInput, PercentInput, SectionHeader } from './components/InputComponents';
 import { CatalogStatus, ModelPicker, useModelCatalog } from './components/ModelPicker';
-import { repriceModels } from './utils/modelCatalog';
+import { catalogModelToParams, repriceModels, toModelId, PRICING_HUB_URL } from './utils/modelCatalog';
+import { applyDeepLink, hasDeepLink, parseDeepLink, presetLabel } from './utils/deepLink';
 import { HelpGuide } from './components/HelpGuide';
 import { CostValueChart, CostBreakdownChart, ROICurveChart, TornadoChart } from './components/Charts';
 import { ScenarioManager } from './components/ScenarioManager';
@@ -21,7 +22,14 @@ const formatNumber = (val: number) =>
 const SCENARIOS_STORAGE_KEY = 'ai-roi-calculator-scenarios';
 
 export default function App() {
-  const [inputs, setInputs] = useState<UseCaseInputs>({ ...DEFAULT_INPUTS, ...PRESETS.support } as UseCaseInputs);
+  // Scenario handed over from the AI Pricing Hub, read once per mount
+  const deepLink = useMemo(
+    () => parseDeepLink(typeof window !== 'undefined' ? window.location.search : ''),
+    []
+  );
+  const [inputs, setInputs] = useState<UseCaseInputs>(() =>
+    applyDeepLink({ ...DEFAULT_INPUTS, ...PRESETS.support } as UseCaseInputs, deepLink)
+  );
   const [mode, setMode] = useState<'simple' | 'advanced'>('simple');
   const [showHelp, setShowHelp] = useState<boolean>(false);
   const [showScenarios, setShowScenarios] = useState<boolean>(false);
@@ -36,10 +44,14 @@ export default function App() {
   });
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     valueScope: true,
-    costModel: false,
+    // A deep-linked model lands in the cost section, so open it or the handover is invisible
+    costModel: Boolean(deepLink.modelId),
   });
   const [copied, setCopied] = useState(false);
-  const { catalog, loading: catalogLoading, refresh: refreshCatalog } = useModelCatalog();
+  const { catalog, loading: catalogLoading, settled: catalogSettled, refresh: refreshCatalog } = useModelCatalog();
+  const [deepLinkModelName, setDeepLinkModelName] = useState<string | undefined>(undefined);
+  const [showDeepLinkBanner, setShowDeepLinkBanner] = useState(hasDeepLink(deepLink));
+  const deepLinkModelApplied = useRef(false);
 
   // Load scenarios from localStorage on mount
   useEffect(() => {
@@ -66,9 +78,46 @@ export default function App() {
   // Runs when the catalog resolves on mount and when the user hits refresh.
   // Custom-priced models are never touched; a scenario loaded from storage keeps its
   // recorded prices, since loading it does not change the catalog.
+  //
+  // A deep-linked model is resolved here too: the embedded snapshot only carries the
+  // top models, so one picked from the hub's full catalog may not exist until the
+  // live fetch lands. Retried on each catalog change until it resolves, then left alone.
   useEffect(() => {
-    setInputs(prev => repriceModels(prev, catalog));
-  }, [catalog]);
+    const pendingModel = !deepLinkModelApplied.current && deepLink.modelId
+      ? catalog.models.find(m => toModelId(m) === deepLink.modelId)
+      : undefined;
+
+    if (pendingModel) {
+      deepLinkModelApplied.current = true;
+      setDeepLinkModelName(pendingModel.model);
+    }
+
+    setInputs(prev => {
+      const repriced = repriceModels(prev, catalog);
+      if (!pendingModel) return repriced;
+      return {
+        ...repriced,
+        primaryModel: { ...repriced.primaryModel, ...catalogModelToParams(pendingModel, catalog.pricedAt) },
+      };
+    });
+  }, [catalog, deepLink.modelId]);
+
+  // Funnel measurement: how many people arrive from the hub with a scenario in hand
+  useEffect(() => {
+    if (!hasDeepLink(deepLink)) return;
+    (window as any).trackEvent?.('deeplink_loaded', {
+      source: 'aipricinghub',
+      use_case: deepLink.presetKey ?? 'none',
+      model_id: deepLink.modelId ?? 'none',
+      volume: deepLink.monthlyVolume ?? 0,
+    });
+  }, [deepLink]);
+
+  const deepLinkSummary = [
+    deepLinkModelName,
+    presetLabel(deepLink.presetKey),
+    deepLink.monthlyVolume ? `${formatNumber(deepLink.monthlyVolume)} ${inputs.unitName}s/mo` : undefined,
+  ].filter(Boolean).join(' · ');
 
   const toggleSection = (key: string) => setExpandedSections(prev => ({...prev, [key]: !prev[key]}));
 
@@ -505,6 +554,41 @@ export default function App() {
       <main className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* --- LEFT COLUMN: INPUTS --- */}
         <div className="lg:col-span-5 space-y-6 overflow-y-auto h-full p-6 rounded-lg" style={{ backgroundColor: 'var(--color-secondary)' }}>
+          {/* Handover from the AI Pricing Hub — confirms what carried over */}
+          {showDeepLinkBanner && (
+            <div className="bg-accent bg-opacity-10 border border-accent rounded-lg p-4">
+              <div className="flex items-start">
+                <Info size={18} className="text-[#2C2C2C] mr-2 mt-0.5 flex-shrink-0" aria-hidden="true" />
+                <div className="flex-1">
+                  <h4 className="text-sm font-bold text-slate-800 mb-1">
+                    Scenario loaded from the{' '}
+                    <a href={PRICING_HUB_URL} target="_blank" rel="noopener noreferrer" className="underline">
+                      AI Pricing Hub
+                    </a>
+                  </h4>
+                  {deepLinkSummary && (
+                    <p className="text-xs font-semibold text-slate-700">{deepLinkSummary}</p>
+                  )}
+                  <p className="text-xs text-slate-600">
+                    Costs are pre-filled — add your business value below to get the ROI.
+                  </p>
+                  {deepLink.modelId && !deepLinkModelName && catalogSettled && (
+                    <p className="text-xs text-amber-700 mt-1">
+                      That model isn't in the catalog right now, so the preset's model is used instead.
+                    </p>
+                  )}
+                </div>
+                <button
+                  onClick={() => setShowDeepLinkBanner(false)}
+                  className="text-slate-400 hover:text-slate-700 flex-shrink-0 ml-2"
+                  aria-label="Dismiss AI Pricing Hub handover notice"
+                >
+                  <X size={16} aria-hidden="true" />
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Preset Loader */}
           <div className="bg-white p-4 rounded-lg border border-slate-200">
             <h3 className="text-xs font-bold font-label text-slate-500 uppercase mb-3">Load Example Profile</h3>
