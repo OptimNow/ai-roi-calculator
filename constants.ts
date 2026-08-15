@@ -190,7 +190,9 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
   callSummary: {
     useCaseName: 'Call Summary',
     unitName: 'call',
-    monthlyVolume: 500,
+    // A contact centre that justifies telephony/CRM integration handles thousands
+    // of calls a month; at 500 the setup cost alone was $0.75 of a $0.76 unit cost.
+    monthlyVolume: 10000,
     successRate: 95,
     integrationCost: 3000,
     trainingTuningCost: 1000,
