@@ -49,7 +49,7 @@ Deployment:   Vercel
 
 ### Brand Identity
 
-The full OptimNow brand identity is defined in `Skills/optimow_branding_skill/SKILL.md` (source of truth).
+The full OptimNow brand identity is the `optimnow-brand` skill (source of truth), which lives in its own repository, `optimow_branding_skill`. It is **not** vendored into this one, so invoke the skill instead of looking for a local path.
 
 **Colors:**
 - **Charcoal (#2C2C2C):** Dark sections, headers, all text
@@ -69,8 +69,9 @@ The full OptimNow brand identity is defined in `Skills/optimow_branding_skill/SK
 - Flat, minimal, system-diagram inspired
 - Clean geometry: circles, lines, bars
 
-**Logo assets:** `Skills/optimow_branding_skill/Ressources/Logos/`
-- **Accessibility:** WCAG 2.1 AA compliant (ARIA labels, keyboard navigation)
+**Logo assets:** the ones this app actually ships are in `public/images/` (Logo.png, favicon.jpg). The full set lives in the brand skill's `Ressources/Logos/`.
+
+**Accessibility:** WCAG 2.1 AA compliant (ARIA labels, keyboard navigation)
 
 ---
 
@@ -78,7 +79,7 @@ The full OptimNow brand identity is defined in `Skills/optimow_branding_skill/SK
 
 ```
 ai-roi-calculator/
-├── App.tsx                     # Main application component (55KB, 1500+ lines)
+├── App.tsx                     # Main application component (~1,400 lines)
 │                               # Contains all state management and orchestration
 ├── components/
 │   ├── Charts.tsx              # Memoized ROICurveChart & TornadoChart
@@ -111,7 +112,8 @@ ai-roi-calculator/
 ├── scripts/
 │   └── refresh-model-snapshot.mjs  # Regenerates the embedded price snapshot (weekly CI)
 ├── .github/workflows/          # refresh-model-snapshot.yml
-├── vite.config.ts              # Vite build configuration
+├── vite.config.ts              # Vite build configuration (dev server on port 3000)
+├── vitest.config.ts            # Test config — node by default, jsdom per-file, see "Testing Philosophy"
 ├── tailwind.config.js          # Tailwind v4 configuration
 ├── postcss.config.js           # PostCSS with Tailwind plugin
 ├── tsconfig.json               # TypeScript configuration
@@ -130,7 +132,8 @@ All TypeScript interfaces:
 - `UseCaseInputs`: The main input state (general, fixed, infra, harness, value)
 - `Scenario`: Saved calculation snapshot (name, inputs, metrics, timestamp, color)
 - `ValueMethod`: Four options (costDisplacement, revenueUplift, retentionUplift, premiumMonetization)
-- `ModelTier`: Primary, secondary, fallback (for advanced multi-model routing)
+- `ModelParams`: One model's identity and prices (`modelId`, input/output, cache-read, batch, `pricedAt`, or `useCallPricing` + `costPerCall`)
+- Routing is two slots, `primaryModel` and `secondaryModel`, blended by `routingSimplePercent`. There is no `ModelTier` type and no third fallback slot.
 
 ### 2. `calculations.ts` - Business Logic
 Exports exactly one pure function, `calculateROI(inputs, modifiers)`. Everything else is
@@ -144,7 +147,7 @@ different `modifiers` and compares the results.
 ripples there through its sync script, so it needs a test and a METHODOLOGY update.
 
 ### 3. `App.tsx` - Orchestration
-The main component (1500+ lines):
+The main component (~1,400 lines):
 - State management for all inputs
 - Preset loading logic
 - Scenario CRUD operations with localStorage
@@ -292,21 +295,40 @@ roi = ((totalValue - totalCost) / totalCost) * 100
 
 ### Break-even Volume
 ```typescript
-breakEvenVolume = monthlyAmortizedFixedCost / (grossValuePerUnit - layer2CostPerUnit)
+breakEvenVolume = ceil(monthlyAmortizedFixedCost / (grossValuePerUnit - layer2CostPerUnit))
 ```
+
+`layer2CostPerUnit` is the full variable cost per unit, Layer 1 included (see below), so the
+denominator is the real unit margin. Undefined when that margin is zero or negative: no
+volume ever covers the fixed costs. 0 when there are no fixed costs to cover.
 
 ### Layer 1 Cost (Infrastructure)
+Two model slots, blended by `routingSimplePercent`. There is no third "fallback" tier.
+Cache applies to input tokens only, and a published cache-read price beats the manual
+discount. **Retries are billed here**, because a retried call is charged by the provider.
+
 ```typescript
-modelCost = (primaryCost * primaryPct + secondaryCost * secondaryPct + fallbackCost * fallbackPct) * volume
-cachedCost = modelCost * cacheHitRate * cacheDiscount
-finalCost = modelCost - cachedCost
+// per slot, token-priced models
+cacheReadPrice   = cachedInputPricePer1M ?? inputPrice * (1 - cachedTokenDiscount / 100)
+cacheReadPrice   = useBatch ? cacheReadPrice * 0.5 : cacheReadPrice   // batch halves it
+effectiveInput   = cacheReadPrice * hitRate + inputPrice * (1 - hitRate)
+
+layer1CostPerUnit = (blendedInput + blendedOutput + blendedCall) * (1 + retryRate)
 ```
 
+`retryRate` is a fraction (0.05, not 5). Call-priced models carry no token breakdown, so
+cache and batch do not touch them; retries still do.
+
 ### Layer 2 Cost (Harness)
+**Layer 2 is cumulative: it contains Layer 1.** The overhead multiplier applies to the sum,
+not to the harness alone. The 7 harness fields are the ones in `types.ts`.
+
 ```typescript
-harnessBaseCost = orchestrationCost + retrievalCost + toolAPICost + loggingCost + monitoringCost + safetyCost + egressCost + storageCost
-retryMultiplier = 1 + (retryRate / 100)
-harnessCost = harnessBaseCost * retryMultiplier * overheadMultiplier * volume
+harnessSum = orchestrationCostPerUnit + retrievalCostPerUnit + toolApiCostPerUnit
+           + loggingMonitoringCostPerUnit + safetyGuardrailsCostPerUnit
+           + networkEgressCostPerUnit + storageCostPerUnit
+
+layer2CostPerUnit = (layer1CostPerUnit + harnessSum) * overheadMultiplier
 ```
 
 ### Layer 3 Value (depends on method)
@@ -378,7 +400,7 @@ GA4 is wired in `index.html` via `window.trackEvent(eventName, params)`. From Ty
 (window as any).trackEvent?.('event_name', { key: 'value' });
 ```
 
-**Currently tracked events** (App.tsx):
+**Currently tracked events** (App.tsx, except `model_selected` which fires from `components/ModelPicker.tsx`):
 
 | Event | Trigger | Params |
 |---|---|---|
@@ -395,13 +417,13 @@ When adding new tracking: keep events business-meaningful (decision points, conv
 
 ## Testing Philosophy
 
-1. **Unit Tests:** All calculation functions in calculations.ts
+1. **Unit Tests:** the pure modules under `utils/`
 2. **Edge Cases:** Zero, negative, NaN, Infinity handling
 3. **Component Tests:** Input validation and accessibility, rendered with React Testing Library
 4. **Manual Testing:** Use UAT_SCENARIOS.md for acceptance testing
 
-**Test Coverage:** 95 tests across 5 files — 73 pure calculation/utility tests and 22
-component tests:
+**Test Coverage:** 95 tests across 5 files — `calculations` (33), `deepLink` (18), `format`
+(11), `modelCatalog` (11) under `utils/`, plus `InputComponents` (22) under `components/`:
 - All 4 value methods
 - Break-even calculations
 - Sensitivity analysis
@@ -550,8 +572,10 @@ npm run build                  # Production build
 npm run preview                # Preview production build
 
 # Testing
-npm test                       # Run tests
-npm run test:coverage          # Run tests with coverage
+npm test                       # Run tests (vitest run)
+
+# Model prices
+npm run refresh:models         # Regenerate the embedded price snapshot
 
 # Git workflow
 git status                     # Check status
@@ -592,7 +616,7 @@ git push origin main           # Auto-deploys to production
 ## Final Notes for AI Assistants
 
 ### Context Window Management
-This is a large codebase (App.tsx alone is 1500+ lines). When working on specific features:
+This is a large codebase (App.tsx alone is ~1,400 lines). When working on specific features:
 1. Read only the files you need
 2. Use types.ts as the single source of truth for data structures
 3. Refer to METHODOLOGY.md for formula verification
@@ -605,9 +629,8 @@ This is a large codebase (App.tsx alone is 1500+ lines). When working on specifi
 - Propose changes before implementing (especially breaking changes)
 
 ### Version Control Awareness
-- Current branch is `main`
-- Repository is clean (no uncommitted changes)
-- Recent commits focus on Phase 1 completion
+- `main` is the default branch and auto-deploys to Vercel, so work on a branch and open a PR
+- Sessions often run in a git worktree under `.claude/worktrees/`, which can sit behind `main`. Check before assuming the file you are reading is current.
 - See git log for commit message style
 
 ---
