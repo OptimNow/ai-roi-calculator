@@ -1,4 +1,5 @@
-import { UseCaseInputs, ValueMethod } from '../types';
+import type { UseCaseInputs } from '../types';
+import { ValueMethod } from '../types';
 import { DEFAULT_INPUTS, PRESETS } from '../constants';
 
 /**

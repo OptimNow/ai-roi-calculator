@@ -1,4 +1,8 @@
-import { UseCaseInputs, CalculationResults, SensitivityModifiers, ValueMethod, ModelParams } from '../types';
+// Type-only imports are explicit so this module stays consumable under
+// verbatimModuleSyntax — it is shared verbatim with the MCP server, which
+// compiles with stricter settings than the app's own build.
+import type { UseCaseInputs, CalculationResults, SensitivityModifiers, ModelParams } from '../types';
+import { ValueMethod } from '../types';
 
 /**
  * Calculates comprehensive ROI metrics for an AI project using a 3-layer framework.
@@ -55,8 +59,6 @@ export const calculateROI = (inputs: UseCaseInputs, modifiers: SensitivityModifi
     routingSimplePercent,
     cacheHitRate,
     cachedTokenDiscount,
-    retryRate,
-    overheadMultiplier,
     amortizationMonths,
     integrationCost,
     trainingTuningCost,

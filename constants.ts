@@ -1,4 +1,5 @@
-import { UseCaseInputs, ValueMethod } from './types';
+import type { UseCaseInputs } from './types';
+import { ValueMethod } from './types';
 import { presetModel } from './utils/modelCatalog';
 
 // Preset model params come from the embedded AI Pricing Hub snapshot (utils/modelCatalog.ts),
