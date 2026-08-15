@@ -88,7 +88,7 @@ The 3-layer architecture prevents common pitfalls in AI cost estimation:
 ### Where the Prices Come From
 
 Model prices are not typed in by default: they are selected from the
-[AI Pricing Hub](https://aipricinghub.optimnow.io) catalog through the model picker, which
+[OptimToken](https://optimtoken.optimnow.io) catalog through the model picker, which
 resolves in this order and never fails — fresh browser cache (< 24h) → live hub API →
 stale cache → the catalog snapshot embedded in the app. The UI states which layer answered
 and the date the prices were published.
@@ -147,7 +147,7 @@ C₁_base = Pc
 **Where:**
 - `Pc` = Price per API call ($)
 
-**How to select it:** in the Infrastructure (Layer 1) section, choose "Custom pricing" for the model, then switch the billing basis to **per call**. It is offered only on custom-priced models because the AI Pricing Hub catalog is entirely token-priced.
+**How to select it:** in the Infrastructure (Layer 1) section, choose "Custom pricing" for the model, then switch the billing basis to **per call**. It is offered only on custom-priced models because the OptimToken catalog is entirely token-priced.
 
 **Use Case:** services billed per request rather than per token, in three families:
 
@@ -183,7 +183,7 @@ C₁_blended = (C₁_primary × Rp) + (C₁_secondary × Rs)
 
 When the workload tolerates delayed responses (document processing, summaries, scoring),
 most providers offer a batch API at roughly -50%. When batch processing is enabled and the
-selected model has published batch rates (sourced from the AI Pricing Hub), those rates
+selected model has published batch rates (sourced from the OptimToken), those rates
 replace the list prices:
 
 ```
@@ -197,7 +197,7 @@ Models without published batch rates keep list prices even when batch is enabled
 
 ### Cache Optimization
 
-**Formula (aligned with the AI Pricing Hub's optimized cost):**
+**Formula (aligned with the OptimToken's optimized cost):**
 ```
 P_cache_read = published cache-read price     (halved again under batch)
              | Pi_base × (1 - Dr)             (manual fallback when no published rate)
@@ -214,7 +214,7 @@ C₁_cached    = (Ti / 1M) × Pi_effective + (To / 1M) × Po_base
 **Rationale:**
 - **Input tokens** can be cached (prompt templates, system instructions)
 - **Output tokens** cannot be cached (unique responses)
-- When a model is picked from the AI Pricing Hub catalog, its published cache-read price is used; providers apply the batch discount to cache reads too, hence the halving under batch
+- When a model is picked from the OptimToken catalog, its published cache-read price is used; providers apply the batch discount to cache reads too, hence the halving under batch
 
 ---
 
@@ -812,7 +812,7 @@ If "Costs" has a smaller impact range (15%):
 
 1. **Linear Scaling:** Costs and value scale linearly with volume (no economies/diseconomies of scale)
 2. **Constant Realization Rate:** AI quality remains stable over time (no model drift)
-3. **Static Pricing:** API pricing doesn't change during the analysis period. Model prices are sourced live from the [AI Pricing Hub](https://aipricinghub.optimnow.io) catalog (refreshed daily); the price date is recorded with each selection (`pricedAt`), catalog-backed models are repriced automatically, and hand-entered prices are left alone (see "Where the Prices Come From").
+3. **Static Pricing:** API pricing doesn't change during the analysis period. Model prices are sourced live from the [OptimToken](https://optimtoken.optimnow.io) catalog (refreshed daily); the price date is recorded with each selection (`pricedAt`), catalog-backed models are repriced automatically, and hand-entered prices are left alone (see "Where the Prices Come From").
 4. **Independent Variables:** Sensitivity multipliers don't interact (e.g., higher volume doesn't reduce unit costs)
 5. **Immediate Value Realization:** Benefits accrue immediately when AI succeeds (no lag)
 6. **API-Based Deployment:** Assumes managed-API pricing — pay-per-token, or a flat per-call rate. Self-hosted GPU economics (hardware amortization, utilization, electricity) are not modelled.
@@ -867,7 +867,7 @@ Our methodology aligns with standard practices:
 | ROI Formula | `(Gain - Cost) / Cost × 100` | ✓ Matches |
 | Payback Period | `Investment / Annual Cash Flow` | ✓ Matches (monthly) |
 | TCO Components | Capex + Opex + Overhead | ✓ Fixed + Variable + Overhead |
-| Cache Discount | Provider-published cache-read prices (typically 75-90% off input) | ✓ Taken per model from the AI Pricing Hub; manual discount only as fallback |
+| Cache Discount | Provider-published cache-read prices (typically 75-90% off input) | ✓ Taken per model from the OptimToken; manual discount only as fallback |
 | Batch Discount | Provider batch APIs, typically -50% | ✓ Applied per model where published |
 
 ---
@@ -904,7 +904,7 @@ Our methodology aligns with standard practices:
 ## Changelog
 
 ### v1.3 (August 2026)
-- Documented model prices sourced from the AI Pricing Hub catalog, model identity, auto-repricing rules and hub deep links
+- Documented model prices sourced from the OptimToken catalog, model identity, auto-repricing rules and hub deep links
 - Documented per-call billing as a selectable basis, and published cache-read / batch rates taking precedence over the manual cache discount
 - Stated explicitly that retries are a Layer 1 cost, that ROI is a monthly ratio, and that the analysis horizon only drives the ROI curve chart
 - Corrected Break-even Months: it is a volume-growth estimate feeding the chart marker, not a second payback formula
@@ -950,7 +950,7 @@ the model and shift the figures.
   - Amortization: 12 months
 
 - **Layer 1 (Infrastructure):**
-  - Model: Claude Haiku 4.5 (Anthropic, via AI Pricing Hub)
+  - Model: Claude Haiku 4.5 (Anthropic, via OptimToken)
   - Input tokens: 1,500/ticket
   - Output tokens: 500/ticket
   - Input price: $1.00/1M tokens

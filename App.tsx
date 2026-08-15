@@ -23,7 +23,7 @@ const formatNumber = (val: number) =>
 const SCENARIOS_STORAGE_KEY = 'ai-roi-calculator-scenarios';
 
 export default function App() {
-  // Scenario handed over from the AI Pricing Hub, read once per mount
+  // Scenario handed over from the OptimToken, read once per mount
   const deepLink = useMemo(
     () => parseDeepLink(typeof window !== 'undefined' ? window.location.search : ''),
     []
@@ -75,7 +75,7 @@ export default function App() {
     }
   }, [scenarios]);
 
-  // Keep the form's model prices in sync with the AI Pricing Hub catalog.
+  // Keep the form's model prices in sync with the OptimToken catalog.
   // Runs when the catalog resolves on mount and when the user hits refresh.
   // Custom-priced models are never touched; a scenario loaded from storage keeps its
   // recorded prices, since loading it does not change the catalog.
@@ -319,7 +319,7 @@ export default function App() {
 ## Inputs
 - Volume: ${formatNumber(inputs.monthlyVolume)} ${pluralize(inputs.unitName)}/mo
 - Realization Rate: ${inputs.successRate}%
-- Primary Model: ${inputs.primaryModel.modelName ? `${inputs.primaryModel.modelName} (${inputs.primaryModel.provider}, prices via AI Pricing Hub)` : 'Custom pricing'}
+- Primary Model: ${inputs.primaryModel.modelName ? `${inputs.primaryModel.modelName} (${inputs.primaryModel.provider}, prices via OptimToken)` : 'Custom pricing'}
 - Model: Simple/Complex split ${inputs.routingSimplePercent}% / ${100 - inputs.routingSimplePercent}%
     `.trim();
     try {
@@ -636,7 +636,7 @@ export default function App() {
       <main className="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* --- LEFT COLUMN: INPUTS --- */}
         <div className="lg:col-span-5 space-y-6 overflow-y-auto h-full p-6 rounded-lg" style={{ backgroundColor: 'var(--color-secondary)' }}>
-          {/* Handover from the AI Pricing Hub — confirms what carried over */}
+          {/* Handover from the OptimToken — confirms what carried over */}
           {showDeepLinkBanner && (
             <div className="bg-accent bg-opacity-10 border border-accent rounded-lg p-4">
               <div className="flex items-start">
@@ -645,7 +645,7 @@ export default function App() {
                   <h4 className="text-sm font-bold text-slate-800 mb-1">
                     Scenario loaded from the{' '}
                     <a href={PRICING_HUB_URL} target="_blank" rel="noopener noreferrer" className="underline">
-                      AI Pricing Hub
+                      OptimToken
                     </a>
                   </h4>
                   {deepLinkSummary && (
@@ -663,7 +663,7 @@ export default function App() {
                 <button
                   onClick={() => setShowDeepLinkBanner(false)}
                   className="text-slate-400 hover:text-slate-700 flex-shrink-0 ml-2"
-                  aria-label="Dismiss AI Pricing Hub handover notice"
+                  aria-label="Dismiss OptimToken handover notice"
                 >
                   <X size={16} aria-hidden="true" />
                 </button>

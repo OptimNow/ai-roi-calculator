@@ -16,7 +16,7 @@ import {
 
 /**
  * Shared model catalog state: starts on the embedded snapshot, upgrades to
- * localStorage cache / live AI Pricing Hub data as soon as the fetch resolves.
+ * localStorage cache / live OptimToken data as soon as the fetch resolves.
  */
 export const useModelCatalog = () => {
   const [catalog, setCatalog] = useState<ModelCatalog>({
@@ -73,7 +73,7 @@ export const CatalogStatus: React.FC<CatalogStatusProps> = ({ catalog, loading, 
         rel="noopener noreferrer"
         className="hover:underline text-blue-500"
       >
-        AI Pricing Hub
+        OptimToken
       </a>
       {' · '}{formatPricedAt(catalog.pricedAt)}
     </span>
@@ -81,7 +81,7 @@ export const CatalogStatus: React.FC<CatalogStatusProps> = ({ catalog, loading, 
       onClick={onRefresh}
       disabled={loading}
       className="text-slate-400 hover:text-slate-600 disabled:opacity-50"
-      title="Refresh prices from AI Pricing Hub"
+      title="Refresh prices from OptimToken"
       aria-label="Refresh model prices"
     >
       <RefreshCw size={11} className={loading ? 'animate-spin' : ''} aria-hidden="true" />
@@ -98,7 +98,7 @@ interface ModelPickerProps {
 }
 
 /**
- * Searchable model selector fed by the AI Pricing Hub catalog. Selecting a model
+ * Searchable model selector fed by the OptimToken catalog. Selecting a model
  * fills the price fields (incl. published cache-read and batch rates) in one click;
  * "Custom pricing" keeps everything editable by hand.
  */
@@ -231,7 +231,7 @@ export const ModelPicker: React.FC<ModelPickerProps> = ({ slot, value, catalog, 
             )}
           </ul>
           <div className="px-3 py-1.5 border-t border-slate-100 text-[10px] text-slate-400">
-            $ / 1M input · output tokens — prices from AI Pricing Hub
+            $ / 1M input · output tokens — prices from OptimToken
           </div>
         </div>
       )}
@@ -257,7 +257,7 @@ interface ModelCostInputsProps {
 /**
  * One model slot: picker, billing basis, and the cost fields that basis implies.
  *
- * Billing basis is only offered on custom-priced models, because the AI Pricing Hub
+ * Billing basis is only offered on custom-priced models, because the OptimToken
  * catalog is entirely token-priced — a catalog model always has a $/1M rate. Per-call
  * billing is for flat-rate contracts and for services with no meaningful token count
  * (per page, per image, per minute of audio).

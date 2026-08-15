@@ -2,7 +2,7 @@ import type { UseCaseInputs } from './types';
 import { ValueMethod } from './types';
 import { presetModel } from './utils/modelCatalog';
 
-// Preset model params come from the embedded AI Pricing Hub snapshot (utils/modelCatalog.ts),
+// Preset model params come from the embedded OptimToken snapshot (utils/modelCatalog.ts),
 // so every preset carries a real model identity (modelId, provider, pricedAt) and its
 // published cache-read / batch prices. Token profiles (in/out) and cache hit rates are
 // aligned with the hub's business use-case profiles (USE_CASE_PROFILES).

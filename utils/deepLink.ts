@@ -3,7 +3,7 @@ import { ValueMethod } from '../types';
 import { DEFAULT_INPUTS, PRESETS } from '../constants';
 
 /**
- * Deep links from the AI Pricing Hub (https://aipricinghub.optimnow.io).
+ * Deep links from the OptimToken (https://optimtoken.optimnow.io).
  *
  * The hub lets people compare per-request model costs for a business scenario;
  * this carries that scenario over so the calculator opens on the same footing:

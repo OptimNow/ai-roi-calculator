@@ -1,7 +1,7 @@
 import type { ModelParams } from '../types';
 
 /**
- * Model pricing catalog sourced from the AI Pricing Hub (https://aipricinghub.optimnow.io).
+ * Model pricing catalog sourced from the OptimToken (https://optimtoken.optimnow.io).
  *
  * The catalog is fetched live from the hub's public JSON endpoint (CORS-open,
  * CDN-cached 24h) and cached in localStorage. When the fetch fails (offline,
@@ -30,18 +30,18 @@ export interface ModelCatalog {
   pricedAt: string;
 }
 
-/** Human-facing hub link (this domain 308-redirects to the canonical one below). */
-export const PRICING_HUB_URL = 'https://aipricinghub.optimnow.io';
+/** Human-facing hub link. */
+export const PRICING_HUB_URL = 'https://optimtoken.optimnow.io';
 
 /**
- * API endpoints, tried in order. The canonical domain comes first: a cross-origin
+ * API endpoints, tried in order. The current domain comes first: a cross-origin
  * fetch fails on a redirect that carries no Access-Control-Allow-Origin header,
- * and only the final response sets it. The second entry keeps this working if the
- * domains are ever swapped back.
+ * and only the final response sets it. The former domain, which 308-redirects
+ * here, is kept as a fallback in case the two are ever swapped back.
  */
 const API_URLS = [
-  'https://optimtoken.optimnow.io/api/llm-models',
   `${PRICING_HUB_URL}/api/llm-models`,
+  'https://aipricinghub.optimnow.io/api/llm-models',
 ];
 const STORAGE_KEY = 'ai-roi-model-catalog-v1';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // matches the hub's CDN cache
