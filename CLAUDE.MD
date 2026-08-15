@@ -173,6 +173,20 @@ The main component (~1,400 lines):
 
 Every preset is bound to a real catalog model through `presetModel(provider, model, inTokens, outTokens)`, so it carries a `modelId`, a `pricedAt` date and the provider's published cache and batch rates. Current bindings: Claude Haiku 4.5, Claude Sonnet 5, Gemini 3.7 Flash, GPT-5.4, Kimi K2.6, DeepSeek V4 Flash 0423, MiniMax M3. Token profiles and cache hit rates match OptimToken's own use-case profiles. India-based cost defaults for harness and labour fields.
 
+**Changing a preset value is not a local edit.** `constants.ts` is synced to the MCP server
+like `calculations.ts` is, and METHODOLOGY.md ends with a worked end-to-end example built on
+the `support` preset's actual numbers. So a preset change means three things, not one:
+
+1. the calculator itself,
+2. METHODOLOGY.md's "Appendix: Worked Example" if `support` moved — inputs **and** every
+   figure derived from them, since the example carries the arithmetic through to ROI, payback
+   and break-even volume,
+3. the MCP's golden scenarios, via `npm run sync:engine` and `generate-goldens.mjs` there.
+
+Check the blast radius before merging: in the `support` scenario the variable costs are small
+enough that fixed-cost amortization dominates, so a change of a few thousand dollars in
+one-time costs can halve the headline ROI.
+
 ---
 
 ## Development Workflow
@@ -607,7 +621,7 @@ git push origin main           # Auto-deploys to production
 - **Vite:** https://vitejs.dev/guide/
 
 ### Project Links
-- **Live Demo:** https://ai-roi-calculator.vercel.app
+- **Live Demo:** https://airoicalculator.optimnow.io (https://ai-roi-calculator.vercel.app is the Vercel default, kept working)
 - **Developer:** OptimNow (https://www.optimnow.io)
 - **Repository:** GitHub (see package.json for URL)
 
