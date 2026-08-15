@@ -532,6 +532,69 @@ describe('calculateROI', () => {
     });
   });
 
+  describe('Break-even Months', () => {
+    const base: UseCaseInputs = {
+      ...DEFAULT_INPUTS,
+      monthlyVolume: 10000,
+      successRate: 100,
+      valueMethod: ValueMethod.COST_DISPLACEMENT,
+      baselineHumanCostPerUnit: 1,
+      deflectionRate: 100,
+      residualHumanReviewRate: 0,
+      residualReviewCostPerUnit: 0,
+      integrationCost: 10000,
+      trainingTuningCost: 0,
+      changeManagementCost: 0,
+    };
+
+    it('should mark the month cumulative cash crosses zero, at a stable volume', () => {
+      const result = calculateROI(base, defaultModifiers);
+
+      // Fixed costs / monthly cash benefit — the same crossing the ROI curve draws
+      expect(result.breakEvenMonths).toBeCloseTo(10000 / result.monthlyCashNetBenefit, 6);
+    });
+
+    it('should agree with the payback KPI, which is the same quantity', () => {
+      const result = calculateROI(base, defaultModifiers);
+
+      expect(result.breakEvenMonths!.toFixed(1)).toBe(result.paybackMonths);
+    });
+
+    it('should not assume volume growth', () => {
+      // Below break-even volume the old formula extrapolated a doubling every
+      // year and returned a month anyway. Cash never turns positive here, so
+      // there is no crossing to mark.
+      const belowBreakEven: UseCaseInputs = {
+        ...base,
+        monthlyVolume: 100,
+        baselineHumanCostPerUnit: 0.001,
+        deflectionRate: 10,
+      };
+      const result = calculateROI(belowBreakEven, defaultModifiers);
+
+      expect(result.monthlyCashNetBenefit).toBeLessThanOrEqual(0);
+      expect(result.breakEvenMonths).toBeUndefined();
+    });
+
+    it('should report zero when there is nothing to repay', () => {
+      const noFixedCosts: UseCaseInputs = {
+        ...base,
+        integrationCost: 0,
+        trainingTuningCost: 0,
+        changeManagementCost: 0,
+      };
+
+      expect(calculateROI(noFixedCosts, defaultModifiers).breakEvenMonths).toBe(0);
+    });
+
+    it('should still report break-even volume, which is a separate question', () => {
+      const result = calculateROI(base, defaultModifiers);
+
+      // Volume needed to cover amortized fixed costs — independent of time
+      expect(result.breakEvenVolume).toBeGreaterThan(0);
+    });
+  });
+
   describe('Sensitivity Modifiers', () => {
     it('should apply volume multiplier correctly', () => {
       const inputs: UseCaseInputs = {

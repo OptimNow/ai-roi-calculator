@@ -656,22 +656,31 @@ V_breakeven = 2,000 / 2.20 = 909 units/month
 
 ---
 
-### Break-even Months (Time to Reach Break-even Volume)
+### Break-even Months (Time to Cumulative Break-even)
 
 **Formula:**
 ```
-M_breakeven = 0                                  (if V_effective ≥ V_breakeven)
-            | (V_breakeven - V_effective) / V_effective × 12   (otherwise)
+M_breakeven = Cf_total / NCB   (if NCB > 0)
+            | 0                (if Cf_total = 0 and NCB > 0)
+            | undefined        (if NCB ≤ 0 — never recovers at this volume)
 ```
 
-**What it measures:** how long it would take to *grow into* the break-even volume, assuming
-volume grows by 100% of today's volume per year. It is a rough planning aid, not a cash
-metric, and it is used for one thing only: positioning the vertical marker on the ROI curve
-chart.
+**What it measures:** the month at which cumulative cash flow crosses zero — that is, when
+the one-time investment has been repaid — **at today's volume**. No volume growth is assumed.
+It is the point where the ROI curve crosses the axis, which is exactly what the chart's
+vertical marker points at.
 
-**Not the same as payback.** Payback (above) answers "when is the one-time investment repaid
-in cash". This answers "how far is current volume from the volume that covers all costs".
-At or above break-even volume, this is 0 while payback can still be several months.
+**Relationship to payback.** They are the same quantity: `Cf_total / NCB`. Payback is
+reported as a headline KPI, `M_breakeven` positions the chart marker. They agree by
+construction, which is the point.
+
+**Previous definition (removed).** This used to extrapolate volume growth:
+`(V_breakeven − V_effective) / V_effective × 12`. Solving for the growth rate that would make
+that correct gives `V_effective / 12` per month — an implied doubling every year that no
+input expresses and nobody chose; it fell out of the `× 12` used to turn a dimensionless
+ratio into months. On a stable-volume project the threshold is never reached, yet a month was
+still displayed — and displayed on a cumulative-cash axis measuring something else entirely.
+A chart could show the curve crossing zero at month 17 with the marker drawn at month 6.
 
 ---
 
@@ -682,9 +691,9 @@ The **ROI Curve Chart** plots `CP(t)` from month 0 to the analysis horizon `N`:
 - **Y-axis:** Cumulative profit ($)
 - **X-axis:** Months
 - **Horizontal dashed line at y=0:** Break-even threshold
-- **Vertical chartreuse line:** `M_breakeven` rounded up — the volume-growth marker defined
-  above, drawn only when it is greater than zero (so it is absent whenever current volume is
-  already at or above break-even volume)
+- **Vertical chartreuse line:** `M_breakeven` rounded up — the month the curve crosses zero.
+  Absent when there are no fixed costs to repay, or when the project never recovers at this
+  volume, since there is no crossing to mark
 - **Green area fill:** under the cumulative-profit line
 
 ---
