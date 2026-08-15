@@ -5,7 +5,7 @@
 > audit line by line.
 
 [![Live app](https://img.shields.io/badge/live-airoicalculator.optimnow.io-ACE849?labelColor=2C2C2C)](https://airoicalculator.optimnow.io)
-[![Prices](https://img.shields.io/badge/prices-AI%20Pricing%20Hub-7C3AED)](https://aipricinghub.optimnow.io)
+[![Prices](https://img.shields.io/badge/prices-OptimToken-7C3AED)](https://optimtoken.optimnow.io)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Tests](https://img.shields.io/badge/tests-73%20passing-brightgreen)](#testing)
@@ -33,7 +33,7 @@ and shows its working at every step.
 ### The three layers
 
 **Layer 1, infrastructure.** Model inference, priced from the live
-[AI Pricing Hub](https://aipricinghub.optimnow.io) catalog: input and output rates plus the
+[OptimToken](https://optimtoken.optimnow.io) catalog: input and output rates plus the
 provider's published prompt-cache read and batch prices. Supports multi-model routing, flat
 per-request contracts, and retries (a retried call is charged again, so it belongs here).
 
@@ -55,7 +55,7 @@ so stakeholders can check the arithmetic instead of trusting it.
 
 ## Model prices stay current
 
-Prices come from the [AI Pricing Hub](https://aipricinghub.optimnow.io) catalog, which tracks
+Prices come from the [OptimToken](https://optimtoken.optimnow.io) catalog, which tracks
 250+ models and refreshes daily. Pick a model from the dropdown and its rates fill in,
 including the cache and batch prices its provider publishes.
 
@@ -199,7 +199,7 @@ asset troubleshooting and cache clearing.
 
 | | |
 |---|---|
-| [**AI Pricing Hub**](https://aipricinghub.optimnow.io) | Compare what 250+ models cost per request, with caching and batch factored in. Source of this calculator's prices. |
+| [**OptimToken**](https://optimtoken.optimnow.io) | Compare what 250+ models cost per request, with caching and batch factored in. Source of this calculator's prices. |
 | **MCP server** | The same engine as an MCP tool, so an assistant can size a business case in conversation. Repository opening shortly. |
 | [**cloud-finops-skills**](https://github.com/OptimNow/cloud-finops-skills) | FinOps knowledge for AI agents: AWS, Azure, GCP, AI inference, SaaS. |
 

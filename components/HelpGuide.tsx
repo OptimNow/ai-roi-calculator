@@ -271,7 +271,7 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                 <h4 className="font-semibold text-slate-700 mb-2">Token Pricing</h4>
                 <p className="text-sm text-slate-600">
                   Pick a model from the dropdown: prices per 1M tokens are filled automatically from the{' '}
-                  <a href="https://aipricinghub.optimnow.io" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">AI Pricing Hub</a>{' '}
+                  <a href="https://optimtoken.optimnow.io" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">OptimToken</a>{' '}
                   (live catalog, refreshed daily), including published cache-read and batch rates.
                 </p>
                 <p className="text-xs text-slate-500 mt-2">
@@ -285,7 +285,7 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                   The line above the model dropdown says which source answered and when those prices were published:
                 </p>
                 <ul className="mt-2 text-sm text-slate-600 list-disc list-inside ml-3">
-                  <li><strong>Live prices:</strong> fetched from the AI Pricing Hub API</li>
+                  <li><strong>Live prices:</strong> fetched from the OptimToken API</li>
                   <li><strong>Cached prices:</strong> a copy kept in your browser for 24 hours</li>
                   <li><strong>Snapshot prices:</strong> the catalog built into the app, used when the hub is unreachable</li>
                 </ul>
@@ -302,9 +302,9 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
               </div>
 
               <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <h4 className="font-semibold text-slate-700 mb-2">Arriving from the AI Pricing Hub</h4>
+                <h4 className="font-semibold text-slate-700 mb-2">Arriving from the OptimToken</h4>
                 <p className="text-sm text-slate-600">
-                  The <a href="https://aipricinghub.optimnow.io" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">AI Pricing Hub</a> can hand a scenario over to this calculator through the URL:
+                  The <a href="https://optimtoken.optimnow.io" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">OptimToken</a> can hand a scenario over to this calculator through the URL:
                   <code className="ml-1">?useCase=&amp;volume=&amp;model=&amp;batch=</code>. The matching preset, monthly volume, model and batch setting are pre-filled and a banner confirms what carried over — you only need to add the business value.
                 </p>
                 <p className="text-xs text-slate-500 mt-2">
