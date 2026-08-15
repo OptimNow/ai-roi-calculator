@@ -1,324 +1,222 @@
 # AI ROI Calculator
 
-A comprehensive web application for calculating the return on investment (ROI) of AI and Large Language Model (LLM) projects. Built to help organizations make data-driven decisions about AI implementations by analyzing costs, value generation, and break-even scenarios across a 3-layer framework.
+> Built by [OptimNow](https://optimnow.io). Work out whether an AI project pays for itself,
+> with live model prices, the operational costs everyone forgets, and arithmetic you can
+> audit line by line.
 
-**Live Demo:** [Deployed on Vercel](https://ai-roi-calculator.vercel.app)
-**Developed by:** [OptimNow](https://www.optimnow.io)
+[![Live app](https://img.shields.io/badge/live-airoicalculator.optimnow.io-ACE849?labelColor=2C2C2C)](https://airoicalculator.optimnow.io)
+[![Prices](https://img.shields.io/badge/prices-AI%20Pricing%20Hub-7C3AED)](https://aipricinghub.optimnow.io)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Tests](https://img.shields.io/badge/tests-73%20passing-brightgreen)](#testing)
+[![License: MIT](https://img.shields.io/badge/License-MIT-lightgrey.svg)](./LICENSE)
+
+**[Open the calculator](https://airoicalculator.optimnow.io)** · [Methodology](METHODOLOGY.md)
 
 ---
 
 ## Overview
 
-Calculating ROI for AI initiatives is notoriously difficult. Unlike traditional software projects with predictable costs, AI implementations involve multiple layers of complexity that most organizations struggle to capture. Token-based pricing fluctuates with usage patterns, cache optimization impacts costs unpredictably, and operational overhead from orchestration and monitoring often remains hidden until production. Meanwhile, quantifying business value proves equally challenging: how do you measure the true impact of an AI assistant that deflects support tickets, or the revenue uplift from improved conversions?
+Most AI business cases are built on two numbers: a token price copied off a pricing page,
+and a saving someone estimated in a meeting. Both are usually wrong, and neither survives
+contact with a CFO.
 
-Finance teams need more than back-of-the-envelope estimates. They need a rigorous framework that accounts for the full technical stack while translating AI capabilities into concrete business metrics. That's exactly what this calculator provides.
+Token prices move, and the published rate is rarely what you pay once prompt caching and
+batch processing enter the picture. The model itself is often the smaller half of the bill:
+orchestration, retrieval, monitoring and guardrails run on every request and rarely appear
+in the estimate at all. On the value side, "productivity gains" is not a number a finance
+team can put in a plan.
 
-The AI ROI Calculator uses a **3-layer framework** that mirrors how production AI systems actually work. Layer 1 captures infrastructure costs at the model level—accounting for token consumption, cache hit rates, and multi-model routing strategies. Layer 2 adds the "harness" costs that surround the model: orchestration platforms, vector databases for retrieval, monitoring systems, API tool calls, and network overhead. Layer 3 translates all this technical investment into business value using four distinct measurement methods, each tailored to different use cases.
+This calculator uses a 3-layer framework that matches how production AI systems are billed,
+and shows its working at every step.
 
-This approach solves a critical gap in AI planning. Most ROI estimates either oversimplify costs (ignoring operational overhead entirely) or overcomplicate them (requiring weeks of spreadsheet engineering). This calculator strikes a balance: sophisticated enough to handle real-world complexity, yet accessible enough for product managers and finance teams to use independently. The result is transparent, auditable projections that stand up to CFO scrutiny while remaining grounded in production realities.
+### The three layers
 
-### What Makes This Framework Different
+**Layer 1, infrastructure.** Model inference, priced from the live
+[AI Pricing Hub](https://aipricinghub.optimnow.io) catalog: input and output rates plus the
+provider's published prompt-cache read and batch prices. Supports multi-model routing, flat
+per-request contracts, and retries (a retried call is charged again, so it belongs here).
 
-The calculator doesn't just add up costs and benefits. It provides the analytical depth needed for confident decision-making through features like break-even analysis (showing exactly when your AI investment pays off), sensitivity analysis (identifying which variables matter most to ROI), and scenario comparison (evaluating trade-offs between different implementation approaches). Every calculation is fully transparent and documented in the accompanying methodology guide, ensuring stakeholders can audit the math and understand the assumptions.
+**Layer 2, harness.** Orchestration, retrieval and vector search, tool APIs, logging,
+guardrails, egress and storage. Entered per 1,000 calls, which is how vendors quote them.
 
-Whether you're evaluating an AI customer support bot, a content generation tool, or a data extraction system, this framework helps you move beyond vague promises of "productivity gains" and "efficiency improvements" toward concrete, defensible financial projections.
+**Layer 3, business value.** 4 archetypes: cost displacement, revenue uplift, retention
+uplift and premium monetization. Each carries a realization rate, because a technically
+successful output does not automatically become money.
 
-### Core Capabilities
+### What you get out
 
-**3-Layer Cost Framework** captures the full technical stack from model inference through operational overhead to business value generation. Layer 1 (Infrastructure) handles model costs with token-based pricing, cache optimization, and multi-model routing. Layer 2 (Harness) accounts for orchestration, retrieval, monitoring, tool APIs, and operational overhead. Layer 3 (Business Value) quantifies ROI using four distinct measurement methods.
-
-**4 Value Measurement Methods** let you quantify business impact based on your specific use case. Cost Displacement calculates savings from automating manual processes, Revenue Uplift measures increased conversions and sales, Retention Uplift quantifies reduced customer churn, and Premium Monetization evaluates subscription-based AI feature revenue.
-
-**Advanced Analysis Tools** provide the depth needed for strategic planning. Create unlimited What-If Scenarios to compare different approaches, visualize Break-even Analysis showing cumulative profit over time, run Sensitivity Analysis with tornado charts ranking variable impact on ROI, and export detailed scenario comparisons with percentage differences highlighted.
-
-**Professional Interface** combines sophisticated analysis with accessible design. The responsive layout works seamlessly on desktop and mobile, with a clear visual hierarchy separating grey input columns from white results. Interactive charts powered by Recharts bring your projections to life, while comprehensive help guides and WCAG 2.1 AA accessibility ensure everyone can use the tool effectively.
-
----
-
-## Tech Stack
-
-- **Framework:** React 19.2.3
-- **Language:** TypeScript
-- **Build Tool:** Vite
-- **Styling:** Tailwind CSS (via CDN)
-- **Charts:** Recharts
-- **Icons:** Lucide React
-- **Testing:** Vitest + React Testing Library (30+ unit & integration tests)
-- **Deployment:** Vercel
+ROI, net monthly benefit, payback, unit cost and break-even volume, plus a cumulative-profit
+curve, a tornado chart ranking which assumption moves ROI most, and unlimited saved scenarios
+for side-by-side comparison. Every formula is documented in [METHODOLOGY.md](METHODOLOGY.md),
+so stakeholders can check the arithmetic instead of trusting it.
 
 ---
 
-## Getting Started
+## Model prices stay current
 
-### Prerequisites
+Prices come from the [AI Pricing Hub](https://aipricinghub.optimnow.io) catalog, which tracks
+250+ models and refreshes daily. Pick a model from the dropdown and its rates fill in,
+including the cache and batch prices its provider publishes.
 
-- Node.js (v18 or higher recommended)
-- npm or yarn package manager
+The catalog resolves in order: a browser cache under 24h old, then the live API, then a stale
+cache, then a snapshot embedded in the app. The interface states which layer answered and the
+date the prices were published, so a figure never appears without its provenance.
 
-### Installation
+Models are repriced automatically whenever the catalog resolves. Two exceptions are
+deliberate: a model you priced by hand keeps your negotiated rate, and a scenario loaded from
+storage keeps the prices it recorded, because it is the record of a decision made on a date.
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/OptimNow/ai-roi-calculator.git
-   cd ai-roi-calculator
-   ```
+Arriving from the hub with `?useCase=&volume=&model=&batch=` preloads the scenario, so a
+comparison there continues here without retyping.
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+---
 
-3. Run the development server:
-   ```bash
-   npm run dev
-   ```
-
-4. Open your browser and navigate to:
-   ```
-   http://localhost:5173
-   ```
-
-### Building for Production
+## Getting started
 
 ```bash
-npm run build
+npm install
+npm run dev        # http://localhost:3000
+npm run build      # production build to dist/
+npm run preview    # serve the production build
+npm test           # 73 tests
 ```
 
-The production-ready files will be in the `dist/` folder.
+Requires Node.js 20+. No API keys, no backend, no account.
 
-### Running Tests
+To refresh the embedded price snapshot used as the offline fallback:
 
 ```bash
-npm test
+npm run refresh:models
 ```
+
+A weekly GitHub Action runs the same script. It refuses to write a snapshot that drops a
+model any preset depends on, since that would break the app at import time.
 
 ---
 
-## Usage
+## Using it
 
-### Basic Workflow
+1. **Load a preset.** 11 scenarios covering support deflection, knowledge Q&A, meeting and
+   call summaries, marketing content, coding, invoice processing, agent workflows,
+   e-commerce recommendations, retention and premium features. Each is bound to a real model
+   with token counts matching the pricing hub's profiles.
 
-1. **Select a Preset:** Choose from predefined use cases (Customer Support, Content Generation, Data Extraction, etc.) or use "Custom" to start from scratch.
+2. **Define value and scope.** Use case, unit, monthly volume, then a value archetype and its
+   drivers, then a realization rate. An equation preview shows how the three rates combine.
 
-2. **Define Value & Scope (Section 1):**
-   - Set project context: use case name, unit of measurement (e.g., "tickets", "documents"), monthly volume, and analysis horizon
-   - Choose a Value Archetype: Cost Displacement, Revenue Uplift, Retention Uplift, or Premium Monetization
-   - Define value drivers for your chosen method (e.g., baseline costs, conversion rates, churn rates)
-   - Set Realization Rate — the % of AI outputs that translate to real business impact
+3. **Set the cost model.** Pick a model or enter custom pricing, set token counts, add the
+   harness costs. Advanced mode adds multi-model routing, cache hit rate, retry rate and ops
+   overhead.
 
-3. **Configure Cost Model (Section 2):**
-   - **Infrastructure (Layer 1):** Primary model token usage and pricing, optional multi-model routing, cache settings
-   - **Harness (Layer 2):** Orchestration, retrieval, tool APIs, logging, monitoring, safety guardrails, retry rate, and overhead multiplier
-   - **One-time Costs:** Integration & development, training & tuning, change management, and amortization period
+4. **Read the results.** Two accounts are in play, and they answer different questions.
+   Break-even volume asks *how many* units a month cover your costs. Payback asks *how long*
+   until the setup is repaid. The in-app help works both through with a worked example.
 
-4. **Analyze Results:**
-   - View 5 key metrics: ROI %, Monthly Benefit, Payback Period, Cost/Unit, and Break-even Volume
-   - Review detailed cost breakdown by layer
-   - Check insight cards for warnings and recommendations
-
-5. **Use Advanced Features:**
-   - **Sensitivity Simulator:** Test different scenarios with multipliers
-   - **Scenario Manager:** Save current calculation for later comparison
-   - **Scenario Comparison:** Compare multiple scenarios side-by-side
-
-### Example Use Case
-
-**Customer Support Automation:**
-- Monthly volume: 10,000 tickets
-- Realization rate: 80% (AI successfully resolves 8,000 tickets)
-- Value method: Cost Displacement
-- Baseline human cost: $5 per ticket
-- Deflection rate: 70% (AI prevents escalation for 5,600 tickets)
-- Result: ~$22,400 monthly benefit with ~450% ROI
+5. **Stress-test it.** Sensitivity sliders move volume, realization, cost and value without
+   touching your inputs. The tornado chart ranks what matters.
 
 ---
 
-## Project Structure
+## Project structure
 
-```
+```text
 ai-roi-calculator/
-├── components/
-│   ├── App.tsx                    # Main application component
-│   ├── Charts.tsx                 # Memoized chart components (ROI curve, tornado)
-│   ├── FixedCostsSection.tsx      # Fixed costs input form
-│   ├── GeneralInputsSection.tsx   # General settings form
-│   ├── HarnessSection.tsx         # Layer 2 harness costs form
-│   ├── HelpGuide.tsx              # Comprehensive help modal
-│   ├── InfrastructureSection.tsx  # Layer 1 model costs form
-│   ├── ResultsDashboard.tsx       # ROI metrics and visualizations
-│   ├── ScenarioComparison.tsx     # Side-by-side scenario comparison
-│   ├── ScenarioManager.tsx        # Scenario CRUD interface
-│   ├── SensitivitySimulator.tsx   # What-if analysis tool
-│   └── ValueSection.tsx           # Layer 3 business value form
-├── utils/
-│   └── calculations.ts            # Core ROI calculation logic
-├── types.ts                       # TypeScript interfaces
-├── constants.ts                   # Presets and default values
-├── tests/                         # Unit and integration tests
-├── public/images/                 # Brand assets (logo, favicon)
-├── METHODOLOGY.md                 # Mathematical specification & theory
-├── ROADMAP.md                     # Product development plan
-├── UAT_SCENARIOS.md               # User acceptance testing guide
-├── DEPLOYMENT.md                  # Vercel deployment instructions
-└── README.md                      # This file
+├─ App.tsx                       # state, layout, results panel
+├─ types.ts                      # UseCaseInputs, ModelParams, Scenario
+├─ constants.ts                  # 11 presets, bound to catalog models
+├─ components/
+│  ├─ Charts.tsx                 # ROI curve, cost/value, breakdown, tornado
+│  ├─ ModelPicker.tsx            # catalog dropdown + billing basis + cost fields
+│  ├─ InputComponents.tsx        # money, number, percent, section header
+│  ├─ HelpGuide.tsx              # in-app guide
+│  ├─ ScenarioManager.tsx        # save, load, export, import
+│  ├─ ScenarioComparison.tsx     # side-by-side comparison
+│  └─ ErrorBoundary.tsx
+├─ utils/
+│  ├─ calculations.ts            # the engine: all cost, value and ROI formulas
+│  ├─ modelCatalog.ts            # live prices, cache, snapshot, repricing
+│  ├─ deepLink.ts                # scenario handover from the pricing hub
+│  └─ format.ts                  # shared display rules
+├─ scripts/refresh-model-snapshot.mjs
+├─ METHODOLOGY.md                # full mathematical specification
+├─ UAT_SCENARIOS.md              # 11 acceptance scenarios
+└─ DEPLOYMENT.md
 ```
 
----
-
-## Methodology & Transparency
-
-For complete transparency and academic rigor, we provide detailed documentation of all calculation methodologies:
-
-**[METHODOLOGY.md](METHODOLOGY.md)** - Comprehensive mathematical specification including:
-- 3-layer framework architecture and design philosophy
-- Complete formulas for all ROI calculations with derivations
-- Worked examples for each of the 4 value methods
-- Break-even analysis mathematics
-- Sensitivity analysis methodology
-- Assumptions, limitations, and validation
-- Industry references and citations
-
-This document enables:
-- **Auditability** for stakeholders and finance teams
-- **Reproducibility** for researchers and academics
-- **Trust** through complete transparency of calculation logic
-- **Verification** that formulas align with industry standards
+Tests sit beside the code they cover, as `*.test.ts`.
 
 ---
 
 ## Testing
 
-The calculator includes comprehensive test coverage:
+73 tests run under Vitest, covering the calculation engine and the modules around it:
 
-- **30+ Unit Tests:** All calculation functions validated with edge cases
-- **Integration Tests:** Component inputs and validation logic
-- **Error Boundary:** Graceful error handling with user-friendly fallback UI
-
-Run tests with:
 ```bash
 npm test
 ```
 
-For coverage report:
-```bash
-npm run test:coverage
-```
+They cover all 4 value methods, cache-read and batch pricing, per-call billing, routing
+blends, retry attribution, break-even and payback, deep-link parsing and validation, catalog
+repricing, and display formatting. Edge cases include zero volume, 0% and 100% realization,
+negative margins and models that have left the catalog.
+
+[UAT_SCENARIOS.md](UAT_SCENARIOS.md) holds 11 manual acceptance scenarios for interface work.
 
 ---
 
-## User Acceptance Testing
+## Tech stack
 
-A detailed UAT guide with 24 test scenarios is available in [UAT_SCENARIOS.md](UAT_SCENARIOS.md). This covers:
+| | |
+|---|---|
+| Framework | React 19 with TypeScript in strict mode |
+| Build | Vite |
+| Styling | Tailwind CSS v4 via PostCSS |
+| Charts | Recharts |
+| Icons | Lucide React |
+| Tests | Vitest |
+| Hosting | Vercel |
 
-- Basic calculator functionality
-- Preset loading and validation
-- Advanced mode and model routing
-- All 4 value methods
-- Sensitivity simulator
-- Break-even analysis
-- Scenario manager CRUD operations
-- UI/UX and accessibility
-- Data export functionality
+All calculation runs in the browser. Scenarios are saved to `localStorage` and never leave
+your machine. The only network call fetches the public price catalog, which sends no data
+about your scenario.
+
+Analytics (GA4 and Vercel Analytics) record anonymous usage events: page views, preset loads,
+exports, model selections. No input values, no scenario data, no personal information.
 
 ---
 
 ## Deployment
 
-The app is configured for seamless Vercel deployment. See [DEPLOYMENT.md](DEPLOYMENT.md) for:
-
-- Vercel configuration settings
-- Troubleshooting static asset issues
-- Cache clearing instructions
-- Local build verification steps
-
-### Quick Deploy to Vercel
+Push to `main` and Vercel deploys. [DEPLOYMENT.md](DEPLOYMENT.md) covers configuration, static
+asset troubleshooting and cache clearing.
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/OptimNow/ai-roi-calculator)
 
 ---
 
-## Roadmap
+## The rest of the family
 
-### Current Version: v1.1 (January 2025)
+| | |
+|---|---|
+| [**AI Pricing Hub**](https://aipricinghub.optimnow.io) | Compare what 250+ models cost per request, with caching and batch factored in. Source of this calculator's prices. |
+| **MCP server** | The same engine as an MCP tool, so an assistant can size a business case in conversation. Repository opening shortly. |
+| [**cloud-finops-skills**](https://github.com/OptimNow/cloud-finops-skills) | FinOps knowledge for AI agents: AWS, Azure, GCP, AI inference, SaaS. |
 
-**Completed Features:**
-- Core 3-layer ROI calculator with 4 value methods
-- What-If Scenarios with unlimited comparisons
-- Break-even analysis with ROI curve visualization
-- Sensitivity analysis with tornado chart
-- Visual UI hierarchy (grey inputs, white results)
-- 30+ unit tests and WCAG 2.1 AA accessibility
-- Comprehensive help guide
-
-### Upcoming (v1.2 - Q2 2025)
-
-**High Priority:**
-- **Self-Hosted Model Pricing:** Support for on-premise GPU deployments (open-source models like Llama, Mistral)
-- **Confidence Intervals:** Optimistic/pessimistic/realistic projections with Monte Carlo simulation
-- **Export to Excel:** Multi-sheet workbook with formulas and charts
-
-**Medium Priority:**
-- Preset customization and sharing
-- Dark mode theme toggle
-- Print-friendly report view
-
-See [ROADMAP.md](ROADMAP.md) for the full product development plan.
-
----
-
-## Important Notes
-
-### API-Based Pricing Assumption
-
-The calculator currently assumes **API-based pricing** (cost per token) for model inference. This is typical for:
-- OpenAI GPT-4, GPT-3.5
-- Anthropic Claude
-- Google Gemini
-- Azure OpenAI Service
-- AWS Bedrock
-
-**Self-hosted deployment pricing** (on-premise GPUs, open-source models) will be added in v1.2 (Q2 2025).
-
-### Data Privacy
-
-All calculations are performed **client-side** in your browser. No data is sent to external servers. Saved scenarios are stored in your browser's localStorage and never leave your device unless you explicitly export them.
+The MCP server consumes this repository's engine verbatim through a sync script, so both
+answer the same question with the same number.
 
 ---
 
 ## Contributing
 
-We welcome contributions! To suggest features or report bugs:
-
-1. Open an issue on GitHub with label `enhancement`, `bug`, or `documentation`
-2. Provide detailed use cases and expected behavior
-3. Include mockups for UI changes (if applicable)
-
-For major changes, please open an issue first to discuss what you would like to change.
-
----
-
-## Support
-
-- **Documentation:** See [HelpGuide.tsx](components/HelpGuide.tsx) or click the "How to Fill" button in the app
-- **Issues:** [GitHub Issues](https://github.com/OptimNow/ai-roi-calculator/issues)
-- **Website:** [www.optimnow.io](https://www.optimnow.io)
-
----
+Issues and pull requests are welcome. Changes to `utils/calculations.ts` need a matching test
+and a METHODOLOGY update, and they ripple into the MCP server through its engine sync.
 
 ## License
 
-This project is licensed under the MIT License.
+MIT. See [LICENSE](./LICENSE).
 
 ---
 
-## Acknowledgments
-
-- Built with [Vite](https://vitejs.dev/) and [React](https://react.dev/)
-- Charts powered by [Recharts](https://recharts.org/)
-- Icons from [Lucide](https://lucide.dev/)
-- Deployed on [Vercel](https://vercel.com/)
-
----
-
-**Last Updated:** January 1, 2025
-**Version:** 1.1
+Questions about your own AI cost estimate? [Talk to OptimNow](https://www.optimnow.io/contact).
