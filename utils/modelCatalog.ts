@@ -1,4 +1,4 @@
-import { ModelParams } from '../types';
+import type { ModelParams } from '../types';
 
 /**
  * Model pricing catalog sourced from the AI Pricing Hub (https://aipricinghub.optimnow.io).
@@ -259,9 +259,24 @@ interface StoredCatalog {
   models: CatalogModel[];
 }
 
+/**
+ * This module is shared verbatim with the MCP server, which runs under Node where
+ * there is no localStorage. Absence just means no cache layer — the live fetch and
+ * the embedded snapshot still work.
+ */
+const storage = (): Storage | null => {
+  try {
+    return typeof localStorage === 'undefined' ? null : localStorage;
+  } catch {
+    return null; // access can throw outright when storage is blocked by policy
+  }
+};
+
 const readStoredCatalog = (): StoredCatalog | null => {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const store = storage();
+    if (!store) return null;
+    const raw = store.getItem(STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed.models) || parsed.models.length < MIN_MODELS) return null;
@@ -323,7 +338,7 @@ export const fetchModelCatalog = async (forceRefresh = false): Promise<ModelCata
 
     const pricedAt = typeof data.meta?.timestamp === 'string' ? data.meta.timestamp : new Date().toISOString();
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ fetchedAt: Date.now(), pricedAt, models }));
+      storage()?.setItem(STORAGE_KEY, JSON.stringify({ fetchedAt: Date.now(), pricedAt, models }));
     } catch {
       // storage full or unavailable — live data still usable
     }
