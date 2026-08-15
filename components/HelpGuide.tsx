@@ -103,7 +103,7 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                   <li><strong>24-36 months:</strong> Multi-year strategic view</li>
                   <li><strong>6 months:</strong> Short-term pilot evaluation</li>
                 </ul>
-                <p className="text-xs text-slate-500 mt-1">💡 Tip: This doesn't affect break-even or payback calculations, only visualization scope.</p>
+                <p className="text-xs text-slate-500 mt-1">💡 Tip: This only sets how far the ROI curve chart runs. It does not affect ROI, payback or break-even — fixed costs are spread over the separate <strong>Amortization (Mo)</strong> field, not over this horizon.</p>
               </div>
 
               <h4 className="font-bold text-slate-700 text-sm border-b border-slate-200 pb-1 mt-4">Value Definition</h4>
@@ -148,7 +148,7 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                   <p><strong>Review Cost:</strong> Cost per unit for that human review (typically lower than full cost)</p>
                 </div>
                 <p className="text-xs text-slate-500 mt-2">
-                  Example: Support agent costs $0.5/ticket, AI deflects 40%, review needed on 10% → saves ~$0.2/ticket
+                  Example (Support Bot preset): agent costs $0.50/ticket, AI deflects 35%, 5% of outputs reviewed at $0.10 → ($0.50 × 35%) − ($0.10 × 5%) = $0.17/ticket gross, $0.153 after a 90% realization rate
                 </p>
               </div>
 
@@ -172,9 +172,9 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                     <tr className="border-b border-amber-200"><td className="py-1 pr-2">Meeting Summary</td><td className="text-right py-1 pr-2">$5.00</td><td className="py-1">Note-taker, ~45 min/meeting @ $6.50/hr</td></tr>
                     <tr className="border-b border-amber-200"><td className="py-1 pr-2">Marketing Content</td><td className="text-right py-1 pr-2">$10.00</td><td className="py-1">Jr. content writer, ~2 hrs/piece @ $5/hr</td></tr>
                     <tr className="border-b border-amber-200"><td className="py-1 pr-2">Coding Task</td><td className="text-right py-1 pr-2">$8.00</td><td className="py-1">Jr. developer, ~1 hr/task @ $8/hr</td></tr>
-                    <tr className="border-b border-amber-200"><td className="py-1 pr-2">Invoice Processing</td><td className="text-right py-1 pr-2">$2.50</td><td className="py-1">Data entry clerk, ~25 min/invoice @ $6/hr</td></tr>
-                    <tr className="border-b border-amber-200"><td className="py-1 pr-2">Call Summary</td><td className="text-right py-1 pr-2">$3.00</td><td className="py-1">Agent post-call, ~30 min/call @ $6/hr</td></tr>
-                    <tr><td className="py-1 pr-2">Agent Workflow</td><td className="text-right py-1 pr-2">$15.00</td><td className="py-1">Sr. analyst, ~2 hrs/workflow @ $7.50/hr</td></tr>
+                    <tr className="border-b border-amber-200"><td className="py-1 pr-2">Invoice Processing</td><td className="text-right py-1 pr-2">$0.40</td><td className="py-1">AP clerk, ~10 invoices/hr @ $4/hr</td></tr>
+                    <tr className="border-b border-amber-200"><td className="py-1 pr-2">Call Summary</td><td className="text-right py-1 pr-2">$10.00</td><td className="py-1">Agent post-call write-up + QA, ~1.5 hrs/call @ $6.50/hr</td></tr>
+                    <tr><td className="py-1 pr-2">Agent Workflow</td><td className="text-right py-1 pr-2">$30.00</td><td className="py-1">Sr. analyst, ~4 hrs/workflow @ $7.50/hr</td></tr>
                   </tbody>
                 </table>
                 <p className="text-xs text-amber-700">
@@ -280,6 +280,39 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
               </div>
 
               <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <h4 className="font-semibold text-slate-700 mb-2">Where the Prices Come From (and How Fresh They Are)</h4>
+                <p className="text-sm text-slate-600">
+                  The line above the model dropdown says which source answered and when those prices were published:
+                </p>
+                <ul className="mt-2 text-sm text-slate-600 list-disc list-inside ml-3">
+                  <li><strong>Live prices:</strong> fetched from the AI Pricing Hub API</li>
+                  <li><strong>Cached prices:</strong> a copy kept in your browser for 24 hours</li>
+                  <li><strong>Snapshot prices:</strong> the catalog built into the app, used when the hub is unreachable</li>
+                </ul>
+                <p className="text-sm text-slate-600 mt-2">
+                  The refresh icon next to it re-fetches on demand. Whenever the catalog resolves — on load, on refresh, when you load a preset, and on reset —
+                  every model that came from the catalog is <strong>repriced automatically</strong> to the current rates.
+                </p>
+                <p className="text-sm text-slate-600 mt-2">
+                  The 11 example profiles are each bound to a real catalog model, with token profiles matching the hub's use-case profiles — so loading one starts you from the same cost basis the hub shows.
+                </p>
+                <p className="text-xs text-slate-500 mt-2">
+                  💡 Two things are never repriced: models you priced by hand (that is how a negotiated rate survives), and scenarios you load from storage — a saved scenario is the record of a decision at a point in time, so it keeps the prices it was saved with. Hit refresh afterwards if you do want it lifted to today's prices.
+                </p>
+              </div>
+
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <h4 className="font-semibold text-slate-700 mb-2">Arriving from the AI Pricing Hub</h4>
+                <p className="text-sm text-slate-600">
+                  The <a href="https://aipricinghub.optimnow.io" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">AI Pricing Hub</a> can hand a scenario over to this calculator through the URL:
+                  <code className="ml-1">?useCase=&amp;volume=&amp;model=&amp;batch=</code>. The matching preset, monthly volume, model and batch setting are pre-filled and a banner confirms what carried over — you only need to add the business value.
+                </p>
+                <p className="text-xs text-slate-500 mt-2">
+                  💡 Every parameter is optional and validated independently; anything unknown is ignored rather than breaking the load. If the linked model isn't in the catalog, the preset's own model is kept and the banner says so.
+                </p>
+              </div>
+
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                 <h4 className="font-semibold text-slate-700 mb-2">Per-Token vs Per-Call Billing</h4>
                 <p className="text-sm text-slate-600">
                   Most LLMs bill per token, which is the default. Choose <strong>Custom pricing</strong> and switch the basis to <strong>per call</strong> when a service charges a flat rate per request instead:
@@ -310,7 +343,7 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                   Adjust the slider to set what percentage goes to the "simple" model.
                 </p>
                 <p className="text-xs text-slate-500 mt-2">
-                  Example: 70% to a $0.15/1M-input model, 30% to a $2.50/1M-input model = blended cost of $0.855 per 1M input tokens.
+                  Example: 70% to a $1.00/1M-input model, 30% to a $5.00/1M-input model = blended cost of $2.20 per 1M input tokens. Each model has its own token counts, so the two sides are blended on full cost per unit, not on price alone.
                 </p>
               </div>
 
@@ -318,10 +351,10 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                 <h4 className="font-semibold text-slate-700 mb-2">Cache Settings (Advanced)</h4>
                 <p className="text-sm text-slate-600">
                   <strong>Cache Hit Rate:</strong> % of input tokens served from the prompt cache (repeated system prompts, shared context)<br />
-                  <strong>Cache Discount:</strong> manual fallback used only when the selected model has no published cache-read price
+                  <strong>Cache Discount:</strong> manual fallback, shown <em>only</em> when the selected model has no published cache-read price
                 </p>
                 <p className="text-xs text-slate-500 mt-2">
-                  💡 When you pick a model from the catalog, its published cache-read price is used automatically (e.g. Anthropic cache reads cost 10% of the input price). Caching only applies to input tokens. Set the hit rate to 0% if not using prompt caching.
+                  💡 When you pick a model from the catalog, its published cache-read price is used automatically (e.g. Claude Haiku 4.5 lists input at $1.00/1M and cache reads at $0.10/1M — 90% off), and the Cache Discount field disappears because it would have no effect. Caching only applies to input tokens. Set the hit rate to 0% if you are not using prompt caching. Simple mode hides both fields but still applies the preset's hit rate.
                 </p>
               </div>
 
@@ -368,7 +401,8 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
               <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
                 <h4 className="font-semibold text-amber-900 mb-2">Harness Cost Assumptions</h4>
                 <p className="text-xs text-slate-600 mb-3">
-                  Default values include a buffer for operational overhead (DevOps time, dashboard setup, alerting configuration) beyond raw cloud pricing.
+                  Defaults below are the per-unit values of the Customer Support Bot preset (other presets carry their own, heavier or lighter, harness assumptions).
+                  They include a buffer for operational overhead (DevOps time, dashboard setup, alerting configuration) beyond raw cloud pricing.
                   Validated using the <a href="https://github.com/OptimNow/cloud-finops-skills" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">OptimNow Cloud FinOps Skills</a>.
                 </p>
                 <table className="w-full text-xs border-collapse">
@@ -383,19 +417,25 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                   <tbody className="text-slate-600">
                     <tr>
                       <td className="p-1.5 border border-amber-200">Orchestration</td>
-                      <td className="text-right p-1.5 border border-amber-200">$0.0010</td>
+                      <td className="text-right p-1.5 border border-amber-200">$0.0020</td>
                       <td className="text-right p-1.5 border border-amber-200">$0.0002</td>
                       <td className="p-1.5 border border-amber-200">AWS Lambda ~$0.000034/req + Step Functions ~$0.0001</td>
                     </tr>
                     <tr>
                       <td className="p-1.5 border border-amber-200">Retrieval / Vector DB</td>
-                      <td className="text-right p-1.5 border border-amber-200">$0.0020</td>
+                      <td className="text-right p-1.5 border border-amber-200">$0.0015</td>
                       <td className="text-right p-1.5 border border-amber-200">$0.0020</td>
                       <td className="p-1.5 border border-amber-200">Bedrock KB ~$2/1K queries; OpenSearch amortized</td>
                     </tr>
                     <tr>
+                      <td className="p-1.5 border border-amber-200">Tool APIs</td>
+                      <td className="text-right p-1.5 border border-amber-200">$0.0003</td>
+                      <td className="text-right p-1.5 border border-amber-200">$0.0003</td>
+                      <td className="p-1.5 border border-amber-200">Web search ~$0.30-1/1K queries; not every unit calls a tool</td>
+                    </tr>
+                    <tr>
                       <td className="p-1.5 border border-amber-200">Logging / Monitoring</td>
-                      <td className="text-right p-1.5 border border-amber-200">$0.0005</td>
+                      <td className="text-right p-1.5 border border-amber-200">$0.0008</td>
                       <td className="text-right p-1.5 border border-amber-200">$0.00001</td>
                       <td className="p-1.5 border border-amber-200">CloudWatch $0.50/GB ingested; ~2-5KB per log entry</td>
                     </tr>
@@ -407,15 +447,21 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                     </tr>
                     <tr>
                       <td className="p-1.5 border border-amber-200">Network Egress</td>
-                      <td className="text-right p-1.5 border border-amber-200">$0.0001</td>
+                      <td className="text-right p-1.5 border border-amber-200">$0.0002</td>
                       <td className="text-right p-1.5 border border-amber-200">$0.000005</td>
                       <td className="p-1.5 border border-amber-200">AWS egress $0.09/GB; ~5KB per AI response</td>
                     </tr>
                     <tr>
                       <td className="p-1.5 border border-amber-200">Storage</td>
-                      <td className="text-right p-1.5 border border-amber-200">$0.0001</td>
+                      <td className="text-right p-1.5 border border-amber-200">$0.0002</td>
                       <td className="text-right p-1.5 border border-amber-200">$0.000005</td>
                       <td className="p-1.5 border border-amber-200">S3 $0.023/GB/month; ~10KB per unit stored</td>
+                    </tr>
+                    <tr className="font-semibold">
+                      <td className="p-1.5 border border-amber-200">Harness subtotal</td>
+                      <td className="text-right p-1.5 border border-amber-200">$0.0055</td>
+                      <td className="text-right p-1.5 border border-amber-200">$0.0025</td>
+                      <td className="p-1.5 border border-amber-200">Shown live under the harness fields, per unit and per month</td>
                     </tr>
                   </tbody>
                 </table>
@@ -439,7 +485,10 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
               <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
                 <h4 className="font-semibold text-slate-700 mb-2">Amortization Period</h4>
                 <p className="text-sm text-slate-600">
-                  Number of months to spread one-time costs over (default: 12 months). Used for payback calculation.
+                  Number of months to spread one-time costs over (default: 12 months). It sets the amortized fixed cost that lands in monthly cost, so it drives ROI, unit cost and break-even volume.
+                </p>
+                <p className="text-xs text-slate-500 mt-2">
+                  💡 Payback deliberately ignores it: payback divides the full one-time cost by the monthly <em>cash</em> benefit (value minus running costs), so amortization is not counted twice.
                 </p>
               </div>
 
@@ -448,6 +497,7 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                 <p className="text-xs text-slate-600 mb-3">
                   Based on India-based development teams ($15-25/hr for developers, $8-12/hr for QA/support).
                   Validated using the <a href="https://github.com/OptimNow/cloud-finops-skills" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">OptimNow Cloud FinOps Skills</a>.
+                  The first presets model a single-team rollout; the last ones (Recommendations, Retention, Premium) model a mid-market programme with data integration and go-to-market work, which is why they are an order of magnitude larger.
                   For US/EU teams, multiply by 3-5x.
                 </p>
                 <table className="w-full text-xs border-collapse">
@@ -464,11 +514,11 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                   <tbody className="text-slate-600">
                     <tr>
                       <td className="p-1.5 border border-amber-200">Support Bot</td>
-                      <td className="text-right p-1.5 border border-amber-200">$2,000</td>
-                      <td className="text-right p-1.5 border border-amber-200">$1,000</td>
-                      <td className="text-right p-1.5 border border-amber-200">$500</td>
-                      <td className="text-right p-1.5 border border-amber-200 font-semibold">$3,500</td>
-                      <td className="p-1.5 border border-amber-200">Simple chatbot + ticketing API</td>
+                      <td className="text-right p-1.5 border border-amber-200">$6,000</td>
+                      <td className="text-right p-1.5 border border-amber-200">$2,500</td>
+                      <td className="text-right p-1.5 border border-amber-200">$1,500</td>
+                      <td className="text-right p-1.5 border border-amber-200 font-semibold">$10,000</td>
+                      <td className="p-1.5 border border-amber-200">SMB rollout: chatbot + ticketing API, KB setup, guardrails tuning, agent enablement</td>
                     </tr>
                     <tr>
                       <td className="p-1.5 border border-amber-200">Knowledge Q&A</td>
@@ -504,11 +554,11 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                     </tr>
                     <tr>
                       <td className="p-1.5 border border-amber-200">Invoice Processing</td>
-                      <td className="text-right p-1.5 border border-amber-200">$5,000</td>
-                      <td className="text-right p-1.5 border border-amber-200">$2,000</td>
-                      <td className="text-right p-1.5 border border-amber-200">$1,000</td>
-                      <td className="text-right p-1.5 border border-amber-200 font-semibold">$8,000</td>
-                      <td className="p-1.5 border border-amber-200">ERP/accounting system integration</td>
+                      <td className="text-right p-1.5 border border-amber-200">$15,000</td>
+                      <td className="text-right p-1.5 border border-amber-200">$6,000</td>
+                      <td className="text-right p-1.5 border border-amber-200">$4,000</td>
+                      <td className="text-right p-1.5 border border-amber-200 font-semibold">$25,000</td>
+                      <td className="p-1.5 border border-amber-200">Enterprise ERP/accounting integration + document workflow</td>
                     </tr>
                     <tr>
                       <td className="p-1.5 border border-amber-200">Call Summary</td>
@@ -522,33 +572,33 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                       <td className="p-1.5 border border-amber-200">Agent Workflow</td>
                       <td className="text-right p-1.5 border border-amber-200">$10,000</td>
                       <td className="text-right p-1.5 border border-amber-200">$5,000</td>
-                      <td className="text-right p-1.5 border border-amber-200">$3,000</td>
-                      <td className="text-right p-1.5 border border-amber-200 font-semibold">$18,000</td>
+                      <td className="text-right p-1.5 border border-amber-200">$2,000</td>
+                      <td className="text-right p-1.5 border border-amber-200 font-semibold">$17,000</td>
                       <td className="p-1.5 border border-amber-200">Complex multi-tool orchestration</td>
                     </tr>
                     <tr>
                       <td className="p-1.5 border border-amber-200">Recommendations</td>
+                      <td className="text-right p-1.5 border border-amber-200">$30,000</td>
+                      <td className="text-right p-1.5 border border-amber-200">$12,000</td>
                       <td className="text-right p-1.5 border border-amber-200">$8,000</td>
-                      <td className="text-right p-1.5 border border-amber-200">$3,000</td>
-                      <td className="text-right p-1.5 border border-amber-200">$1,000</td>
-                      <td className="text-right p-1.5 border border-amber-200 font-semibold">$12,000</td>
-                      <td className="p-1.5 border border-amber-200">E-commerce platform integration</td>
+                      <td className="text-right p-1.5 border border-amber-200 font-semibold">$50,000</td>
+                      <td className="p-1.5 border border-amber-200">Mid-market e-commerce: catalog/data integration, experimentation, merchandising adoption</td>
                     </tr>
                     <tr>
                       <td className="p-1.5 border border-amber-200">Retention AI</td>
-                      <td className="text-right p-1.5 border border-amber-200">$8,000</td>
-                      <td className="text-right p-1.5 border border-amber-200">$5,000</td>
-                      <td className="text-right p-1.5 border border-amber-200">$2,000</td>
-                      <td className="text-right p-1.5 border border-amber-200 font-semibold">$15,000</td>
-                      <td className="p-1.5 border border-amber-200">CRM + data pipeline + model tuning</td>
+                      <td className="text-right p-1.5 border border-amber-200">$20,000</td>
+                      <td className="text-right p-1.5 border border-amber-200">$9,000</td>
+                      <td className="text-right p-1.5 border border-amber-200">$6,000</td>
+                      <td className="text-right p-1.5 border border-amber-200 font-semibold">$35,000</td>
+                      <td className="p-1.5 border border-amber-200">CRM/CDP integration, propensity tuning, lifecycle-team enablement</td>
                     </tr>
                     <tr>
                       <td className="p-1.5 border border-amber-200">Premium Features</td>
+                      <td className="text-right p-1.5 border border-amber-200">$35,000</td>
                       <td className="text-right p-1.5 border border-amber-200">$15,000</td>
-                      <td className="text-right p-1.5 border border-amber-200">$8,000</td>
-                      <td className="text-right p-1.5 border border-amber-200">$3,000</td>
-                      <td className="text-right p-1.5 border border-amber-200 font-semibold">$26,000</td>
-                      <td className="p-1.5 border border-amber-200">Full product feature build-out</td>
+                      <td className="text-right p-1.5 border border-amber-200">$10,000</td>
+                      <td className="text-right p-1.5 border border-amber-200 font-semibold">$60,000</td>
+                      <td className="p-1.5 border border-amber-200">Product build-out, monetization experiments, GTM and support enablement</td>
                     </tr>
                   </tbody>
                 </table>
@@ -561,11 +611,57 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
 
           <hr className="border-slate-200" />
 
+          {/* Section 3: Reading the Results */}
+          <section>
+            <div className="flex items-center space-x-2 mb-4">
+              <Calculator className="text-slate-600" size={20} />
+              <h3 className="text-lg font-bold font-headline text-slate-800">3. Reading the Results</h3>
+            </div>
+            <p className="text-sm text-slate-600 mb-4 ml-7">What the five headline cards actually measure.</p>
+
+            <div className="space-y-4 ml-7">
+              <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                <h4 className="font-semibold text-slate-700 mb-2">ROI</h4>
+                <p className="text-sm text-slate-600">
+                  A <strong>monthly</strong> ratio: (monthly value − total monthly cost) ÷ total monthly cost. Total monthly cost is model + harness + the amortized slice of your one-time costs.
+                </p>
+                <p className="text-xs text-slate-500 mt-2">
+                  💡 It is not an annual or lifetime figure, and the Analysis Months field never enters it — only the Amortization months do.
+                </p>
+              </div>
+
+              <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                <h4 className="font-semibold text-slate-700 mb-2">Net Benefit &amp; Payback</h4>
+                <p className="text-sm text-slate-600">
+                  <strong>Net Benefit</strong> is monthly value minus total monthly cost, amortized fixed costs included.<br />
+                  <strong>Payback</strong> divides your full one-time cost by the monthly <em>cash</em> net benefit — value minus running costs, <em>before</em> amortization — so the fixed costs are not charged twice. It reads "Immediate" when there are no one-time costs and "No Payback" when the cash benefit is zero or negative.
+                </p>
+              </div>
+
+              <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                <h4 className="font-semibold text-slate-700 mb-2">Unit Cost &amp; Break-even</h4>
+                <p className="text-sm text-slate-600">
+                  <strong>Unit Cost</strong> is total monthly cost ÷ monthly volume, so it falls as volume spreads the fixed costs wider.<br />
+                  <strong>Break-even</strong> is the monthly volume at which value covers everything: amortized fixed cost ÷ (value per unit − variable cost per unit). It is a fixed threshold — changing your current volume does not move it.
+                </p>
+              </div>
+
+              <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                <h4 className="font-semibold text-slate-700 mb-2">ROI Curve</h4>
+                <p className="text-sm text-slate-600">
+                  Cumulative cash: it starts at minus your one-time costs and adds the monthly cash net benefit each month, running out to the Analysis Months you set.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <hr className="border-slate-200" />
+
           {/* Advanced Features */}
           <section>
             <div className="flex items-center space-x-2 mb-4">
               <Settings className="text-purple-500" size={20} />
-              <h3 className="text-lg font-bold font-headline text-slate-800">3. Advanced Features</h3>
+              <h3 className="text-lg font-bold font-headline text-slate-800">4. Advanced Features</h3>
             </div>
 
             <div className="space-y-4 ml-7">
@@ -576,17 +672,21 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                   Toggle to "Advanced" in the header to unlock additional cost parameters:
                 </p>
                 <ul className="text-sm text-slate-600 list-disc list-inside ml-3 space-y-1">
-                  <li><strong>Model Routing Strategy:</strong> Use a slider to split traffic between two models</li>
-                  <li><strong>Cache Settings:</strong> Cache hit rate and discount percentage</li>
-                  <li><strong>Extended Harness Costs:</strong> Tool APIs, logging, safety guardrails, storage</li>
+                  <li><strong>Model Routing Strategy:</strong> a slider that splits traffic between two models, plus the Secondary Model block it reveals</li>
+                  <li><strong>Cache Settings:</strong> cache hit rate (and the manual discount, only for models with no published cache-read price)</li>
+                  <li><strong>Extended Harness Costs:</strong> Tool APIs, logging / monitoring, safety guardrails, storage, network egress</li>
+                  <li><strong>Retry Rate and Ops Overhead:</strong> the two calibration knobs under the harness block</li>
                 </ul>
+                <p className="text-xs text-slate-500 mt-2">
+                  💡 Simple mode does not zero the hidden fields — it keeps the preset's values and still charges them. The harness subtotal says so explicitly, and the line under it states the retry and overhead percentages in force.
+                </p>
               </div>
 
               {/* Model Routing */}
               <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
                 <h4 className="font-semibold text-purple-700 mb-2">🔀 Model Routing Strategy (Advanced Mode)</h4>
                 <p className="text-sm text-slate-600 mb-2">
-                  <strong>Concept:</strong> Route simple requests to a cheap, fast model (e.g., GPT-4o-mini) and complex requests to an expensive, smart model (e.g., GPT-4o).
+                  <strong>Concept:</strong> Route simple requests to a cheap, fast model (e.g. Claude Haiku 4.5) and complex requests to an expensive, smart model (e.g. Claude Opus 5).
                 </p>
                 <p className="text-sm text-slate-600 mb-2">
                   <strong>How it works:</strong>

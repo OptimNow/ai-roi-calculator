@@ -1,7 +1,7 @@
 # AI ROI Calculator - Methodology & Mathematical Specification
 
-**Version:** 1.1
-**Last Updated:** January 1, 2026
+**Version:** 1.3
+**Last Updated:** August 15, 2026
 **Authors:** OptimNow Team
 **Purpose:** Comprehensive documentation of the ROI calculation methodology for transparency, auditability, and academic rigor.
 
@@ -66,7 +66,8 @@ The 3-layer architecture prevents common pitfalls in AI cost estimation:
 | `C₁` | Layer 1 cost per unit | $/unit |
 | `C₂` | Layer 2 cost per unit | $/unit |
 | `Cf` | Fixed costs (one-time) | $ |
-| `A` | Amortization period | months |
+| `A` | Amortization period (spreads fixed costs into monthly cost) | months |
+| `N` | Analysis horizon (length of the ROI curve chart only) | months |
 | `GV` | Gross value per unit | $/unit |
 | `NV` | Net value per unit (after realization rate) | $/unit |
 | `ROI` | Return on Investment | % |
@@ -76,12 +77,48 @@ The 3-layer architecture prevents common pitfalls in AI cost estimation:
 
 1. **Additive Costs**: All cost components sum linearly
 2. **Multiplicative Success**: Value scales by realization rate (`S/100`)
-3. **Amortization**: Fixed costs spread across analysis horizon
-4. **Conservative Estimation**: When uncertain, favor higher costs / lower value
+3. **Amortization**: Fixed costs are spread over the amortization period `A`, which is a separate input from the analysis horizon `N`
+4. **Monthly Frame**: Every headline metric except payback is a monthly figure; `N` never enters `calculateROI()`, it only sets how far the ROI curve chart runs
+5. **Conservative Estimation**: When uncertain, favor higher costs / lower value
 
 ---
 
 ## Layer 1: Infrastructure Costs
+
+### Where the Prices Come From
+
+Model prices are not typed in by default: they are selected from the
+[AI Pricing Hub](https://aipricinghub.optimnow.io) catalog through the model picker, which
+resolves in this order and never fails — fresh browser cache (< 24h) → live hub API →
+stale cache → the catalog snapshot embedded in the app. The UI states which layer answered
+and the date the prices were published.
+
+A selected model carries an **identity** alongside its prices (`modelId`, `modelName`,
+`provider`, `pricedAt`) plus the provider's published **cache-read** and **batch** rates,
+which is what makes the optimizations below computable rather than guessed.
+
+**Auto-repricing.** Whenever the catalog resolves — on load, on a manual refresh, on preset
+load and on reset — every model carrying a `modelId` is repriced to the current rates
+(input, output, cache-read, batch, and `pricedAt`). Two deliberate exceptions:
+
+- **Custom-priced models** (no `modelId`) are never touched. Editing any price field, or
+  switching the billing basis to per call, drops the identity — that is how a negotiated
+  rate survives a refresh, and it stops a scenario from claiming a model's name with prices
+  it no longer uses.
+- **Scenarios loaded from storage** keep their recorded prices, because loading one does not
+  change the catalog. A scenario is the record of a decision at a point in time. An explicit
+  refresh afterwards will reprice it.
+
+**Presets.** The 11 example profiles are each bound to a real catalog model, with token
+profiles aligned to the hub's business use-case profiles, so a preset and the hub agree on
+the cost basis before any of your own numbers are entered.
+
+**Deep links.** The hub can hand a scenario over via
+`?useCase=&volume=&model=&batch=`; each parameter is validated independently and ignored if
+unknown. The model is applied once the catalog has loaded, since the embedded snapshot only
+carries the top models.
+
+---
 
 ### Token-Based Pricing
 
@@ -189,9 +226,15 @@ C₁_with_retries = C₁_cached × (1 + Rr)
 ```
 
 **Where:**
-- `Rr` = Retry rate (0.1 = 10% of calls retry once)
+- `Rr` = Retry rate (0.1 = 10% of calls retry once). Entered as a percentage in the UI ("Retry Rate", Advanced mode) and stored as a 0-1 fraction.
 
 **Rationale:** API failures, timeouts, and rate limits necessitate retries. Conservative estimate assumes full model cost for retries (no caching benefit on retry).
+
+**Layer placement:** the retry multiplier belongs to **Layer 1**, not Layer 2 — a retry re-runs
+the model, while harness components (storage, logging, egress) are not re-incurred. The UI
+puts the control under the harness block for convenience, but the cost lands in Layer 1 and
+is visible there in the Unit Economics table. Per-call models are multiplied the same way: a
+retried call is billed again.
 
 ---
 
@@ -224,8 +267,16 @@ C₁_monthly = C₁ × V × M_volume
 | Tool APIs | `Ct` | External API calls (web search, calculators, databases) | $0.00 - $0.10/unit |
 | Logging/Monitoring | `Cl` | CloudWatch, DataDog, LangSmith traces | $0.0001 - $0.001/unit |
 | Safety Guardrails | `Cg` | Content moderation, PII detection APIs | $0.0001 - $0.005/unit |
-| Network Egress | `Cn` | Data transfer out of cloud provider | $0.00001 - $0.0001/unit |
+| Network Egress | `Cn` | Data transfer out of cloud provider | $0.00001 - $0.0005/unit |
 | Storage | `Cs` | S3, RDS for conversation history | $0.00001 - $0.0005/unit |
+
+All seven have an input control. Simple mode shows Orchestration and Retrieval only; the
+other five keep their preset values and are still charged (the running subtotal under the
+fields states this).
+
+**Entry unit:** these services are almost always quoted per 1,000 calls, so the block
+defaults to a **per 1,000** entry mode. This is a display transform only — values are stored
+per unit — and a toggle switches back to per-unit entry.
 
 ---
 
@@ -251,10 +302,11 @@ C₂ = (C₁_with_retries + H_sum) × Oh × M_cost
 - Overhead multiplier applied to the sum
 
 **Where:**
-- `Oh` = Overhead multiplier (1.0 - 1.5)
-  - 1.0 = Perfectly optimized system
+- `Oh` = Overhead multiplier (1.0 - 1.5). Entered in the UI as **Ops Overhead**, a percentage
+  (Advanced mode): 10% means `Oh = 1.1`.
+  - 1.0 = Perfectly optimized system (0%)
   - 1.1 = 10% DevOps/maintenance overhead
-  - 1.2-1.5 = Early-stage systems with inefficiencies
+  - 1.2-1.5 = Early-stage systems with inefficiencies (20-50%)
 
 **Rationale:** Overhead captures:
 - Failed requests consuming resources but not generating value
@@ -298,22 +350,22 @@ GV = [(Bh × Dr) - (Rrc × Rr)] × (S / 100) × M_value
 
 **Example Calculation:**
 
-**Inputs:**
-- Baseline human cost: $1.00/ticket
+**Inputs** (the Customer Support Bot preset):
+- Baseline human cost: $0.50/ticket
 - Deflection rate: 35% (AI resolves without human)
 - Residual review rate: 5% (AI draft requires human review)
-- Residual review cost: $0.20/ticket
+- Residual review cost: $0.10/ticket
 - Realization rate: 90%
 
 **Math:**
 ```
-GV = [(1.00 × 0.35) - (0.20 × 0.05)] × 0.90
-   = [0.35 - 0.01] × 0.90
-   = 0.34 × 0.90
-   = $0.306 per ticket
+GV = [(0.50 × 0.35) - (0.10 × 0.05)] × 0.90
+   = [0.175 - 0.005] × 0.90
+   = 0.170 × 0.90
+   = $0.153 per ticket
 ```
 
-**Interpretation:** Each AI-handled ticket saves $0.31 compared to pure human handling.
+**Interpretation:** Each ticket saves $0.153 compared to pure human handling.
 
 **Realization Rate Explanation (90%):**
 - **What it means:** Technical realization rate - 90% of AI attempts produce usable output, 10% fail completely (timeouts, errors, no response)
@@ -432,16 +484,16 @@ Total_Value = (Ps - Cn) × Ns × (S / 100) × M_value
 
 **Example Calculation:**
 
-**Inputs:**
+**Inputs** (the AI Premium Features preset):
 - Subscription price: $15/month
 - Non-AI COGS (hosting, support): $3/month
-- Subscribers: 5,000
+- Subscribers: 1,000
 - Realization rate: 100%
 
 **Math:**
 ```
 Margin per subscriber = 15 - 3 = $12
-Total Value = 12 × 5,000 × 1.00 = $60,000/month
+Total Value = 12 × 1,000 × 1.00 = $12,000/month
 ```
 
 **Realization Rate Explanation (100%):**
@@ -494,6 +546,12 @@ ROI% = (NMB / C_monthly_total) × 100
 - **ROI > 0%:** Project is profitable
 - **ROI = 100%:** Returns double the investment each month
 - **ROI < 0%:** Monthly losses
+
+**This is a monthly ratio.** Both sides of the fraction are monthly figures: monthly value
+against monthly cost (variable + amortized fixed). It is not annualized and not cumulative,
+and the analysis horizon `N` plays no part in it — only the amortization period `A`, through
+`Cf_amortized`. Lengthening `A` lowers monthly cost and therefore raises ROI; lengthening `N`
+only stretches the ROI curve chart.
 
 **Example:**
 ```
@@ -591,29 +649,43 @@ V_breakeven = 2,000 / 2.20 = 909 units/month
 
 **Interpretation:** Need 909 units/month to cover all costs. Below this, project loses money.
 
+**Special cases:**
+- Unit margin ≤ 0: no break-even volume exists (the card shows "N/A")
+- `Cf_amortized = 0` with a positive unit margin: break-even volume is 0 — every unit is profitable
+- The result is rounded up to a whole unit
+
 ---
 
-### Break-even Months (Time to Profitability)
+### Break-even Months (Time to Reach Break-even Volume)
 
 **Formula:**
 ```
-M_breakeven = Cf_total / NMB  (if NMB > 0)
+M_breakeven = 0                                  (if V_effective ≥ V_breakeven)
+            | (V_breakeven - V_effective) / V_effective × 12   (otherwise)
 ```
 
-**Note:** This is identical to Payback Period. Break-even time = time to recover fixed costs.
+**What it measures:** how long it would take to *grow into* the break-even volume, assuming
+volume grows by 100% of today's volume per year. It is a rough planning aid, not a cash
+metric, and it is used for one thing only: positioning the vertical marker on the ROI curve
+chart.
+
+**Not the same as payback.** Payback (above) answers "when is the one-time investment repaid
+in cash". This answers "how far is current volume from the volume that covers all costs".
+At or above break-even volume, this is 0 while payback can still be several months.
 
 ---
 
 ### Visual Representation
 
-The **ROI Curve Chart** plots `CP(t)` from month 0 to the analysis horizon:
+The **ROI Curve Chart** plots `CP(t)` from month 0 to the analysis horizon `N`:
 
 - **Y-axis:** Cumulative profit ($)
 - **X-axis:** Months
-- **Horizontal line at y=0:** Break-even threshold
-- **Vertical chartreuse line:** Break-even month marker
-- **Green gradient fill:** Profitable region (above y=0)
-- **Red gradient fill:** Loss region (below y=0, not currently implemented)
+- **Horizontal dashed line at y=0:** Break-even threshold
+- **Vertical chartreuse line:** `M_breakeven` rounded up — the volume-growth marker defined
+  above, drawn only when it is greater than zero (so it is absent whenever current volume is
+  already at or above break-even volume)
+- **Green area fill:** under the cumulative-profit line
 
 ---
 
@@ -646,11 +718,16 @@ Four independent multipliers modify baseline assumptions:
 **Modified Calculations:**
 ```
 V_effective = V × M_volume
-S_effective = min(100, S × M_realization)
+S_effective = clamp(S × M_realization, 0, 100)
 C₁_effective = C₁ × M_cost
 C₂_effective = C₂ × M_cost
-GV_effective = GV × M_value
+GV_effective = GV × M_value   (applied to the value driver, see below)
 ```
+
+**Where `M_value` actually acts:** on the value *driver* of the selected method, not on the
+finished gross value — deflection rate (capped at 100%), absolute conversion uplift, churn
+reduction, or subscriber margin. For Cost Displacement this means the residual review cost is
+**not** scaled, so `GV` moves slightly more than proportionally with `M_value`.
 
 **Example Scenario:**
 
@@ -726,10 +803,10 @@ If "Costs" has a smaller impact range (15%):
 
 1. **Linear Scaling:** Costs and value scale linearly with volume (no economies/diseconomies of scale)
 2. **Constant Realization Rate:** AI quality remains stable over time (no model drift)
-3. **Static Pricing:** API pricing doesn't change during analysis period. Model prices are sourced live from the [AI Pricing Hub](https://aipricinghub.optimnow.io) catalog (refreshed daily); the price date is recorded with each selection (`pricedAt`).
+3. **Static Pricing:** API pricing doesn't change during the analysis period. Model prices are sourced live from the [AI Pricing Hub](https://aipricinghub.optimnow.io) catalog (refreshed daily); the price date is recorded with each selection (`pricedAt`), catalog-backed models are repriced automatically, and hand-entered prices are left alone (see "Where the Prices Come From").
 4. **Independent Variables:** Sensitivity multipliers don't interact (e.g., higher volume doesn't reduce unit costs)
 5. **Immediate Value Realization:** Benefits accrue immediately when AI succeeds (no lag)
-6. **API-Based Deployment:** Currently assumes pay-per-token pricing (self-hosted GPU pricing in v1.2)
+6. **API-Based Deployment:** Assumes managed-API pricing — pay-per-token, or a flat per-call rate. Self-hosted GPU economics (hardware amortization, utilization, electricity) are not modelled.
 
 ---
 
@@ -757,16 +834,18 @@ If "Costs" has a smaller impact range (15%):
 
 ### Unit Test Coverage
 
-The `calculations.ts` module includes 30+ test cases covering:
+The `calculations.ts` module has ~28 test cases covering:
 
 - Edge cases (zero volume, 100% realization rate, negative margins)
 - All four value methods with representative scenarios
-- Cache optimization logic
+- Cache optimization, including published cache-read prices vs. the manual discount
+- Batch rates, and per-call models ignoring token/cache/batch settings
 - Model routing with various split percentages
 - Break-even calculations across profitable/unprofitable scenarios
 - Sensitivity multiplier interactions
 
-**Test Suite:** `utils/calculations.test.ts`
+**Test Suites:** `utils/calculations.test.ts`, plus `utils/modelCatalog.test.ts` (catalog
+resolution, repricing) and `utils/deepLink.test.ts` (hub handover parsing).
 
 ---
 
@@ -779,7 +858,8 @@ Our methodology aligns with standard practices:
 | ROI Formula | `(Gain - Cost) / Cost × 100` | ✓ Matches |
 | Payback Period | `Investment / Annual Cash Flow` | ✓ Matches (monthly) |
 | TCO Components | Capex + Opex + Overhead | ✓ Fixed + Variable + Overhead |
-| Cache Discount | Anthropic: 90%, OpenAI: 50% | ✓ Configurable |
+| Cache Discount | Provider-published cache-read prices (typically 75-90% off input) | ✓ Taken per model from the AI Pricing Hub; manual discount only as fallback |
+| Batch Discount | Provider batch APIs, typically -50% | ✓ Applied per model where published |
 
 ---
 
@@ -805,13 +885,22 @@ Our methodology aligns with standard practices:
 
 ### Internal Documentation
 
-6. **Code Implementation:** `utils/calculations.ts` (lines 1-280)
-7. **Type Definitions:** `types.ts` (UseCaseInputs, CalculationResults interfaces)
-8. **Test Validation:** `utils/calculations.test.ts`
+6. **Code Implementation:** `utils/calculations.ts` (`calculateROI`)
+7. **Type Definitions:** `types.ts` (UseCaseInputs, ModelParams, CalculationResults interfaces)
+8. **Model Catalog & Repricing:** `utils/modelCatalog.ts`; deep links in `utils/deepLink.ts`
+9. **Test Validation:** `utils/calculations.test.ts`
 
 ---
 
 ## Changelog
+
+### v1.3 (August 2026)
+- Documented model prices sourced from the AI Pricing Hub catalog, model identity, auto-repricing rules and hub deep links
+- Documented per-call billing as a selectable basis, and published cache-read / batch rates taking precedence over the manual cache discount
+- Stated explicitly that retries are a Layer 1 cost, that ROI is a monthly ratio, and that the analysis horizon only drives the ROI curve chart
+- Corrected Break-even Months: it is a volume-growth estimate feeding the chart marker, not a second payback formula
+- Documented the seven harness components, per-1,000 entry mode and subtotal; noted Ops Overhead is entered as a percentage
+- Rebuilt the end-to-end worked example on the Customer Support Bot preset with current catalog prices
 
 ### v1.2 (February 2026)
 - Updated Revenue Uplift worked example wording from sessions to orders for recommendation scenarios
@@ -834,41 +923,50 @@ Our methodology aligns with standard practices:
 
 ### Scenario: Customer Support Chatbot
 
+This is the **Customer Support Bot** preset exactly as it loads, so it can be reproduced in
+the app. Model prices are those of the embedded catalog snapshot; a live catalog may reprice
+the model and shift the figures.
+
 **Inputs:**
 - **Value & Scope:**
-  - Monthly Volume: 1,000 tickets
+  - Monthly Volume: 10,000 tickets
   - Realization Rate: 90%
-  - Analysis Horizon: 12 months
+  - Analysis Horizon: 12 months (chart only)
 
 - **Fixed Costs:**
-  - Integration: $5,000
-  - Training: $2,000
-  - Change Management: $1,000
-  - **Total Fixed:** $8,000
+  - Integration: $6,000
+  - Training: $2,500
+  - Change Management: $1,500
+  - **Total Fixed:** $10,000
   - Amortization: 12 months
 
 - **Layer 1 (Infrastructure):**
-  - Model: GPT-3.5 Turbo
-  - Input tokens: 800/ticket
-  - Output tokens: 300/ticket
-  - Input price: $0.15/1M tokens
-  - Output price: $0.60/1M tokens
-  - Cache hit rate: 10%
-  - Cache discount: 90%
+  - Model: Claude Haiku 4.5 (Anthropic, via AI Pricing Hub)
+  - Input tokens: 1,500/ticket
+  - Output tokens: 500/ticket
+  - Input price: $1.00/1M tokens
+  - Output price: $5.00/1M tokens
+  - Published cache-read price: $0.10/1M tokens (90% off)
+  - Cache hit rate: 60%
+  - Batch processing: off (support is interactive)
   - Retry rate: 10%
 
-- **Layer 2 (Harness):**
-  - Orchestration: $0.001/ticket
-  - Retrieval: $0.002/ticket
-  - Logging: $0.0005/ticket
-  - Overhead multiplier: 1.1
+- **Layer 2 (Harness), per ticket:**
+  - Orchestration: $0.0020
+  - Retrieval: $0.0015
+  - Tool APIs: $0.0003
+  - Logging / Monitoring: $0.0008
+  - Safety / Guardrails: $0.0005
+  - Network Egress: $0.0002
+  - Storage: $0.0002
+  - Ops Overhead: 0% (`Oh` = 1.0)
 
 - **Layer 3 (Value):**
   - Method: Cost Displacement
-  - Baseline human cost: $8.50/ticket
+  - Baseline human cost: $0.50/ticket
   - Deflection rate: 35%
   - Residual review rate: 5%
-  - Residual review cost: $2.50/ticket
+  - Residual review cost: $0.10/ticket
 
 ---
 
@@ -876,63 +974,62 @@ Our methodology aligns with standard practices:
 
 **Layer 1:**
 ```
-Input cost = (800 / 1,000,000) × 0.15 = $0.00012
-Output cost = (300 / 1,000,000) × 0.60 = $0.00018
-Base cost = 0.00012 + 0.00018 = $0.0003/ticket
+Effective input price = (0.10 × 0.60) + (1.00 × 0.40) = $0.46/1M
+Input cost  = (1,500 / 1,000,000) × 0.46 = $0.00069
+Output cost = (500 / 1,000,000) × 5.00   = $0.00250
+Base cost = 0.00069 + 0.00250 = $0.00319/ticket
 
-Cache savings = 0.00012 × (0.10 × 0.90) = 0.0000108
-Cached input cost = 0.00012 - 0.0000108 = 0.0001092
-C₁ = 0.0001092 + 0.00018 = $0.0002892/ticket
-
-With retries: C₁ = 0.0002892 × 1.10 = $0.00031812/ticket
+With retries: C₁ = 0.00319 × 1.10 = $0.003509/ticket
 ```
 
 **Layer 2:**
 ```
-Harness sum = 0.001 + 0.002 + 0.0005 = $0.0035
-C₂_pre_overhead = 0.00031812 + 0.0035 = $0.00381812
-C₂ = 0.00381812 × 1.1 = $0.00419993/ticket
+H_sum = 0.0020 + 0.0015 + 0.0003 + 0.0008 + 0.0005 + 0.0002 + 0.0002 = $0.0055
+C₂ = (0.003509 + 0.0055) × 1.0 = $0.009009/ticket
 ```
 
 **Fixed Costs:**
 ```
-Cf_amortized = 8,000 / 12 = $666.67/month
+Cf_amortized = 10,000 / 12 = $833.33/month
 ```
 
 **Layer 3 (Value):**
 ```
-Deflection savings = 8.50 × 0.35 = $2.975
-Residual cost = 2.50 × 0.05 = $0.125
-Gross value = (2.975 - 0.125) × 0.90 = $2.565/ticket
+Deflection savings = 0.50 × 0.35 = $0.175
+Residual cost = 0.10 × 0.05 = $0.005
+Gross value = (0.175 - 0.005) × 0.90 = $0.153/ticket
 ```
 
 **Monthly Metrics:**
 ```
-C_monthly_var = 0.00419993 × 1,000 = $4.20
-C_monthly_total = 4.20 + 666.67 = $670.87
+C_monthly_var   = 0.009009 × 10,000 = $90.09
+C_monthly_total = 90.09 + 833.33 = $923.42
+Cost per ticket = 923.42 / 10,000 = $0.0923
 
-Total_Value = 2.565 × 1,000 = $2,565/month
-NMB = 2,565 - 670.87 = $1,894.13/month
+Total_Value = 0.153 × 10,000 = $1,530/month
+NMB = 1,530 - 923.42 = $606.58/month
+NCB = 1,530 - 90.09 = $1,439.91/month   (cash, before amortization)
 ```
 
 **ROI Metrics:**
 ```
-ROI% = (1,894.13 / 670.87) × 100 = 282.3%
-Payback = 8,000 / 1,894.13 = 4.2 months
+ROI% = (606.58 / 923.42) × 100 = 65.7%
+Payback = 10,000 / 1,439.91 = 6.9 months
 ```
 
 **Break-even:**
 ```
-Unit margin = 2.565 - 0.00419993 = $2.56080007
-V_breakeven = 666.67 / 2.56080007 = 260 tickets/month
+Unit margin = 0.153 - 0.009009 = $0.143991
+V_breakeven = ceil(833.33 / 0.143991) = 5,788 tickets/month
+M_breakeven = 0  (10,000 tickets already exceeds 5,788, so the chart shows no marker)
 ```
 
 **Interpretation:**
-- Every month generates $1,894 profit (after recovering $667 of fixed costs)
-- 282% monthly ROI
-- Break-even at 260 tickets (already exceeded at 1,000/month)
-- Fixed costs recovered in 4.2 months
-- After 12 months: Total cumulative profit = -8,000 + (1,894.13 × 12) = **$14,729.56**
+- 66% monthly ROI: every month generates $607 of profit after absorbing $833 of amortized fixed cost
+- The model itself is the smaller half of the running cost ($35/month) — the harness is $55/month
+- Break-even at 5,788 tickets, already exceeded at 10,000/month
+- The $10,000 investment is repaid in cash in 6.9 months
+- After 12 months: cumulative profit = -10,000 + (1,439.91 × 12) = **$7,278.92**
 
 ---
 
@@ -946,6 +1043,6 @@ For questions, corrections, or suggestions regarding this methodology:
 
 ---
 
-**Document Version:** 1.1
-**Last Reviewed:** January 1, 2026
-**Next Review:** April 1, 2026 (or upon Phase 2 release)
+**Document Version:** 1.3
+**Last Reviewed:** August 15, 2026
+**Next Review:** November 15, 2026 (or upon Phase 2 release)

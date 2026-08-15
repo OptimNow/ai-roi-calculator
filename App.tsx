@@ -732,7 +732,7 @@ export default function App() {
                    label="Analysis Months"
                    value={inputs.analysisHorizonMonths}
                    onChange={v => updateInput('analysisHorizonMonths', v)}
-                   tooltip="Analysis horizon for ROI calculation and fixed cost amortization. Longer periods reduce monthly amortized costs, improving ROI. Does NOT affect monthly metrics like Net Benefit."
+                   tooltip="How far the ROI curve chart runs. It does not enter any calculation: ROI, payback and break-even are all monthly figures. Fixed costs are spread over the separate Amortization field."
                  />
                </div>
 
@@ -1225,7 +1225,7 @@ export default function App() {
                   <h3 className="text-sm font-bold font-headline text-slate-800 uppercase">ROI Curve: Cumulative Profit Over Time</h3>
                   <button
                     className="text-slate-300 hover:text-[#2C2C2C] transition-colors"
-                    title="ROI Curve: Shows how cumulative profit evolves over your analysis period. The vertical chartreuse line marks when you break even (cumulative profit = $0)."
+                    title="ROI Curve: cumulative profit over the analysis horizon, starting at minus the one-time fixed costs. The vertical chartreuse line marks the break-even estimate — how long it would take to reach break-even volume at the current growth, not the month cumulative profit turns positive."
                     aria-label="ROI curve explanation"
                   >
                     <Info size={14} />
