@@ -335,10 +335,13 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
               </div>
 
               <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                <h4 className="font-semibold text-slate-700 mb-2">Retry Rate & Overhead</h4>
+                <h4 className="font-semibold text-slate-700 mb-2">Retry Rate & Ops Overhead (Advanced Mode)</h4>
                 <p className="text-sm text-slate-600">
-                  <strong>Retry Rate:</strong> Percentage of requests that fail and need to be retried (e.g., 0.1 = 10% retry rate adds 10% to Layer 1 costs).<br />
-                  <strong>Overhead Multiplier:</strong> Generic buffer for miscellaneous costs (e.g., 1.1 = 10% overhead for networking, staff time, etc.).
+                  <strong>Retry Rate:</strong> Percentage of requests that fail and need to be retried. Retries re-run the model, so they are counted in Layer 1 (10% here adds 10% to inference cost).<br />
+                  <strong>Ops Overhead:</strong> A percentage on top of all per-unit costs for miscellaneous operational load — DevOps time, dashboards, alerting.
+                </p>
+                <p className="text-xs text-slate-500 mt-2">
+                  Both are calibration knobs rather than business inputs, so Simple mode keeps the preset values (shown under the harness fields) and Advanced mode lets you change them.
                 </p>
               </div>
 

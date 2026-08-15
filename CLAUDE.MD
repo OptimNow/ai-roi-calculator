@@ -352,7 +352,7 @@ https://airoicalculator.optimnow.io/?useCase=supportTicket&volume=100000&model=a
 
 Everything is optional and independently validated — a malformed value is ignored rather than failing the load. Applied at mount for preset/volume/batch; the model waits for the catalog, since the embedded snapshot only carries the top models and one picked from the hub's full catalog may not exist until the live fetch lands.
 
-Two UI consequences: a dismissible banner confirms what carried over, and the Cost Model section starts expanded when a model was deep-linked (otherwise the handover is invisible — that section is collapsed by default).
+A dismissible banner confirms what carried over. (Both form sections are expanded by default, so a handed-over model is visible on arrival.)
 
 **When adding a preset**, check `HUB_USE_CASE_TO_PRESET` in `utils/deepLink.ts` if the hub has a matching use case under a different key.
 
