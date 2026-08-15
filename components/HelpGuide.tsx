@@ -620,6 +620,51 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
             <p className="text-sm text-slate-600 mb-4 ml-7">What the five headline cards actually measure.</p>
 
             <div className="space-y-4 ml-7">
+              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                <h4 className="font-semibold text-slate-700 mb-2">Start here: two accounts, two different zeros</h4>
+                <p className="text-sm text-slate-600">
+                  Most of the confusion around "break-even" comes from the calculator tracking two separate accounts. They answer different questions, and each has its own zero.
+                </p>
+                <p className="text-sm text-slate-600 mt-3">
+                  <strong>1. This month's account — "does this month pay for itself?"</strong><br />
+                  Value produced, minus running costs, minus a monthly slice of your setup. Take the Customer Support Bot preset at 10,000 tickets: $1,530 of value, −$90 of model and harness, −$833 of setup slice ($10,000 spread over 12 months) = <strong>+$607</strong>. The month is positive.
+                </p>
+                <p className="text-sm text-slate-600 mt-2">
+                  The question here is <em>how many</em>. At what volume does this account hit zero? That is <strong>Break-even volume</strong>: 5,788 tickets a month for this preset.
+                </p>
+                <p className="text-sm text-slate-600 mt-3">
+                  <strong>2. The cumulative account — "have I got my money back yet?"</strong><br />
+                  You paid $10,000 once. Each month the project hands back $1,440 of cash — the setup slice is not subtracted here, it is already paid. So $10,000 ÷ $1,440 = <strong>6.9 months</strong>.
+                </p>
+                <p className="text-sm text-slate-600 mt-2">
+                  The question here is <em>how long</em>. That is <strong>Payback</strong>, and it is what the ROI curve's vertical line marks.
+                </p>
+                <p className="text-sm text-slate-600 mt-3">
+                  The two move differently, which is the clearest way to tell them apart:
+                </p>
+                <table className="w-full text-xs mt-2 border border-green-200">
+                  <thead className="bg-green-100">
+                    <tr>
+                      <th className="text-left p-1.5 border border-green-200">Volume</th>
+                      <th className="text-right p-1.5 border border-green-200">This month</th>
+                      <th className="text-right p-1.5 border border-green-200">Break-even volume</th>
+                      <th className="text-right p-1.5 border border-green-200">Payback</th>
+                    </tr>
+                  </thead>
+                  <tbody className="text-slate-600">
+                    <tr><td className="p-1.5 border border-green-200">10,000 tickets</td><td className="text-right p-1.5 border border-green-200">+$607</td><td className="text-right p-1.5 border border-green-200">5,788</td><td className="text-right p-1.5 border border-green-200">6.9 mo</td></tr>
+                    <tr><td className="p-1.5 border border-green-200">5,788 tickets</td><td className="text-right p-1.5 border border-green-200">$0</td><td className="text-right p-1.5 border border-green-200">5,788</td><td className="text-right p-1.5 border border-green-200">12.0 mo</td></tr>
+                    <tr><td className="p-1.5 border border-green-200">4,000 tickets</td><td className="text-right p-1.5 border border-green-200">−$257</td><td className="text-right p-1.5 border border-green-200">5,788</td><td className="text-right p-1.5 border border-green-200">17.4 mo</td></tr>
+                  </tbody>
+                </table>
+                <p className="text-xs text-slate-500 mt-2">
+                  💡 Break-even volume never moves — it is a property of your unit economics, not of your size. Payback moves a lot: more volume repays the setup faster.
+                </p>
+                <p className="text-xs text-slate-500 mt-2">
+                  💡 Notice the middle row: at exactly the break-even volume, payback equals 12 months — your amortization period. Not a coincidence. At that volume the monthly cash generated is exactly the monthly setup slice, so repaying takes exactly the window you chose to spread it over. That is the hinge between the two accounts.
+                </p>
+              </div>
+
               <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
                 <h4 className="font-semibold text-slate-700 mb-2">ROI</h4>
                 <p className="text-sm text-slate-600">
@@ -639,17 +684,23 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
               </div>
 
               <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                <h4 className="font-semibold text-slate-700 mb-2">Unit Cost &amp; Break-even</h4>
+                <h4 className="font-semibold text-slate-700 mb-2">Unit Cost &amp; Break-even volume</h4>
                 <p className="text-sm text-slate-600">
                   <strong>Unit Cost</strong> is total monthly cost ÷ monthly volume, so it falls as volume spreads the fixed costs wider.<br />
-                  <strong>Break-even</strong> is the monthly volume at which value covers everything: amortized fixed cost ÷ (value per unit − variable cost per unit). It is a fixed threshold — changing your current volume does not move it.
+                  <strong>Break-even volume</strong> is the monthly volume at which this month's account hits zero: amortized fixed cost ÷ (value per unit − variable cost per unit). It is a fixed threshold — changing your current volume does not move it.
+                </p>
+                <p className="text-xs text-slate-500 mt-2">
+                  💡 It reads N/A when value per unit does not cover the variable cost per unit. No volume fixes that: every extra unit loses money, so there is no threshold to reach.
                 </p>
               </div>
 
               <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
                 <h4 className="font-semibold text-slate-700 mb-2">ROI Curve</h4>
                 <p className="text-sm text-slate-600">
-                  Cumulative cash: it starts at minus your one-time costs and adds the monthly cash net benefit each month, running out to the Analysis Months you set.
+                  The cumulative account, drawn: it starts at minus your one-time costs and adds the monthly cash net benefit each month, running out to the Analysis Months you set.
+                </p>
+                <p className="text-xs text-slate-500 mt-2">
+                  💡 The vertical chartreuse line marks where the curve crosses zero — the Payback month. Volume is held at today's level; no growth is assumed. If your volume does grow, repayment arrives sooner than the line suggests.
                 </p>
               </div>
             </div>

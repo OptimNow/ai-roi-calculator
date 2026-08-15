@@ -156,6 +156,39 @@ export default function App() {
 
   const effectiveRealizationRate = Math.min(100, Math.max(0, inputs.successRate * modifiers.successRateMultiplier));
 
+  /**
+   * Explanations written against the user's own figures, because the abstract
+   * definitions are what confuse people: "break-even" is a volume, "payback" is
+   * a duration, and both are described as reaching zero. Naming the two accounts
+   * — this month's, and the cumulative one — is what makes them separable.
+   */
+  const unit = inputs.unitName;
+  const setupPerUnit = results.monthlyAmortizedFixedCost / (results.effectiveMonthlyVolume || 1);
+  const harnessPerUnit = results.layer2CostPerUnit - results.layer1CostPerUnit;
+  const tooltips = {
+    roi:
+      `Your monthly account: ${formatMoney(results.totalMonthlyValue, 0)} of value against ` +
+      `${formatMoney(results.totalMonthlyCost, 0)} of cost — running costs plus a monthly slice of the setup. ` +
+      `This is a monthly figure; it does not grow with the analysis horizon.`,
+    netBenefit:
+      `What the monthly account leaves you: ${formatMoney(results.totalMonthlyValue, 0)} of value minus ` +
+      `${formatMoney(results.totalMonthlyCost, 0)} of cost. The setup counts here as a monthly slice ` +
+      `(${formatMoney(results.monthlyAmortizedFixedCost, 0)}), not as the full ${formatMoney(results.totalFixedCost, 0)}.`,
+    payback:
+      `How long to earn back the one-time setup. You pay ${formatMoney(results.totalFixedCost, 0)} once; the project ` +
+      `returns ${formatMoney(results.monthlyCashNetBenefit, 0)} of cash a month — the setup slice is not subtracted ` +
+      `here, it is already paid. More volume repays faster. Different question from Break-even volume, which asks ` +
+      `how big you must be, not how long you must wait.`,
+    unitCost:
+      `All-in cost of one ${unit}: ${formatMoney(results.layer1CostPerUnit, 4)} model inference + ` +
+      `${formatMoney(harnessPerUnit, 4)} harness + ${formatMoney(setupPerUnit, 4)} share of the setup.`,
+    breakEvenVolume:
+      `How many ${unit}s a month you need for the monthly account to balance — value covering running costs plus ` +
+      `the monthly setup slice. Below it you lose money every month, above it you gain. It does not move when your ` +
+      `volume changes: it is a property of your unit economics, not of your size. Different question from Payback, ` +
+      `which asks when the setup is repaid.`,
+  };
+
   const updateInput = (field: keyof UseCaseInputs, value: any) => {
     setInputs(prev => {
       const nextInputs = { ...prev, [field]: value };
@@ -1093,7 +1126,7 @@ export default function App() {
                       <span className="text-xs font-bold font-label text-slate-400 uppercase" id="roi-label">ROI</span>
                       <button
                         className="text-slate-300 hover:text-[#2C2C2C] transition-colors"
-                        title="Return on Investment: net monthly benefit (monthly value minus total monthly cost, incl. amortized fixed costs) divided by total monthly cost."
+                        title={tooltips.roi}
                         aria-label="ROI explanation"
                       >
                         <Info size={12} />
@@ -1113,7 +1146,7 @@ export default function App() {
                       <span className="text-xs font-bold font-label text-slate-400 uppercase" id="netbenefit-label">Net Benefit</span>
                       <button
                         className="text-slate-300 hover:text-[#2C2C2C] transition-colors"
-                        title="Net Monthly Benefit: Total monthly value generated minus total monthly costs. This is your profit per month."
+                        title={tooltips.netBenefit}
                         aria-label="Net benefit explanation"
                       >
                         <Info size={12} />
@@ -1133,7 +1166,7 @@ export default function App() {
                       <span className="text-xs font-bold font-label text-slate-400 uppercase" id="payback-label">Payback</span>
                       <button
                         className="text-slate-300 hover:text-[#2C2C2C] transition-colors"
-                        title="Payback Period: How many months until cumulative profits cover your fixed costs (integration, training, change management)."
+                        title={tooltips.payback}
                         aria-label="Payback period explanation"
                       >
                         <Info size={12} />
@@ -1149,7 +1182,7 @@ export default function App() {
                       <span className="text-xs font-bold font-label text-slate-400 uppercase" id="unitcost-label">Unit Cost</span>
                       <button
                         className="text-slate-300 hover:text-[#2C2C2C] transition-colors"
-                        title="Cost per Unit: Average total cost per transaction, including model inference, harness costs, and amortized fixed costs."
+                        title={tooltips.unitCost}
                         aria-label="Unit cost explanation"
                       >
                         <Info size={12} />
@@ -1162,10 +1195,10 @@ export default function App() {
                 </div>
                 <div className="bg-white p-4 rounded-lg border border-slate-200 flex flex-col justify-between" role="article" aria-label="Break-even metric">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold font-label text-slate-400 uppercase" id="breakeven-label">Break-even</span>
+                      <span className="text-xs font-bold font-label text-slate-400 uppercase" id="breakeven-label">Break-even volume</span>
                       <button
                         className="text-slate-300 hover:text-[#2C2C2C] transition-colors"
-                        title="Break-even Volume: The monthly volume needed for your net benefit to reach $0 (where value equals total costs). This threshold is constant regardless of current volume."
+                        title={tooltips.breakEvenVolume}
                         aria-label="Break-even explanation"
                       >
                         <Info size={12} />
@@ -1178,7 +1211,7 @@ export default function App() {
                     </span>
                     <span className="text-[10px] text-slate-400">
                       {results.breakEvenVolume !== undefined
-                        ? `${inputs.unitName}s/mo needed`
+                        ? `${inputs.unitName}s/mo to break even`
                         : 'Negative margin'}
                     </span>
                 </div>
@@ -1225,7 +1258,7 @@ export default function App() {
                   <h3 className="text-sm font-bold font-headline text-slate-800 uppercase">ROI Curve: Cumulative Profit Over Time</h3>
                   <button
                     className="text-slate-300 hover:text-[#2C2C2C] transition-colors"
-                    title="ROI Curve: cumulative profit over the analysis horizon, starting at minus the one-time fixed costs. The vertical chartreuse line marks the month cumulative profit turns positive, at today's volume. No volume growth is assumed; if volume does grow, break-even arrives sooner."
+                    title={`This is the cumulative account, not the monthly one. It starts at minus your ${formatMoney(results.totalFixedCost, 0)} of setup and climbs by the cash the project generates each month. The chartreuse line marks where it crosses zero — the month your setup is repaid, which is the Payback figure above. Volume is held at today's level; if it grows, repayment comes sooner.`}
                     aria-label="ROI curve explanation"
                   >
                     <Info size={14} />

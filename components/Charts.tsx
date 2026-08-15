@@ -179,14 +179,17 @@ export const ROICurveChart = memo<ROICurveChartProps>(({ data, breakEvenMonth, f
           stroke="#94a3b8"
           strokeWidth={2}
           strokeDasharray="3 3"
-          label={{ value: 'Break-even Line', position: 'right', fill: '#64748b', fontSize: 11 }}
+          label={{ value: 'Setup repaid', position: 'right', fill: '#64748b', fontSize: 11 }}
         />
         {breakEvenMonth !== undefined && breakEvenMonth > 0 && (
           <ReferenceLine
             x={breakEvenMonth}
             stroke="#ACE849"
             strokeWidth={2}
-            label={{ value: `Month ${breakEvenMonth}`, position: 'top', fill: '#ACE849', fontSize: 11, fontWeight: 'bold' }}
+            // Named for what it is: the payback month. Calling it "break-even"
+            // invited confusion with the break-even volume KPI, which is a
+            // quantity rather than a duration.
+            label={{ value: `Payback: month ${breakEvenMonth}`, position: 'top', fill: '#ACE849', fontSize: 11, fontWeight: 'bold' }}
           />
         )}
         <Area
