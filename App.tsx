@@ -44,8 +44,7 @@ export default function App() {
   });
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     valueScope: true,
-    // A deep-linked model lands in the cost section, so open it or the handover is invisible
-    costModel: Boolean(deepLink.modelId),
+    costModel: true,
   });
   const [copied, setCopied] = useState(false);
   const { catalog, loading: catalogLoading, settled: catalogSettled, refresh: refreshCatalog } = useModelCatalog();
@@ -650,8 +649,14 @@ export default function App() {
 
           <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
             {/* 1. Value & Scope */}
-             <SectionHeader title="1. Value & Scope" isOpen={expandedSections.valueScope} onToggle={() => toggleSection('valueScope')} />
-             {expandedSections.valueScope && <div className="p-5 border-b border-slate-100">
+             <SectionHeader
+               title="1. Value & Scope"
+               isOpen={expandedSections.valueScope}
+               onToggle={() => toggleSection('valueScope')}
+               controls="section-value-scope"
+               summary={`${inputs.valueMethod} · ${formatMoney(results.grossValuePerUnit, 4)} / ${inputs.unitName} · ${formatNumber(inputs.monthlyVolume)} ${inputs.unitName}s/mo`}
+             />
+             {expandedSections.valueScope && <div id="section-value-scope" className="p-5 border-b border-slate-100">
                <div className="space-y-3">
                  <div>
                    <label className="block text-xs font-semibold text-slate-600 uppercase mb-1">Use Case Name</label>
@@ -769,24 +774,48 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Equation Preview */}
+                {/* Equation Preview — shows where each rate acts, since the three are easily confused */}
                 <div className="bg-slate-50 p-3 rounded-lg border border-slate-200 ml-9">
                   <h4 className="text-xs font-bold font-label text-slate-500 uppercase mb-2">Equation Preview</h4>
+                  {inputs.valueMethod === ValueMethod.COST_DISPLACEMENT && (
+                    <p className="text-xs text-slate-600 font-mono mb-1">
+                      ({formatMoney(inputs.baselineHumanCostPerUnit, 2)}
+                      <span className="text-slate-400"> × </span>{inputs.deflectionRate}%
+                      <span className="text-slate-400"> deflected) − (</span>
+                      {formatMoney(inputs.residualReviewCostPerUnit, 2)}
+                      <span className="text-slate-400"> × </span>{inputs.residualHumanReviewRate}%
+                      <span className="text-slate-400"> reviewed) = </span>
+                      {formatMoney(grossBeforeRealization, 4)}
+                    </p>
+                  )}
                   <p className="text-sm text-slate-700 font-mono">
                     {formatMoney(grossBeforeRealization, 4)}
                     <span className="text-slate-400"> × </span>
                     {effectiveRealizationRate.toFixed(0)}%
-                    <span className="text-slate-400"> = </span>
+                    <span className="text-slate-400"> realized = </span>
                     <span className="font-bold text-[#2C2C2C]">{formatMoney(results.grossValuePerUnit, 4)}</span>
                     <span className="text-slate-400"> / {inputs.unitName}</span>
                   </p>
+                  {inputs.valueMethod === ValueMethod.COST_DISPLACEMENT && (
+                    <p className="text-[10px] text-slate-500 mt-2 leading-relaxed">
+                      Three different questions: <strong>deflection</strong> is how often AI handles the task at all,
+                      <strong> review</strong> is how often a human still checks its output, and
+                      <strong> realization</strong> is how much of the resulting saving actually reaches the P&amp;L.
+                    </p>
+                  )}
                 </div>
                </div>
              </div>}
 
              {/* 2. Cost Model */}
-             <SectionHeader title="2. Cost Model" isOpen={expandedSections.costModel} onToggle={() => toggleSection('costModel')} />
-             {expandedSections.costModel && <div className="p-5 border-b border-slate-100">
+             <SectionHeader
+               title="2. Cost Model"
+               isOpen={expandedSections.costModel}
+               onToggle={() => toggleSection('costModel')}
+               controls="section-cost-model"
+               summary={`${inputs.primaryModel.modelName ?? 'Custom pricing'} · ${formatMoney(results.totalCostPerUnit, 4)} / ${inputs.unitName}`}
+             />
+             {expandedSections.costModel && <div id="section-cost-model" className="p-5 border-b border-slate-100">
                 {/* Sub-section: Infrastructure (Layer 1) */}
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-xs font-bold font-label text-slate-500 uppercase tracking-wider">Infrastructure (Layer 1)</h4>
@@ -909,10 +938,18 @@ export default function App() {
                            <MoneyInput label="Storage" value={inputs.storageCostPerUnit} onChange={v => updateInput('storageCostPerUnit', v)} precision={4} />
                       </div>
                   )}
-                  <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-slate-100">
-                      <PercentInput label="Retry Rate" value={inputs.retryRate * 100} onChange={v => updateInput('retryRate', v/100)} tooltip="Percentage of calls that need a retry" />
-                      <NumberInput label="Overhead Multiplier" value={inputs.overheadMultiplier} onChange={v => updateInput('overheadMultiplier', v)} step={0.05} tooltip="Generic multiplier (e.g. 1.1 for 10% misc overhead)" />
-                  </div>
+                  {mode === 'advanced' ? (
+                      <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-slate-100">
+                          <PercentInput label="Retry Rate" value={inputs.retryRate * 100} onChange={v => updateInput('retryRate', v/100)} tooltip="Percentage of calls that need a retry. Retries re-run the model, so they are counted in Layer 1." />
+                          <PercentInput label="Ops Overhead" value={Math.round((inputs.overheadMultiplier - 1) * 1000) / 10} onChange={v => updateInput('overheadMultiplier', 1 + v/100)} tooltip="Extra percentage on top of all per-unit costs for DevOps time, dashboards and alerting. 10% here means costs are multiplied by 1.1." />
+                      </div>
+                  ) : (
+                      <p className="text-[10px] text-slate-400 mt-3 pt-3 border-t border-slate-100">
+                        Assumes {(inputs.retryRate * 100).toFixed(0)}% retries
+                        {inputs.overheadMultiplier !== 1 && ` and ${((inputs.overheadMultiplier - 1) * 100).toFixed(0)}% ops overhead`}.
+                        Switch to Advanced to change {inputs.overheadMultiplier !== 1 ? 'them' : 'it'}.
+                      </p>
+                  )}
                 </div>
 
                 {/* Sub-section: One-time Costs */}
@@ -980,48 +1017,6 @@ export default function App() {
                   Full methodology →
                 </a>
               </p>
-            </div>
-
-            {/* Unit Economics — placed right after Value Summary for context */}
-            <div className="grid grid-cols-2 gap-4" role="group" aria-label="Unit economics">
-                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between" role="article" aria-label="Unit cost metric">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-400 uppercase" id="unitcost-label">Unit Cost</span>
-                      <button
-                        className="text-slate-300 hover:text-accent transition-colors"
-                        title="Cost per Unit: Average total cost per transaction, including model inference, harness costs, and amortized fixed costs."
-                        aria-label="Unit cost explanation"
-                      >
-                        <Info size={12} />
-                      </button>
-                    </div>
-                    <span className="text-2xl font-extrabold text-slate-800" aria-labelledby="unitcost-label" aria-live="polite">
-                        {formatMoney(results.totalCostPerUnit, 3)}
-                    </span>
-                    <span className="text-[10px] text-slate-400">per {inputs.unitName}</span>
-                </div>
-                <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between" role="article" aria-label="Break-even metric">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-400 uppercase" id="breakeven-label">Unit Break-even</span>
-                      <button
-                        className="text-slate-300 hover:text-accent transition-colors"
-                        title="Break-even Volume: The monthly volume needed for your net benefit to reach $0 (where value equals total costs). This threshold is constant regardless of current volume."
-                        aria-label="Break-even explanation"
-                      >
-                        <Info size={12} />
-                      </button>
-                    </div>
-                    <span className="text-2xl font-extrabold text-slate-800" aria-labelledby="breakeven-label" aria-live="polite">
-                        {results.breakEvenVolume !== undefined
-                          ? formatNumber(results.breakEvenVolume)
-                          : 'N/A'}
-                    </span>
-                    <span className="text-[10px] text-slate-400">
-                      {results.breakEvenVolume !== undefined
-                        ? `${inputs.unitName}s/mo needed`
-                        : 'Negative margin'}
-                    </span>
-                </div>
             </div>
 
             {/* KPI Cards */}
@@ -1241,10 +1236,13 @@ export default function App() {
 
             {/* Sensitivity Analysis */}
             <div className="bg-[#2C2C2C] rounded-lg p-6 text-white">
-                <div className="flex items-center space-x-2 mb-4">
+                <div className="flex items-center space-x-2 mb-1">
                     <Settings size={18} className="text-accent" />
                     <h3 className="text-sm font-bold font-headline uppercase tracking-wider">Sensitivity Simulator</h3>
                 </div>
+                <p className="text-xs text-slate-400 mb-4">
+                    Stress-tests the results only — these sliders never change your inputs, and are not saved with a scenario.
+                </p>
                 <div className="grid grid-cols-2 gap-6">
                     <div>
                         <div className="flex justify-between text-xs mb-2">

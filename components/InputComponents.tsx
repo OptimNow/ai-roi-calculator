@@ -180,9 +180,45 @@ export const PercentInput: React.FC<BaseProps> = ({ label, value, onChange, tool
   );
 };
 
-export const SectionHeader: React.FC<{ title: string; onToggle?: () => void; isOpen?: boolean }> = ({ title, onToggle, isOpen }) => (
-    <div className="flex items-center justify-between bg-slate-100 px-4 py-3 rounded-t-lg border-b border-slate-200 mt-6 cursor-pointer" onClick={onToggle}>
+/**
+ * Collapsible section header. Rendered as a real button so it can be reached and
+ * toggled from the keyboard; `summary` surfaces the section's key values while it
+ * is collapsed, so folding a section never hides what it is currently set to.
+ */
+export const SectionHeader: React.FC<{
+  title: string;
+  onToggle?: () => void;
+  isOpen?: boolean;
+  summary?: string;
+  controls?: string;
+}> = ({ title, onToggle, isOpen, summary, controls }) => {
+  const content = (
+    <>
+      <div className="min-w-0 text-left">
         <h3 className="text-sm font-bold font-headline text-slate-700 uppercase">{title}</h3>
-        {onToggle && <span className="text-slate-500 text-xs">{isOpen ? '▼' : '▶'}</span>}
-    </div>
-);
+        {!isOpen && summary && (
+          <p className="text-xs font-normal normal-case text-slate-500 truncate mt-0.5">{summary}</p>
+        )}
+      </div>
+      {onToggle && <span className="text-slate-500 text-xs flex-shrink-0 ml-3" aria-hidden="true">{isOpen ? '▼' : '▶'}</span>}
+    </>
+  );
+
+  const className = 'w-full flex items-center justify-between bg-slate-100 px-4 py-3 rounded-t-lg border-b border-slate-200 mt-6';
+
+  if (!onToggle) {
+    return <div className={className}>{content}</div>;
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-expanded={isOpen}
+      aria-controls={controls}
+      className={`${className} hover:bg-slate-200 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent`}
+    >
+      {content}
+    </button>
+  );
+};
