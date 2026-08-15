@@ -280,6 +280,22 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
               </div>
 
               <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <h4 className="font-semibold text-slate-700 mb-2">Per-Token vs Per-Call Billing</h4>
+                <p className="text-sm text-slate-600">
+                  Most LLMs bill per token, which is the default. Choose <strong>Custom pricing</strong> and switch the basis to <strong>per call</strong> when a service charges a flat rate per request instead:
+                </p>
+                <ul className="mt-2 text-sm text-slate-600 list-disc list-inside ml-3">
+                  <li><strong>Per page:</strong> OCR and document extraction (Textract, Document AI, Document Intelligence)</li>
+                  <li><strong>Per image:</strong> image generation endpoints</li>
+                  <li><strong>Per minute:</strong> audio transcription</li>
+                  <li><strong>Negotiated flat rates:</strong> "$0.12 per document processed", whatever the tokens</li>
+                </ul>
+                <p className="text-xs text-slate-500 mt-2">
+                  💡 A per-call rate ignores token counts, cache and batch discounts — there is no token quantity for them to act on. Retries still count, since a retried call is billed again.
+                </p>
+              </div>
+
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                 <h4 className="font-semibold text-slate-700 mb-2">Async Batch Processing</h4>
                 <p className="text-sm text-slate-600">
                   If your workload tolerates delayed responses (document processing, summaries, scoring), enable batch processing:
@@ -320,17 +336,21 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
               </div>
 
               <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                <h4 className="font-semibold text-slate-700 mb-2">Key Cost Components (per unit)</h4>
+                <h4 className="font-semibold text-slate-700 mb-2">Where each vendor bill goes</h4>
                 <ul className="space-y-2 text-sm text-slate-600">
-                  <li><strong>Orchestration:</strong> LangChain, agent frameworks, workflow engines (~$0.001/unit)</li>
-                  <li><strong>Retrieval / Vector DB:</strong> Pinecone, Weaviate, embedding searches (~$0.002/unit)</li>
-                  <li><strong>Tool APIs:</strong> External APIs called by your AI (varies by API)</li>
-                  <li><strong>Logging / Monitoring:</strong> LangSmith, Helicone, DataDog (~$0.0005/unit)</li>
-                  <li><strong>Safety / Guardrails:</strong> Content moderation, PII detection (~$0.0005/unit)</li>
-                  <li><strong>Storage:</strong> Conversation history, documents (~$0.0001/unit)</li>
+                  <li><strong>Orchestration:</strong> the runtime that drives the workflow — LangGraph, Temporal, Step Functions, or your own service compute</li>
+                  <li><strong>Retrieval / Vector DB:</strong> vector search and embedding calls — Pinecone, Weaviate, pgvector</li>
+                  <li><strong>Tool APIs:</strong> everything the agent calls out to — web search (Serper, Tavily, Bing), rerankers (Cohere Rerank), enrichment services</li>
+                  <li><strong>Logging / Monitoring:</strong> observability — LangSmith, Helicone, Datadog, CloudWatch</li>
+                  <li><strong>Safety / Guardrails:</strong> moderation and PII detection — Bedrock Guardrails, Azure Content Safety, OpenAI Moderation</li>
+                  <li><strong>Network Egress:</strong> data transfer out of your cloud provider</li>
+                  <li><strong>Storage:</strong> conversation history, documents and artifacts — S3, RDS, blob storage</li>
                 </ul>
-                <p className="text-xs text-slate-500 mt-3">
-                  💡 Start with estimates, refine after testing. Simple mode hides optional fields.
+                <p className="text-sm text-slate-600 mt-3">
+                  <strong>Entering the numbers:</strong> these services are almost always quoted per 1,000 calls, so the harness block defaults to a <strong>per 1,000</strong> entry mode — type the vendor's figure directly ($8 per 1,000 searches → <code>8</code>). Switch to per-unit if you prefer. If each unit of work makes several calls, multiply first: 3 searches per ticket at $8/1,000 is $24 per 1,000 tickets.
+                </p>
+                <p className="text-xs text-slate-500 mt-2">
+                  💡 The subtotal under the fields shows the running total per unit and per month. Simple mode hides the optional lines but still charges their preset values, which the subtotal says explicitly.
                 </p>
               </div>
 

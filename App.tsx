@@ -5,7 +5,7 @@ import { UseCaseInputs, CalculationResults, ValueMethod, SensitivityModifiers, M
 import { DEFAULT_INPUTS, PRESETS } from './constants';
 import { calculateROI } from './utils/calculations';
 import { MoneyInput, NumberInput, PercentInput, SectionHeader } from './components/InputComponents';
-import { CatalogStatus, ModelPicker, useModelCatalog } from './components/ModelPicker';
+import { CatalogStatus, ModelCostInputs, useModelCatalog } from './components/ModelPicker';
 import { catalogModelToParams, repriceModels, toModelId, PRICING_HUB_URL } from './utils/modelCatalog';
 import { applyDeepLink, hasDeepLink, parseDeepLink, presetLabel } from './utils/deepLink';
 import { HelpGuide } from './components/HelpGuide';
@@ -47,6 +47,7 @@ export default function App() {
     costModel: true,
   });
   const [copied, setCopied] = useState(false);
+  const [harnessPer1k, setHarnessPer1k] = useState(true);
   const { catalog, loading: catalogLoading, settled: catalogSettled, refresh: refreshCatalog } = useModelCatalog();
   const [deepLinkModelName, setDeepLinkModelName] = useState<string | undefined>(undefined);
   const [showDeepLinkBanner, setShowDeepLinkBanner] = useState(hasDeepLink(deepLink));
@@ -118,6 +119,31 @@ export default function App() {
     deepLink.monthlyVolume ? `${formatNumber(deepLink.monthlyVolume)} ${inputs.unitName}s/mo` : undefined,
   ].filter(Boolean).join(' · ');
 
+  // Harness costs are stored per unit, but vendors quote per 1,000 calls. This is a
+  // display preference only — it scales what the inputs show, never what is stored.
+  const harnessScale = harnessPer1k ? 1000 : 1;
+  const harnessPrecision = harnessPer1k ? 2 : 4;
+  const harnessValue = (perUnit: number) => Math.round(perUnit * harnessScale * 1e6) / 1e6;
+  const updateHarness = (field: keyof UseCaseInputs, displayed: number) =>
+    updateInput(field, Math.round((displayed / harnessScale) * 1e9) / 1e9);
+
+  const harnessSubtotal =
+    inputs.orchestrationCostPerUnit +
+    inputs.retrievalCostPerUnit +
+    inputs.toolApiCostPerUnit +
+    inputs.loggingMonitoringCostPerUnit +
+    inputs.safetyGuardrailsCostPerUnit +
+    inputs.networkEgressCostPerUnit +
+    inputs.storageCostPerUnit;
+
+  // What Simple mode does not show but still charges, so the subtotal is never a surprise
+  const harnessHiddenCost =
+    inputs.toolApiCostPerUnit +
+    inputs.loggingMonitoringCostPerUnit +
+    inputs.safetyGuardrailsCostPerUnit +
+    inputs.networkEgressCostPerUnit +
+    inputs.storageCostPerUnit;
+
   const toggleSection = (key: string) => setExpandedSections(prev => ({...prev, [key]: !prev[key]}));
 
   const results = useMemo(() => calculateROI(inputs, modifiers), [inputs, modifiers]);
@@ -183,6 +209,29 @@ export default function App() {
         batchInputPricePer1M: undefined,
         batchOutputPricePer1M: undefined,
       }
+    }));
+  };
+
+  // Switching to a flat per-call rate detaches the catalog identity: the catalog is
+  // token-priced, so its $/1M rates and cache/batch discounts no longer describe the cost.
+  const setBillingBasis = (model: 'primaryModel' | 'secondaryModel', useCallPricing: boolean) => {
+    setInputs(prev => ({
+      ...prev,
+      [model]: {
+        ...prev[model],
+        useCallPricing,
+        ...(useCallPricing
+          ? {
+              modelId: undefined,
+              modelName: undefined,
+              provider: undefined,
+              pricedAt: undefined,
+              cachedInputPricePer1M: undefined,
+              batchInputPricePer1M: undefined,
+              batchOutputPricePer1M: undefined,
+            }
+          : {}),
+      },
     }));
   };
 
@@ -843,45 +892,30 @@ export default function App() {
 
                 <div className="space-y-4">
                     <div className="border-l-2 border-accent pl-3">
-                        <h5 className="text-xs font-bold text-slate-900 mb-2">{mode === 'advanced' ? 'Primary Model (Simple)' : 'Model'}</h5>
-                        <ModelPicker
+                        <ModelCostInputs
                           slot="primary"
+                          title={mode === 'advanced' ? 'Primary Model (Simple)' : 'Model'}
                           value={inputs.primaryModel}
                           catalog={catalog}
                           onSelect={patch => patchModelParams('primaryModel', patch)}
+                          onParam={(field, v) => updateModelParam('primaryModel', field, v)}
+                          onPrice={(field, v) => updateModelPrice('primaryModel', field, v)}
+                          onBillingBasisChange={perCall => setBillingBasis('primaryModel', perCall)}
                         />
-                        <div className="grid grid-cols-2 gap-3">
-                            <NumberInput label="Avg Input Tokens" value={inputs.primaryModel.avgInputTokensPerUnit} onChange={v => updateModelParam('primaryModel', 'avgInputTokensPerUnit', v)} />
-                            <NumberInput label="Avg Output Tokens" value={inputs.primaryModel.avgOutputTokensPerUnit} onChange={v => updateModelParam('primaryModel', 'avgOutputTokensPerUnit', v)} />
-                        </div>
-                        <div className="grid grid-cols-2 gap-3">
-                            <MoneyInput label="$ / 1M Input" value={inputs.primaryModel.pricePer1MInputTokens} onChange={v => updateModelPrice('primaryModel', 'pricePer1MInputTokens', v)} precision={4} />
-                            <MoneyInput label="$ / 1M Output" value={inputs.primaryModel.pricePer1MOutputTokens} onChange={v => updateModelPrice('primaryModel', 'pricePer1MOutputTokens', v)} precision={4} />
-                        </div>
-                        {inputs.primaryModel.pricedAt && (
-                          <p className="text-[10px] text-slate-400 mt-1">
-                            {inputs.primaryModel.modelName} list prices as of {new Date(inputs.primaryModel.pricedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}. Editing a price switches to custom pricing.
-                          </p>
-                        )}
                     </div>
 
                     {mode === 'advanced' && inputs.routingSimplePercent < 100 && (
                         <div className="border-l-2 border-purple-500 pl-3 mt-4 pt-4 border-t border-dashed border-slate-200">
-                            <h5 className="text-xs font-bold text-slate-900 mb-2">Secondary Model (Complex)</h5>
-                            <ModelPicker
+                            <ModelCostInputs
                               slot="secondary"
+                              title="Secondary Model (Complex)"
                               value={inputs.secondaryModel}
                               catalog={catalog}
                               onSelect={patch => patchModelParams('secondaryModel', patch)}
+                              onParam={(field, v) => updateModelParam('secondaryModel', field, v)}
+                              onPrice={(field, v) => updateModelPrice('secondaryModel', field, v)}
+                              onBillingBasisChange={perCall => setBillingBasis('secondaryModel', perCall)}
                             />
-                            <div className="grid grid-cols-2 gap-3">
-                                <NumberInput label="Avg Input Tokens" value={inputs.secondaryModel.avgInputTokensPerUnit} onChange={v => updateModelParam('secondaryModel', 'avgInputTokensPerUnit', v)} />
-                                <NumberInput label="Avg Output Tokens" value={inputs.secondaryModel.avgOutputTokensPerUnit} onChange={v => updateModelParam('secondaryModel', 'avgOutputTokensPerUnit', v)} />
-                            </div>
-                            <div className="grid grid-cols-2 gap-3">
-                                <MoneyInput label="$ / 1M Input" value={inputs.secondaryModel.pricePer1MInputTokens} onChange={v => updateModelPrice('secondaryModel', 'pricePer1MInputTokens', v)} precision={4} />
-                                <MoneyInput label="$ / 1M Output" value={inputs.secondaryModel.pricePer1MOutputTokens} onChange={v => updateModelPrice('secondaryModel', 'pricePer1MOutputTokens', v)} precision={4} />
-                            </div>
                         </div>
                     )}
 
@@ -925,19 +959,52 @@ export default function App() {
 
                 {/* Sub-section: Harness (Layer 2) */}
                 <div className="border-t border-slate-200 mt-5 pt-5">
-                  <h4 className="text-xs font-bold font-label text-slate-500 uppercase tracking-wider mb-3">Harness (Layer 2)</h4>
+                  <div className="flex items-center justify-between mb-3 gap-2">
+                    <h4 className="text-xs font-bold font-label text-slate-500 uppercase tracking-wider">Harness (Layer 2)</h4>
+                    <div className="flex bg-slate-100 rounded-md p-0.5 flex-shrink-0" role="group" aria-label="Harness cost entry unit">
+                      <button
+                        type="button"
+                        onClick={() => setHarnessPer1k(false)}
+                        aria-pressed={!harnessPer1k}
+                        className={`px-2 py-0.5 text-[10px] font-medium rounded transition-colors ${!harnessPer1k ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                      >
+                        per {inputs.unitName}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setHarnessPer1k(true)}
+                        aria-pressed={harnessPer1k}
+                        className={`px-2 py-0.5 text-[10px] font-medium rounded transition-colors ${harnessPer1k ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                      >
+                        per 1,000
+                      </button>
+                    </div>
+                  </div>
+                  {harnessPer1k && (
+                    <p className="text-[10px] text-slate-500 mb-2 -mt-1">
+                      Vendors quote per 1,000 calls — enter that figure directly. If each {inputs.unitName} makes several calls, multiply first.
+                    </p>
+                  )}
                   <div className="grid grid-cols-2 gap-3">
-                      <MoneyInput label="Orchestration Cost" value={inputs.orchestrationCostPerUnit} onChange={v => updateInput('orchestrationCostPerUnit', v)} precision={4} tooltip="Cost per unit for logic/chains" />
-                      <MoneyInput label="Retrieval / Vector DB" value={inputs.retrievalCostPerUnit} onChange={v => updateInput('retrievalCostPerUnit', v)} precision={4} />
+                      <MoneyInput label="Orchestration" value={harnessValue(inputs.orchestrationCostPerUnit)} onChange={v => updateHarness('orchestrationCostPerUnit', v)} precision={harnessPrecision} tooltip="Agent and workflow runtime: LangGraph, Temporal, Step Functions, or your own service compute." />
+                      <MoneyInput label="Retrieval / Vector DB" value={harnessValue(inputs.retrievalCostPerUnit)} onChange={v => updateHarness('retrievalCostPerUnit', v)} precision={harnessPrecision} tooltip="Vector search and embedding calls: Pinecone, Weaviate, pgvector. Usually quoted per 1,000 queries." />
                   </div>
                   {mode === 'advanced' && (
                       <div className="grid grid-cols-2 gap-3 mt-3">
-                           <MoneyInput label="Tool APIs" value={inputs.toolApiCostPerUnit} onChange={v => updateInput('toolApiCostPerUnit', v)} precision={4} />
-                           <MoneyInput label="Logging / Monitoring" value={inputs.loggingMonitoringCostPerUnit} onChange={v => updateInput('loggingMonitoringCostPerUnit', v)} precision={4} />
-                           <MoneyInput label="Safety / Guardrails" value={inputs.safetyGuardrailsCostPerUnit} onChange={v => updateInput('safetyGuardrailsCostPerUnit', v)} precision={4} />
-                           <MoneyInput label="Storage" value={inputs.storageCostPerUnit} onChange={v => updateInput('storageCostPerUnit', v)} precision={4} />
+                           <MoneyInput label="Tool APIs" value={harnessValue(inputs.toolApiCostPerUnit)} onChange={v => updateHarness('toolApiCostPerUnit', v)} precision={harnessPrecision} tooltip="External APIs the agent calls: web search (Serper, Tavily, Bing), rerankers (Cohere Rerank), enrichment services. Quoted per 1,000 calls." />
+                           <MoneyInput label="Logging / Monitoring" value={harnessValue(inputs.loggingMonitoringCostPerUnit)} onChange={v => updateHarness('loggingMonitoringCostPerUnit', v)} precision={harnessPrecision} tooltip="Observability: Datadog, LangSmith, CloudWatch traces and log ingestion." />
+                           <MoneyInput label="Safety / Guardrails" value={harnessValue(inputs.safetyGuardrailsCostPerUnit)} onChange={v => updateHarness('safetyGuardrailsCostPerUnit', v)} precision={harnessPrecision} tooltip="Moderation and PII detection: Bedrock Guardrails, Azure Content Safety, OpenAI Moderation. Quoted per 1,000 text units or transactions." />
+                           <MoneyInput label="Storage" value={harnessValue(inputs.storageCostPerUnit)} onChange={v => updateHarness('storageCostPerUnit', v)} precision={harnessPrecision} tooltip="Conversation history, documents and artifacts kept per unit: S3, RDS, blob storage." />
+                           <MoneyInput label="Network Egress" value={harnessValue(inputs.networkEgressCostPerUnit)} onChange={v => updateHarness('networkEgressCostPerUnit', v)} precision={harnessPrecision} tooltip="Data transfer out of your cloud provider per unit." />
                       </div>
                   )}
+                  <div className="flex items-baseline justify-between mt-3 pt-2 border-t border-slate-100 text-xs">
+                    <span className="text-slate-500">Harness subtotal{mode === 'simple' && harnessHiddenCost > 0 ? ' (incl. defaults hidden in Simple)' : ''}</span>
+                    <span className="font-mono font-semibold text-slate-700">
+                      {formatMoney(harnessSubtotal, 4)} / {inputs.unitName}
+                      <span className="text-slate-400 font-normal"> · {formatMoney(harnessSubtotal * inputs.monthlyVolume, 0)}/mo</span>
+                    </span>
+                  </div>
                   {mode === 'advanced' ? (
                       <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-slate-100">
                           <PercentInput label="Retry Rate" value={inputs.retryRate * 100} onChange={v => updateInput('retryRate', v/100)} tooltip="Percentage of calls that need a retry. Retries re-run the model, so they are counted in Layer 1." />

@@ -110,7 +110,15 @@ C₁_base = Pc
 **Where:**
 - `Pc` = Price per API call ($)
 
-**Use Case:** Some providers (e.g., Anthropic's legacy plans) charge per request regardless of tokens.
+**How to select it:** in the Infrastructure (Layer 1) section, choose "Custom pricing" for the model, then switch the billing basis to **per call**. It is offered only on custom-priced models because the AI Pricing Hub catalog is entirely token-priced.
+
+**Use Case:** services billed per request rather than per token, in three families:
+
+1. **Non-text modalities**, where a token has no meaning — OCR and document extraction billed per page (AWS Textract, Google Document AI, Azure Document Intelligence), image generation billed per image, transcription billed per minute of audio.
+2. **Tooling around the model** — web search APIs (per query), rerankers (per search), moderation endpoints (per transaction). These usually belong in Layer 2 rather than Layer 1.
+3. **Negotiated contracts** — a committed rate such as "$0.12 per document processed", where modelling the contract as signed is more honest than reverse-engineering a token count.
+
+**Interactions:** a per-call model ignores token counts, prompt-cache discounts and batch rates entirely — there is no token quantity for them to act on. Retries still apply, since a retried call is billed again.
 
 ---
 

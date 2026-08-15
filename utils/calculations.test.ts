@@ -224,6 +224,78 @@ describe('calculateROI', () => {
       expect(result.layer1CostPerUnit).toBeCloseTo(0.001525, 6);
     });
 
+    it('should price a per-call model at its flat rate regardless of tokens', () => {
+      const inputs: UseCaseInputs = {
+        ...DEFAULT_INPUTS,
+        monthlyVolume: 10000,
+        primaryModel: {
+          ...basicModel,
+          // Token fields are deliberately large: they must be ignored entirely
+          avgInputTokensPerUnit: 500_000,
+          avgOutputTokensPerUnit: 200_000,
+          costPerCall: 0.012, // e.g. a per-page OCR rate
+          useCallPricing: true,
+        },
+        routingSimplePercent: 100,
+        cacheHitRate: 80,
+        cachedTokenDiscount: 90,
+        batchProcessing: true,
+        retryRate: 0,
+        overheadMultiplier: 1,
+      };
+
+      const result = calculateROI(inputs, defaultModifiers);
+
+      expect(result.layer1CostPerUnit).toBeCloseTo(0.012, 6);
+      expect(result.layer1MonthlyCost).toBeCloseTo(120, 4);
+    });
+
+    it('should blend a per-call primary with a token-priced secondary', () => {
+      const inputs: UseCaseInputs = {
+        ...DEFAULT_INPUTS,
+        monthlyVolume: 10000,
+        primaryModel: {
+          ...basicModel,
+          costPerCall: 0.01,
+          useCallPricing: true,
+        },
+        secondaryModel: {
+          ...basicModel,
+          avgInputTokensPerUnit: 1000,
+          avgOutputTokensPerUnit: 500,
+          pricePer1MInputTokens: 2.5,
+          pricePer1MOutputTokens: 10,
+          useCallPricing: false,
+        },
+        routingSimplePercent: 60,
+        cacheHitRate: 0,
+        cachedTokenDiscount: 0,
+        batchProcessing: false,
+        retryRate: 0,
+        overheadMultiplier: 1,
+      };
+
+      const result = calculateROI(inputs, defaultModifiers);
+
+      // Primary: 0.01 flat × 60%. Secondary: (1000/1M × 2.5) + (500/1M × 10) = 0.0075, × 40%
+      expect(result.layer1CostPerUnit).toBeCloseTo(0.01 * 0.6 + 0.0075 * 0.4, 6);
+    });
+
+    it('should apply retries to a per-call model too', () => {
+      const inputs: UseCaseInputs = {
+        ...DEFAULT_INPUTS,
+        monthlyVolume: 10000,
+        primaryModel: { ...basicModel, costPerCall: 0.02, useCallPricing: true },
+        routingSimplePercent: 100,
+        retryRate: 0.25,
+        overheadMultiplier: 1,
+      };
+
+      const result = calculateROI(inputs, defaultModifiers);
+
+      expect(result.layer1CostPerUnit).toBeCloseTo(0.025, 6);
+    });
+
     it('should keep list prices when batch is enabled but the model has no batch rates', () => {
       const inputs: UseCaseInputs = {
         ...DEFAULT_INPUTS,
