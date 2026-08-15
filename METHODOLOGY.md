@@ -945,10 +945,10 @@ the model and shift the figures.
   - Analysis Horizon: 12 months (chart only)
 
 - **Fixed Costs:**
-  - Integration: $6,000
-  - Training: $2,500
-  - Change Management: $1,500
-  - **Total Fixed:** $10,000
+  - Integration: $8,000
+  - Training: $3,000
+  - Change Management: $2,000
+  - **Total Fixed:** $13,000
   - Amortization: 12 months
 
 - **Layer 1 (Infrastructure):**
@@ -1001,7 +1001,7 @@ C₂ = (0.003509 + 0.0055) × 1.0 = $0.009009/ticket
 
 **Fixed Costs:**
 ```
-Cf_amortized = 10,000 / 12 = $833.33/month
+Cf_amortized = 13,000 / 12 = $1,083.33/month
 ```
 
 **Layer 3 (Value):**
@@ -1014,33 +1014,36 @@ Gross value = (0.175 - 0.005) × 0.90 = $0.153/ticket
 **Monthly Metrics:**
 ```
 C_monthly_var   = 0.009009 × 10,000 = $90.09
-C_monthly_total = 90.09 + 833.33 = $923.42
-Cost per ticket = 923.42 / 10,000 = $0.0923
+C_monthly_total = 90.09 + 1,083.33 = $1,173.42
+Cost per ticket = 1,173.42 / 10,000 = $0.1173
 
 Total_Value = 0.153 × 10,000 = $1,530/month
-NMB = 1,530 - 923.42 = $606.58/month
+NMB = 1,530 - 1,173.42 = $356.58/month
 NCB = 1,530 - 90.09 = $1,439.91/month   (cash, before amortization)
 ```
 
 **ROI Metrics:**
 ```
-ROI% = (606.58 / 923.42) × 100 = 65.7%
-Payback = 10,000 / 1,439.91 = 6.9 months
+ROI% = (356.58 / 1,173.42) × 100 = 30.4%
+Payback = 13,000 / 1,439.91 = 9.0 months
 ```
 
 **Break-even:**
 ```
 Unit margin = 0.153 - 0.009009 = $0.143991
-V_breakeven = ceil(833.33 / 0.143991) = 5,788 tickets/month
-M_breakeven = 0  (10,000 tickets already exceeds 5,788, so the chart shows no marker)
+V_breakeven = ceil(1,083.33 / 0.143991) = 7,524 tickets/month
+M_breakeven = 0  (10,000 tickets already exceeds 7,524, so the chart shows no marker)
 ```
 
 **Interpretation:**
-- 66% monthly ROI: every month generates $607 of profit after absorbing $833 of amortized fixed cost
+- 30% monthly ROI: every month generates $357 of profit after absorbing $1,083 of amortized fixed cost
 - The model itself is the smaller half of the running cost ($35/month) — the harness is $55/month
-- Break-even at 5,788 tickets, already exceeded at 10,000/month
-- The $10,000 investment is repaid in cash in 6.9 months
-- After 12 months: cumulative profit = -10,000 + (1,439.91 × 12) = **$7,278.92**
+- Break-even at 7,524 tickets, already exceeded at 10,000/month
+- The $13,000 investment is repaid in cash in 9.0 months
+- After 12 months: cumulative profit = -13,000 + (1,439.91 × 12) = **$4,278.92**
+- Note how much of the outcome rides on the fixed costs: the running cost is only $90/month
+  against $1,083 of amortization, so the ROI headline is mostly a statement about the rollout
+  estimate, not about the model. This is why the fixed-cost fields deserve real numbers.
 
 ---
 
@@ -1054,6 +1057,6 @@ For questions, corrections, or suggestions regarding this methodology:
 
 ---
 
-**Document Version:** 1.3
+**Document Version:** 1.4
 **Last Reviewed:** August 15, 2026
 **Next Review:** November 15, 2026 (or upon Phase 2 release)

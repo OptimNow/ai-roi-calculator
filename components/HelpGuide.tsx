@@ -514,11 +514,11 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                   <tbody className="text-slate-600">
                     <tr>
                       <td className="p-1.5 border border-amber-200">Support Bot</td>
-                      <td className="text-right p-1.5 border border-amber-200">$6,000</td>
-                      <td className="text-right p-1.5 border border-amber-200">$2,500</td>
-                      <td className="text-right p-1.5 border border-amber-200">$1,500</td>
-                      <td className="text-right p-1.5 border border-amber-200 font-semibold">$10,000</td>
-                      <td className="p-1.5 border border-amber-200">SMB rollout: chatbot + ticketing API, KB setup, guardrails tuning, agent enablement</td>
+                      <td className="text-right p-1.5 border border-amber-200">$8,000</td>
+                      <td className="text-right p-1.5 border border-amber-200">$3,000</td>
+                      <td className="text-right p-1.5 border border-amber-200">$2,000</td>
+                      <td className="text-right p-1.5 border border-amber-200 font-semibold">$13,000</td>
+                      <td className="p-1.5 border border-amber-200">SMB rollout: CRM/ticketing integration, KB setup, routing, guardrails tuning, agent enablement</td>
                     </tr>
                     <tr>
                       <td className="p-1.5 border border-amber-200">Knowledge Q&A</td>
@@ -627,14 +627,14 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                 </p>
                 <p className="text-sm text-slate-600 mt-3">
                   <strong>1. This month's account — "does this month pay for itself?"</strong><br />
-                  Value produced, minus running costs, minus a monthly slice of your setup. Take the Customer Support Bot preset at 10,000 tickets: $1,530 of value, −$90 of model and harness, −$833 of setup slice ($10,000 spread over 12 months) = <strong>+$607</strong>. The month is positive.
+                  Value produced, minus running costs, minus a monthly slice of your setup. Take the Customer Support Bot preset at 10,000 tickets: $1,530 of value, −$90 of model and harness, −$1,083 of setup slice ($13,000 spread over 12 months) = <strong>+$357</strong>. The month is positive.
                 </p>
                 <p className="text-sm text-slate-600 mt-2">
-                  The question here is <em>how many</em>. At what volume does this account hit zero? That is <strong>Break-even volume</strong>: 5,788 tickets a month for this preset.
+                  The question here is <em>how many</em>. At what volume does this account hit zero? That is <strong>Break-even volume</strong>: 7,524 tickets a month for this preset.
                 </p>
                 <p className="text-sm text-slate-600 mt-3">
                   <strong>2. The cumulative account — "have I got my money back yet?"</strong><br />
-                  You paid $10,000 once. Each month the project hands back $1,440 of cash — the setup slice is not subtracted here, it is already paid. So $10,000 ÷ $1,440 = <strong>6.9 months</strong>.
+                  You paid $13,000 once. Each month the project hands back $1,440 of cash — the setup slice is not subtracted here, it is already paid. So $13,000 ÷ $1,440 = <strong>9.0 months</strong>.
                 </p>
                 <p className="text-sm text-slate-600 mt-2">
                   The question here is <em>how long</em>. That is <strong>Payback</strong>, and it is what the ROI curve's vertical line marks.
@@ -652,9 +652,9 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                     </tr>
                   </thead>
                   <tbody className="text-slate-600">
-                    <tr><td className="p-1.5 border border-green-200">10,000 tickets</td><td className="text-right p-1.5 border border-green-200">+$607</td><td className="text-right p-1.5 border border-green-200">5,788</td><td className="text-right p-1.5 border border-green-200">6.9 mo</td></tr>
-                    <tr><td className="p-1.5 border border-green-200">5,788 tickets</td><td className="text-right p-1.5 border border-green-200">$0</td><td className="text-right p-1.5 border border-green-200">5,788</td><td className="text-right p-1.5 border border-green-200">12.0 mo</td></tr>
-                    <tr><td className="p-1.5 border border-green-200">4,000 tickets</td><td className="text-right p-1.5 border border-green-200">−$257</td><td className="text-right p-1.5 border border-green-200">5,788</td><td className="text-right p-1.5 border border-green-200">17.4 mo</td></tr>
+                    <tr><td className="p-1.5 border border-green-200">10,000 tickets</td><td className="text-right p-1.5 border border-green-200">+$357</td><td className="text-right p-1.5 border border-green-200">7,524</td><td className="text-right p-1.5 border border-green-200">9.0 mo</td></tr>
+                    <tr><td className="p-1.5 border border-green-200">7,524 tickets</td><td className="text-right p-1.5 border border-green-200">$0</td><td className="text-right p-1.5 border border-green-200">7,524</td><td className="text-right p-1.5 border border-green-200">12.0 mo</td></tr>
+                    <tr><td className="p-1.5 border border-green-200">4,000 tickets</td><td className="text-right p-1.5 border border-green-200">−$507</td><td className="text-right p-1.5 border border-green-200">7,524</td><td className="text-right p-1.5 border border-green-200">22.6 mo</td></tr>
                   </tbody>
                 </table>
                 <p className="text-xs text-slate-500 mt-2">
