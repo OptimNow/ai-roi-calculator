@@ -108,7 +108,7 @@ export const ScenarioComparison: React.FC<ScenarioComparisonProps> = ({
                     tick={{ fill: '#64748b', fontSize: 12 }}
                   />
                   <YAxis tick={{ fill: '#64748b', fontSize: 12 }} />
-                  <Tooltip formatter={(value: number) => formatMoney(value * 1000)} />
+                  <Tooltip formatter={(value?: number) => formatMoney((value ?? 0) * 1000)} />
                   <Legend />
                   <Bar dataKey="Net Benefit" fill="#10b981" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="Cost" fill="#ef4444" radius={[4, 4, 0, 0]} />

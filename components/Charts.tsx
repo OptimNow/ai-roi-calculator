@@ -14,6 +14,10 @@ interface CostValueChartData {
 interface CostBreakdownData {
   name: string;
   value: number;
+  // Recharts types its `data` props as ChartDataInput, which requires an index
+  // signature. Without this the interface is structurally incompatible even
+  // though the fields match.
+  [key: string]: string | number;
 }
 
 interface CostValueChartProps {
@@ -48,7 +52,7 @@ export const CostValueChart = memo<CostValueChartProps>(({ data, formatMoney }) 
           tickFormatter={(val) => formatUsdThousands(val, 1)}
         />
         <RechartsTooltip
-          formatter={(val: number) => formatMoney(val, 0)}
+          formatter={(val?: number) => formatMoney(val ?? 0, 0)}
           cursor={{ fill: 'transparent' }}
           contentStyle={{
             borderRadius: '8px',
@@ -96,7 +100,7 @@ export const CostBreakdownChart = memo<CostBreakdownChartProps>(({ data, colors 
           ))}
         </Pie>
         <RechartsTooltip
-          formatter={(val: number) => formatUsd(val)}
+          formatter={(val?: number) => formatUsd(val ?? 0)}
         />
         <Legend
           verticalAlign="bottom"
