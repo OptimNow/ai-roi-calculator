@@ -8,6 +8,7 @@ import { MoneyInput, NumberInput, PercentInput, SectionHeader } from './componen
 import { CatalogStatus, ModelCostInputs, useModelCatalog } from './components/ModelPicker';
 import { catalogModelToParams, repriceModels, toModelId, PRICING_HUB_URL } from './utils/modelCatalog';
 import { applyDeepLink, hasDeepLink, parseDeepLink, presetLabel } from './utils/deepLink';
+import { pluralize } from './utils/format';
 import { HelpGuide } from './components/HelpGuide';
 import { CostValueChart, CostBreakdownChart, ROICurveChart, TornadoChart } from './components/Charts';
 import { ScenarioManager } from './components/ScenarioManager';
@@ -116,7 +117,7 @@ export default function App() {
   const deepLinkSummary = [
     deepLinkModelName,
     presetLabel(deepLink.presetKey),
-    deepLink.monthlyVolume ? `${formatNumber(deepLink.monthlyVolume)} ${inputs.unitName}s/mo` : undefined,
+    deepLink.monthlyVolume ? `${formatNumber(deepLink.monthlyVolume)} ${pluralize(inputs.unitName)}/mo` : undefined,
   ].filter(Boolean).join(' · ');
 
   // Harness costs are stored per unit, but vendors quote per 1,000 calls. This is a
@@ -183,7 +184,7 @@ export default function App() {
       `All-in cost of one ${unit}: ${formatMoney(results.layer1CostPerUnit, 4)} model inference + ` +
       `${formatMoney(harnessPerUnit, 4)} harness + ${formatMoney(setupPerUnit, 4)} share of the setup.`,
     breakEvenVolume:
-      `How many ${unit}s a month you need for the monthly account to balance — value covering running costs plus ` +
+      `How many ${pluralize(unit)} a month you need for the monthly account to balance — value covering running costs plus ` +
       `the monthly setup slice. Below it you lose money every month, above it you gain. It does not move when your ` +
       `volume changes: it is a property of your unit economics, not of your size. Different question from Payback, ` +
       `which asks when the setup is repaid.`,
@@ -316,7 +317,7 @@ export default function App() {
 - **Value per Unit**: ${formatMoney(results.grossValuePerUnit, 4)}
 
 ## Inputs
-- Volume: ${formatNumber(inputs.monthlyVolume)} ${inputs.unitName}s/mo
+- Volume: ${formatNumber(inputs.monthlyVolume)} ${pluralize(inputs.unitName)}/mo
 - Realization Rate: ${inputs.successRate}%
 - Primary Model: ${inputs.primaryModel.modelName ? `${inputs.primaryModel.modelName} (${inputs.primaryModel.provider}, prices via AI Pricing Hub)` : 'Custom pricing'}
 - Model: Simple/Complex split ${inputs.routingSimplePercent}% / ${100 - inputs.routingSimplePercent}%
@@ -736,7 +737,7 @@ export default function App() {
                isOpen={expandedSections.valueScope}
                onToggle={() => toggleSection('valueScope')}
                controls="section-value-scope"
-               summary={`${inputs.valueMethod} · ${formatMoney(results.grossValuePerUnit, 4)} / ${inputs.unitName} · ${formatNumber(inputs.monthlyVolume)} ${inputs.unitName}s/mo`}
+               summary={`${inputs.valueMethod} · ${formatMoney(results.grossValuePerUnit, 4)} / ${inputs.unitName} · ${formatNumber(inputs.monthlyVolume)} ${pluralize(inputs.unitName)}/mo`}
              />
              {expandedSections.valueScope && <div id="section-value-scope" className="p-5 border-b border-slate-100">
                <div className="space-y-3">
@@ -1211,7 +1212,7 @@ export default function App() {
                     </span>
                     <span className="text-[10px] text-slate-400">
                       {results.breakEvenVolume !== undefined
-                        ? `${inputs.unitName}s/mo to break even`
+                        ? `${pluralize(inputs.unitName)}/mo to break even`
                         : 'Negative margin'}
                     </span>
                 </div>
@@ -1228,7 +1229,7 @@ export default function App() {
                 <div className="flex-1">
                   <h4 className="text-sm font-bold text-amber-900">Break-even Analysis</h4>
                   <p className="text-sm text-amber-800 mt-1">
-                    You need <strong>{formatNumber(results.breakEvenVolume - results.effectiveMonthlyVolume)}</strong> more {inputs.unitName}s per month
+                    You need <strong>{formatNumber(results.breakEvenVolume - results.effectiveMonthlyVolume)}</strong> more {pluralize(inputs.unitName)} per month
                     ({((results.breakEvenVolume / results.effectiveMonthlyVolume - 1) * 100).toFixed(1)}% increase) to reach break-even.
                   </p>
                 </div>
@@ -1245,8 +1246,8 @@ export default function App() {
                 <div className="flex-1">
                   <h4 className="text-sm font-bold text-green-900">Above Break-even</h4>
                   <p className="text-sm text-green-800 mt-1">
-                    Your current volume of <strong>{formatNumber(results.effectiveMonthlyVolume)}</strong> {inputs.unitName}s is already profitable.
-                    Break-even threshold: <strong>{formatNumber(results.breakEvenVolume)}</strong> {inputs.unitName}s/mo.
+                    Your current volume of <strong>{formatNumber(results.effectiveMonthlyVolume)}</strong> {pluralize(inputs.unitName)} are already profitable.
+                    Break-even threshold: <strong>{formatNumber(results.breakEvenVolume)}</strong> {pluralize(inputs.unitName)}/mo.
                   </p>
                 </div>
               </div>

@@ -1,4 +1,5 @@
 import React, { memo } from 'react';
+import { formatUsd, formatUsdThousands } from '../utils/format';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend,
   LineChart, Line, Area, ComposedChart, ReferenceLine
@@ -44,7 +45,7 @@ export const CostValueChart = memo<CostValueChartProps>(({ data, formatMoney }) 
           axisLine={false}
           tickLine={false}
           tick={{ fill: '#64748b', fontSize: 12 }}
-          tickFormatter={(val) => `$${val / 1000}k`}
+          tickFormatter={(val) => formatUsdThousands(val, 1)}
         />
         <RechartsTooltip
           formatter={(val: number) => formatMoney(val, 0)}
@@ -95,7 +96,7 @@ export const CostBreakdownChart = memo<CostBreakdownChartProps>(({ data, colors 
           ))}
         </Pie>
         <RechartsTooltip
-          formatter={(val: number) => `$${val.toFixed(2)}`}
+          formatter={(val: number) => formatUsd(val)}
         />
         <Legend
           verticalAlign="bottom"
@@ -147,7 +148,7 @@ export const ROICurveChart = memo<ROICurveChartProps>(({ data, breakEvenMonth, f
           axisLine={false}
           tickLine={false}
           tick={{ fill: '#64748b', fontSize: 12 }}
-          tickFormatter={(val) => `$${(val / 1000).toFixed(0)}k`}
+          tickFormatter={(val) => formatUsdThousands(val)}
           label={{ value: 'Cumulative Profit', angle: -90, position: 'insideLeft', style: { fill: '#64748b', fontSize: 12 } }}
         />
         <RechartsTooltip
