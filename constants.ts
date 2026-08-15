@@ -14,9 +14,9 @@ export const DEFAULT_INPUTS: UseCaseInputs = {
   successRate: 90,
   analysisHorizonMonths: 12,
 
-  integrationCost: 6000,
-  trainingTuningCost: 2500,
-  changeManagementCost: 1500,
+  integrationCost: 8000,
+  trainingTuningCost: 3000,
+  changeManagementCost: 2000,
   amortizationMonths: 12,
 
   primaryModel: presetModel('Anthropic', 'Claude Haiku 4.5', 1500, 500),
@@ -65,10 +65,10 @@ export const PRESETS: Record<string, Partial<UseCaseInputs>> = {
     unitName: 'ticket',
     monthlyVolume: 10000,
     successRate: 90,
-    // SMB support rollout: knowledge base setup, guardrails tuning, and agent enablement
-    integrationCost: 6000,
-    trainingTuningCost: 2500,
-    changeManagementCost: 1500,
+    // SMB support rollout: CRM/ticketing integration, KB setup, routing, guardrails tuning, agent enablement
+    integrationCost: 8000,
+    trainingTuningCost: 3000,
+    changeManagementCost: 2000,
     valueMethod: ValueMethod.COST_DISPLACEMENT,
     baselineHumanCostPerUnit: 0.50,
     deflectionRate: 35,
