@@ -356,6 +356,14 @@ A dismissible banner confirms what carried over. (Both form sections are expande
 
 **When adding a preset**, check `HUB_USE_CASE_TO_PRESET` in `utils/deepLink.ts` if the hub has a matching use case under a different key.
 
+## Cost Model Entry (Layer 1 & 2)
+
+**Billing basis** — `ModelParams.useCallPricing` / `costPerCall` are surfaced in `components/ModelPicker.tsx` (`ModelCostInputs`) as a per-token / per-call toggle, shown only on custom-priced models: the hub catalog is entirely token-priced, so a catalog model always has a $/1M rate. Switching to per-call detaches the catalog identity, because the model's $/1M, cache and batch rates no longer describe the cost. A per-call model ignores tokens, cache and batch in `calculations.ts`; retries still apply.
+
+**Harness entry unit** — harness costs are stored per unit but entered per 1,000 by default (`harnessPer1k` in App.tsx), because vendors quote per 1,000 calls. This is a display transform only: `harnessValue()` scales for display, `updateHarness()` scales back and rounds to kill floating-point residue. A running subtotal sits under the fields, and flags when Simple mode is hiding lines that still cost money.
+
+All seven harness fields now have a control — `networkEgressCostPerUnit` was summed in `calculations.ts` but had no UI, so presets charged it invisibly.
+
 ## Analytics & Event Tracking
 
 GA4 is wired in `index.html` via `window.trackEvent(eventName, params)`. From TypeScript, always call it with optional chaining to avoid runtime errors and TS complaints:

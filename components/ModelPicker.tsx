@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronDown, PencilLine, RefreshCw, Search } from 'lucide-react';
 
+import { MoneyInput, NumberInput } from './InputComponents';
 import { ModelParams } from '../types';
 import {
   CatalogModel,
@@ -235,5 +236,105 @@ export const ModelPicker: React.FC<ModelPickerProps> = ({ slot, value, catalog, 
         </div>
       )}
     </div>
+  );
+};
+
+interface ModelCostInputsProps {
+  slot: 'primary' | 'secondary';
+  /** Heading shown above the picker */
+  title: string;
+  value: ModelParams;
+  catalog: ModelCatalog;
+  /** Model chosen from the catalog (or switched to custom pricing) */
+  onSelect: (patch: Partial<ModelParams>) => void;
+  /** Fields the user owns: token counts, cost per call */
+  onParam: (field: keyof ModelParams, value: number) => void;
+  /** Token prices — editing one detaches the catalog identity */
+  onPrice: (field: 'pricePer1MInputTokens' | 'pricePer1MOutputTokens', value: number) => void;
+  onBillingBasisChange: (useCallPricing: boolean) => void;
+}
+
+/**
+ * One model slot: picker, billing basis, and the cost fields that basis implies.
+ *
+ * Billing basis is only offered on custom-priced models, because the AI Pricing Hub
+ * catalog is entirely token-priced — a catalog model always has a $/1M rate. Per-call
+ * billing is for flat-rate contracts and for services with no meaningful token count
+ * (per page, per image, per minute of audio).
+ */
+export const ModelCostInputs: React.FC<ModelCostInputsProps> = ({
+  slot,
+  title,
+  value,
+  catalog,
+  onSelect,
+  onParam,
+  onPrice,
+  onBillingBasisChange,
+}) => {
+  const perCall = value.useCallPricing === true;
+  // Hidden for catalog models, but always shown when per-call is already on, so an
+  // imported scenario can never leave the user stuck in a mode with no way out.
+  const showBasis = !value.modelId || perCall;
+
+  const basisButton = (active: boolean, label: string, onClick: () => void) => (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`px-2.5 py-1 text-[11px] font-medium rounded transition-colors ${
+        active ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+      }`}
+    >
+      {label}
+    </button>
+  );
+
+  return (
+    <>
+      <h5 className="text-xs font-bold text-slate-900 mb-2">{title}</h5>
+      <ModelPicker slot={slot} value={value} catalog={catalog} onSelect={onSelect} />
+
+      {showBasis && (
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-[11px] text-slate-500">Billed</span>
+          <div className="flex bg-slate-100 rounded-md p-0.5" role="group" aria-label={`${slot} model billing basis`}>
+            {basisButton(!perCall, 'per token', () => onBillingBasisChange(false))}
+            {basisButton(perCall, 'per call', () => onBillingBasisChange(true))}
+          </div>
+        </div>
+      )}
+
+      {perCall ? (
+        <>
+          <MoneyInput
+            label="Cost per Call"
+            value={value.costPerCall}
+            onChange={v => onParam('costPerCall', v)}
+            precision={4}
+            tooltip="Flat price per request, whatever the token count. Use for per-page OCR, per-image generation, per-minute transcription, or a negotiated per-request rate."
+          />
+          <p className="text-[10px] text-slate-400 -mt-1 mb-1">
+            Token counts, cache and batch discounts don't apply to a flat per-call rate.
+          </p>
+        </>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            <NumberInput label="Avg Input Tokens" value={value.avgInputTokensPerUnit} onChange={v => onParam('avgInputTokensPerUnit', v)} />
+            <NumberInput label="Avg Output Tokens" value={value.avgOutputTokensPerUnit} onChange={v => onParam('avgOutputTokensPerUnit', v)} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <MoneyInput label="$ / 1M Input" value={value.pricePer1MInputTokens} onChange={v => onPrice('pricePer1MInputTokens', v)} precision={4} />
+            <MoneyInput label="$ / 1M Output" value={value.pricePer1MOutputTokens} onChange={v => onPrice('pricePer1MOutputTokens', v)} precision={4} />
+          </div>
+          {value.pricedAt && (
+            <p className="text-[10px] text-slate-400 mt-1">
+              {value.modelName} list prices as of {formatPricedAt(value.pricedAt)}. Editing a price switches to custom pricing.
+            </p>
+          )}
+        </>
+      )}
+    </>
   );
 };
