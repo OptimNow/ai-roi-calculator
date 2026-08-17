@@ -1,8 +1,8 @@
 # CLAUDE.MD - AI Assistant Project Guide
 
-**Last Updated:** August 15, 2026
+**Last Updated:** August 17, 2026
 **Project:** AI ROI Calculator
-**Version:** 0.5.0
+**Version:** 0.6.0
 **Live Demo:** https://airoicalculator.optimnow.io (custom domain) / https://ai-roi-calculator.vercel.app (Vercel default)
 
 ---
@@ -44,8 +44,17 @@ Deployment:   Vercel
 1. **Single-Page Application:** All logic runs client-side (no backend)
 2. **Client-Side State:** Uses React hooks (useState, useMemo, useCallback)
 3. **LocalStorage Persistence:** Scenarios saved in browser storage
-4. **Memoization:** Charts wrapped in React.memo for performance
-5. **TypeScript Strict Mode:** `"strict": true` in tsconfig.json, and it passes clean. Nothing in the build enforces it — Vite strips types without checking them — so `npm run typecheck` is the only gate.
+4. **Memoization:** Charts wrapped in React.memo, with its **default shallow compare** — their
+   data is memoized in App.tsx so prop identity is stable. Do not reintroduce custom
+   comparators; the previous `JSON.stringify` ones existed only to paper over data arrays
+   rebuilt inline on every render.
+5. **Code splitting:** the three modals (HelpGuide, ScenarioManager, ScenarioComparison) are
+   `React.lazy` and mounted only while open — ~74 kB off the critical path. They must stay
+   conditionally rendered: each returns null internally when closed, so rendering them
+   unconditionally would fetch their chunks on first paint and undo the split. Charts stay
+   eager: they are visible on arrival and deferring them would trade bundle size for a layout
+   shift.
+6. **TypeScript Strict Mode:** `"strict": true` in tsconfig.json, and it passes clean. Nothing in the build enforces it — Vite strips types without checking them — so `npm run typecheck` is the only gate.
 
 ### Brand Identity
 
@@ -79,10 +88,11 @@ The full OptimNow brand identity is the `optimnow-brand` skill (source of truth)
 
 ```
 ai-roi-calculator/
-├── App.tsx                     # Main application component (~1,400 lines)
+├── App.tsx                     # Main application component (~1,450 lines)
 │                               # Contains all state management and orchestration
 ├── components/
-│   ├── Charts.tsx              # Memoized ROICurveChart & TornadoChart
+│   ├── Charts.tsx              # Memoized CostValueChart, CostBreakdownChart,
+│   │                           # ROICurveChart & TornadoChart
 │   ├── ErrorBoundary.tsx       # Top-level error boundary
 │   ├── HelpGuide.tsx           # Comprehensive modal with step-by-step instructions
 │   ├── InputComponents.tsx     # MoneyInput, NumberInput, PercentInput, SectionHeader
@@ -97,6 +107,8 @@ ai-roi-calculator/
 │   ├── modelCatalog.ts         # Model price catalog: live fetch from OptimToken API,
 │   │                           # localStorage cache, embedded snapshot fallback, preset helper
 │   ├── deepLink.ts             # Scenario handover from OptimToken (?useCase=&volume=&model=&batch=)
+│   ├── scenario.ts             # Validates + migrates saved scenarios at both untrusted
+│   │                           # boundaries (JSON import, localStorage). NOT synced to the MCP
 │   └── format.ts               # pluralize() + Intl money formatters, SHARED with the MCP server
 ├── types.ts                    # TypeScript interfaces (UseCaseInputs, Scenario, etc.)
 ├── constants.ts                # Presets for common use cases (support, content, etc.)
@@ -104,14 +116,17 @@ ai-roi-calculator/
 ├── index.css                   # Tailwind v4 import + @config + custom CSS
 ├── index.html                  # HTML shell: metadata (OG, Twitter, JSON-LD, manifest) + GA4 with hostname guard
 ├── public/
+│   ├── methodology.html        # GENERATED from METHODOLOGY.md — never hand-edit
 │   ├── robots.txt              # Crawler directives + sitemap reference
-│   ├── sitemap.xml             # Search engine sitemap
-│   ├── llms.txt                # LLM-discoverability descriptor
+│   ├── sitemap.xml             # Search engine sitemap (home + methodology)
+│   ├── llms.txt                # LLM-discoverability descriptor (link-list convention)
 │   ├── manifest.webmanifest    # PWA manifest
 │   └── images/                 # Logo.png, favicon.jpg
 ├── scripts/
+│   ├── build-methodology.mjs   # METHODOLOGY.md -> public/methodology.html (runs on prebuild)
 │   └── refresh-model-snapshot.mjs  # Regenerates the embedded price snapshot (weekly CI)
 ├── .github/workflows/          # refresh-model-snapshot.yml
+├── vercel.json                 # Security headers, SPA rewrite, immutable cache on /assets/*
 ├── vite.config.ts              # Vite build configuration (dev server on port 3000)
 ├── vitest.config.ts            # Test config — node by default, jsdom per-file, see "Testing Philosophy"
 ├── tailwind.config.js          # Tailwind v4 configuration
@@ -130,7 +145,9 @@ ai-roi-calculator/
 ### 1. `types.ts` - Data Model
 All TypeScript interfaces:
 - `UseCaseInputs`: The main input state (general, fixed, infra, harness, value)
-- `Scenario`: Saved calculation snapshot (name, inputs, metrics, timestamp, color)
+- `Scenario`: Saved calculation snapshot (name, inputs, metrics, timestamp, color, optional
+  `schemaVersion`). Absent `schemaVersion` means it predates versioning — `utils/scenario.ts`
+  backfills rather than rejects it.
 - `ValueMethod`: Four options (costDisplacement, revenueUplift, retentionUplift, premiumMonetization)
 - `ModelParams`: One model's identity and prices (`modelId`, input/output, cache-read, batch, `pricedAt`, or `useCallPricing` + `costPerCall`)
 - Routing is two slots, `primaryModel` and `secondaryModel`, blended by `routingSimplePercent`. There is no `ModelTier` type and no third fallback slot.
@@ -147,7 +164,7 @@ different `modifiers` and compares the results.
 ripples there through its sync script, so it needs a test and a METHODOLOGY update.
 
 ### 3. `App.tsx` - Orchestration
-The main component (~1,400 lines):
+The main component (~1,450 lines):
 - State management for all inputs
 - Preset loading logic
 - Scenario CRUD operations with localStorage
@@ -203,7 +220,7 @@ npm run preview    # Preview production build
 ### Testing
 
 ```bash
-npm test           # Run unit + component tests (95 cases)
+npm test           # Run unit + component tests (114 cases)
 npm run typecheck  # tsc --noEmit under strict. Vite does NOT typecheck, so run this before pushing
 ```
 
@@ -317,6 +334,15 @@ breakEvenVolume = ceil(monthlyAmortizedFixedCost / (grossValuePerUnit - layer2Co
 denominator is the real unit margin. Undefined when that margin is zero or negative: no
 volume ever covers the fixed costs. 0 when there are no fixed costs to cover.
 
+**Only defined for value methods whose total value scales with volume.** The derivation
+cancels volume out of both sides, which needs `grossValuePerUnit` to be volume-invariant.
+Under **Retention Uplift** it is not: total value comes from `customersImpactedPerMonth`, an
+input independent of volume, and the per-unit figure is back-derived by dividing by volume —
+so value x volume is a constant and the equation has no solution of that shape. It returned
+7,051 on the shipped preset at a volume already earning +$1,253/month. Retention now returns
+`undefined` and both break-even cards hide. Premium Monetization keeps it: App.tsx
+synchronises `subscribers` with `monthlyVolume`, so the per-unit margin is real at baseline.
+
 ### Layer 1 Cost (Infrastructure)
 Two model slots, blended by `routingSimplePercent`. There is no third "fallback" tier.
 Cache applies to input tokens only, and a published cache-read price beats the manual
@@ -355,7 +381,10 @@ See `METHODOLOGY.md` for complete formulas for all 4 value methods.
 
 - **No Backend:** All calculations run in browser
 - **Model prices (read-only fetch):** The app fetches the public model-price catalog from `https://optimtoken.optimnow.io/api/llm-models` (anonymous GET, CORS-open, no user data sent) and caches it in localStorage for 24h. An embedded snapshot in `utils/modelCatalog.ts` is the offline fallback. See "Model Price Freshness" below.
-- **LocalStorage:** Scenarios saved locally, never sent to servers
+- **LocalStorage:** Scenarios saved locally, never sent to servers. Treated as untrusted on
+  read — `utils/scenario.ts` shape-checks and migrates every entry, and drops what it cannot
+  render. An unvalidated import used to be persisted before it crashed, so the crash came
+  back on every reload until the user cleared site data.
 - **Analytics:** GA4 (`G-188H55KPFM`) + Vercel Analytics. Both track anonymous usage events (page views, mode toggle, preset loads, exports, OptimNow CTA clicks). **No input values, no scenario data, no PII** are ever sent — only event names and the use-case label (which is a preset name like "Customer Support Bot", not user-entered content).
 - **GA4 hostname guard:** GA4 `config` and `event` calls are gated by a regex matching only `optimnow.io` (and subdomains) + `localhost`. Forks deployed elsewhere will load `gtag.js` but never fire any tracking — protects shared OptimNow analytics from pollution.
 - **Export Only:** User manually exports data as JSON if desired
@@ -407,6 +436,30 @@ A dismissible banner confirms what carried over. (Both form sections are expande
 
 All seven harness fields now have a control — `networkEgressCostPerUnit` was summed in `calculations.ts` but had no UI, so presets charged it invisibly.
 
+## Discoverability: the static methodology page
+
+The app is a client-rendered SPA whose served HTML is an empty `<div id="root">`. Googlebot
+renders JS and sees the app, but non-rendering fetchers — GPTBot, ClaudeBot, PerplexityBot,
+CCBot, most social unfurlers — see only the `<noscript>` block. The one genuinely citable asset
+this project owns, the 1,000-line mathematical specification, lived only on GitHub, so every
+answer an AI search engine could give about this methodology cited github.com, not optimnow.io.
+
+`public/methodology.html` fixes that: ~5,900 words of specification, zero JavaScript (the only
+`<script>` is the `TechArticle` JSON-LD), on the product's own domain.
+
+- **Generated, never hand-edited.** `scripts/build-methodology.mjs` renders METHODOLOGY.md with
+  `marked` (a devDependency — it never reaches the client bundle). `prebuild` runs it, so a
+  Vercel deploy always ships a page matching the markdown. `npm run check:methodology` fails if
+  the committed copy is stale.
+- **METHODOLOGY.md stays the single source of truth.** Edit the markdown, never the HTML.
+- h2 headings get GitHub-style anchor ids and feed the in-page table of contents. Tables are
+  wrapped in an `overflow-x: auto` box so the page body never scrolls sideways on mobile.
+- Linked from the header `BookOpen` icon, the value summary card, `public/llms.txt`,
+  `public/sitemap.xml` and the `<noscript>` block — that last one is what non-JS crawlers follow.
+
+Static files in `public/` are served ahead of the SPA rewrite in `vercel.json`, so
+`/methodology.html` resolves to the page and not to `index.html`.
+
 ## Analytics & Event Tracking
 
 GA4 is wired in `index.html` via `window.trackEvent(eventName, params)`. From TypeScript, always call it with optional chaining to avoid runtime errors and TS complaints:
@@ -437,12 +490,14 @@ When adding new tracking: keep events business-meaningful (decision points, conv
 3. **Component Tests:** Input validation and accessibility, rendered with React Testing Library
 4. **Manual Testing:** Use UAT_SCENARIOS.md for acceptance testing
 
-**Test Coverage:** 95 tests across 5 files — `calculations` (33), `deepLink` (18), `format`
-(11), `modelCatalog` (11) under `utils/`, plus `InputComponents` (22) under `components/`:
+**Test Coverage:** 114 tests across 6 files — `calculations` (37), `deepLink` (18), `format`
+(11), `modelCatalog` (11), `scenario` (15) under `utils/`, plus `InputComponents` (22) under
+`components/`:
 - All 4 value methods
-- Break-even calculations
+- Break-even calculations, including the methods that deliberately report none
 - Sensitivity analysis
 - Edge cases and error conditions
+- Scenario validation and migration: rejected shapes, backfilled fields, recomputed results
 - Clamping, blur normalization and label association in `components/InputComponents.tsx`
 
 **Two environments, one config.** `vitest.config.ts` runs everything in `node` by default and
@@ -465,6 +520,14 @@ out-of-range field on blur. Assert clearing and negative-value behaviour with
 **Branch:** `main` (auto-deploys on push)
 **Build Command:** `npm run build`
 **Output Directory:** `dist/`
+
+**Caching:** `vercel.json` sets `max-age=31536000, immutable` on `/assets/(.*)`, whose
+filenames Vite content-hashes. `index.html` deliberately keeps Vercel's revalidating default —
+it is the file that must never be stale, since it points at the hashed bundles.
+
+**Canonical host:** `vercel.json` `308`s `ai-roi-calculator.vercel.app` to
+`airoicalculator.optimnow.io`. The `has: host` condition matches that exact hostname, so
+preview deployments on `ai-roi-calculator-<hash>.vercel.app` are untouched.
 
 **Important:** After Tailwind config changes, clear Vercel cache:
 ```bash
@@ -494,9 +557,9 @@ recurring.
 
 ## Roadmap Context
 
-**Current state (August 2026, v0.5.0).** Live model prices from OptimToken with automatic
+**Current state (August 2026, v0.6.0).** Live model prices from OptimToken with automatic
 repricing, per-token and per-call billing, published cache-read and batch rates, deep links
-from the hub, per-1,000 harness entry, 95 tests, WCAG 2.1 AA.
+from the hub, per-1,000 harness entry, 114 tests, WCAG 2.1 AA.
 
 **Not built.** Self-hosted GPU cost modelling, Monte Carlo confidence intervals, Excel export,
 user accounts, sharing.
@@ -593,6 +656,10 @@ npm run typecheck              # tsc --noEmit under strict
 # Model prices
 npm run refresh:models         # Regenerate the embedded price snapshot
 
+# Methodology page
+npm run build:methodology      # Regenerate public/methodology.html from METHODOLOGY.md
+npm run check:methodology      # Fail if the committed page is stale
+
 # Git workflow
 git status                     # Check status
 git add .                      # Stage all changes
@@ -632,7 +699,7 @@ git push origin main           # Auto-deploys to production
 ## Final Notes for AI Assistants
 
 ### Context Window Management
-This is a large codebase (App.tsx alone is ~1,400 lines). When working on specific features:
+This is a large codebase (App.tsx alone is ~1,450 lines). When working on specific features:
 1. Read only the files you need
 2. Use types.ts as the single source of truth for data structures
 3. Refer to METHODOLOGY.md for formula verification

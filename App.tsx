@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { Suspense, lazy, useState, useMemo, useEffect, useRef } from 'react';
 import { Download, Copy, Check, RefreshCw, Settings, HelpCircle, FolderOpen, Info, BookOpen, X } from 'lucide-react';
 
 import { UseCaseInputs, CalculationResults, ValueMethod, SensitivityModifiers, ModelParams, Scenario } from './types';
@@ -8,19 +8,27 @@ import { MoneyInput, NumberInput, PercentInput, SectionHeader } from './componen
 import { CatalogStatus, ModelCostInputs, useModelCatalog } from './components/ModelPicker';
 import { catalogModelToParams, repriceModels, toModelId, PRICING_HUB_URL } from './utils/modelCatalog';
 import { applyDeepLink, hasDeepLink, parseDeepLink, presetLabel } from './utils/deepLink';
-import { pluralize } from './utils/format';
-import { HelpGuide } from './components/HelpGuide';
+import { SCENARIO_SCHEMA_VERSION, parseScenarioList } from './utils/scenario';
+import { formatCount, formatUsd, pluralize } from './utils/format';
 import { CostValueChart, CostBreakdownChart, ROICurveChart, TornadoChart } from './components/Charts';
-import { ScenarioManager } from './components/ScenarioManager';
-import { ScenarioComparison } from './components/ScenarioComparison';
 
-const formatMoney = (val: number, decimals = 2) => 
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(val);
+// The three modals are code-split: together they are ~74 kB of the bundle, and most
+// visitors never open any of them. Charts stay eagerly loaded — they sit in the results
+// column and are visible on arrival, so deferring them would trade bundle size for a
+// layout shift. Named exports, hence the .then() unwrap.
+const HelpGuide = lazy(() => import('./components/HelpGuide').then(m => ({ default: m.HelpGuide })));
+const ScenarioManager = lazy(() => import('./components/ScenarioManager').then(m => ({ default: m.ScenarioManager })));
+const ScenarioComparison = lazy(() => import('./components/ScenarioComparison').then(m => ({ default: m.ScenarioComparison })));
 
-const formatNumber = (val: number) => 
-  new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 }).format(val);
+// Both were local re-implementations of the shared helpers, rebuilding an
+// Intl.NumberFormat on every one of their ~50 calls per render. Kept as aliases so
+// the call sites read the same.
+const formatMoney = formatUsd;
+const formatNumber = formatCount;
 
 const SCENARIOS_STORAGE_KEY = 'ai-roi-calculator-scenarios';
+
+const COST_BREAKDOWN_COLORS = ['#3b82f6', '#8b5cf6', '#64748b'];
 
 export default function App() {
   // Scenario handed over from the OptimToken, read once per mount
@@ -54,12 +62,19 @@ export default function App() {
   const [showDeepLinkBanner, setShowDeepLinkBanner] = useState(hasDeepLink(deepLink));
   const deepLinkModelApplied = useRef(false);
 
-  // Load scenarios from localStorage on mount
+  // Load scenarios from localStorage on mount.
+  // Whatever is in storage is untrusted — an older schema, or a bad import that a
+  // previous version persisted before crashing on it. Anything unrenderable is
+  // dropped here so it cannot poison every subsequent load.
   useEffect(() => {
     try {
       const saved = localStorage.getItem(SCENARIOS_STORAGE_KEY);
       if (saved) {
-        setScenarios(JSON.parse(saved));
+        const { scenarios: valid, rejected } = parseScenarioList(JSON.parse(saved));
+        if (rejected > 0) {
+          console.warn(`Discarded ${rejected} unreadable scenario(s) from localStorage.`);
+        }
+        setScenarios(valid);
       }
     } catch (error) {
       console.error('Failed to load scenarios from localStorage:', error);
@@ -350,6 +365,7 @@ export default function App() {
       inputs: { ...inputs },
       results: { ...results },
       createdAt: Date.now(),
+      schemaVersion: SCENARIO_SCHEMA_VERSION,
       color: `hsl(${(scenarios.length * 137.5) % 360}, 70%, 50%)` // Golden angle for color distribution
     };
     setScenarios([...scenarios, newScenario]);
@@ -375,9 +391,13 @@ export default function App() {
     link.click();
   };
 
-  const handleImportScenarios = (importedScenarios: Scenario[]) => {
+  const handleImportScenarios = (importedScenarios: Scenario[], rejected: number) => {
     setScenarios([...scenarios, ...importedScenarios]);
-    alert(`Imported ${importedScenarios.length} scenario(s) successfully!`);
+    alert(
+      rejected > 0
+        ? `Imported ${importedScenarios.length} scenario(s). Skipped ${rejected} entr${rejected === 1 ? 'y' : 'ies'} that were not readable scenarios.`
+        : `Imported ${importedScenarios.length} scenario(s) successfully!`
+    );
   };
 
   const handleCompareScenarios = (scenarioIds: string[]) => {
@@ -393,17 +413,25 @@ export default function App() {
   const selectedScenarios = scenarios.filter(s => selectedScenarioIds.includes(s.id));
 
   // --- Charts Data Preparation ---
-  const chartDataMonthly = [
+  // Memoized so the chart components' props keep a stable identity between renders.
+  // Rebuilt inline, they were new arrays on every keystroke, which defeated React.memo's
+  // default shallow compare — the charts papered over that with JSON.stringify comparators,
+  // paying an O(n) double-serialize per keystroke to reach the same answer a reference
+  // check gives for free.
+  const chartDataMonthly = useMemo(() => [
     { name: 'Cost', value: results.totalMonthlyCost, fill: '#ef4444' },
     { name: 'Value', value: results.totalMonthlyValue, fill: '#22c55e' },
-  ];
+  ], [results.totalMonthlyCost, results.totalMonthlyValue]);
 
-  const pieDataCost = [
+  const pieDataCost = useMemo(() => [
     { name: 'Model (L1)', value: results.layer1MonthlyCost },
     { name: 'Harness (L2)', value: results.layer2MonthlyCost - results.layer1MonthlyCost },
     { name: 'Fixed (Amort)', value: results.monthlyAmortizedFixedCost },
-  ];
-  const COLORS = ['#3b82f6', '#8b5cf6', '#64748b'];
+  ], [results.layer1MonthlyCost, results.layer2MonthlyCost, results.monthlyAmortizedFixedCost]);
+
+  // Module-level constant would do, but it is only used here; hoisting it out of the
+  // component is what makes the identity stable.
+  const COLORS = COST_BREAKDOWN_COLORS;
 
   // ROI Curve Data - Calculate cumulative profit over analysis period
   const roiCurveData = useMemo(() => {
@@ -499,30 +527,39 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#F4F4F4] flex flex-col font-sans text-slate-900">
-      {/* Help Guide Modal */}
-      <HelpGuide isOpen={showHelp} onClose={() => setShowHelp(false)} />
+      {/* Modals are code-split and mounted only while open — see the lazy imports above.
+          Rendering them unconditionally would fetch their chunks on first paint and undo
+          the split, since each one only returns null internally when closed. */}
+      <Suspense fallback={null}>
+        {/* Help Guide Modal */}
+        {showHelp && <HelpGuide isOpen onClose={() => setShowHelp(false)} />}
 
-      {/* Scenario Manager Modal */}
-      <ScenarioManager
-        isOpen={showScenarios}
-        onClose={() => setShowScenarios(false)}
-        currentInputs={inputs}
-        currentResults={results}
-        scenarios={scenarios}
-        onSaveScenario={handleSaveScenario}
-        onLoadScenario={handleLoadScenario}
-        onDeleteScenario={handleDeleteScenario}
-        onExportScenarios={handleExportScenarios}
-        onImportScenarios={handleImportScenarios}
-        onCompareScenarios={handleCompareScenarios}
-      />
+        {/* Scenario Manager Modal */}
+        {showScenarios && (
+          <ScenarioManager
+            isOpen
+            onClose={() => setShowScenarios(false)}
+            currentInputs={inputs}
+            currentResults={results}
+            scenarios={scenarios}
+            onSaveScenario={handleSaveScenario}
+            onLoadScenario={handleLoadScenario}
+            onDeleteScenario={handleDeleteScenario}
+            onExportScenarios={handleExportScenarios}
+            onImportScenarios={handleImportScenarios}
+            onCompareScenarios={handleCompareScenarios}
+          />
+        )}
 
-      {/* Scenario Comparison Modal */}
-      <ScenarioComparison
-        isOpen={showComparison}
-        onClose={() => setShowComparison(false)}
-        scenarios={selectedScenarios}
-      />
+        {/* Scenario Comparison Modal */}
+        {showComparison && (
+          <ScenarioComparison
+            isOpen
+            onClose={() => setShowComparison(false)}
+            scenarios={selectedScenarios}
+          />
+        )}
+      </Suspense>
 
       {/* Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-30">
@@ -603,8 +640,11 @@ export default function App() {
             >
               <HelpCircle size={18} aria-hidden="true" />
             </button>
+            {/* On-domain, statically rendered — generated from METHODOLOGY.md by
+                scripts/build-methodology.mjs. It used to point at GitHub, which sent both
+                readers and crawlers off the product's own domain. */}
             <a
-              href="https://github.com/OptimNow/ai-roi-calculator/blob/main/METHODOLOGY.md"
+              href="/methodology.html"
               target="_blank"
               rel="noopener noreferrer"
               className="hidden sm:block p-1.5 sm:p-2 text-slate-500 hover:bg-accent hover:bg-opacity-10 rounded-md transition-colors"
@@ -1110,7 +1150,7 @@ export default function App() {
               <p className="text-[10px] text-slate-400 mt-3">
                 Realized = Gross × {inputs.successRate}% success rate.{' '}
                 <a
-                  href="https://github.com/OptimNow/ai-roi-calculator/blob/main/METHODOLOGY.md"
+                  href="/methodology.html"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-accent hover:underline"

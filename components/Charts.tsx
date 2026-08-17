@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { formatUsd, formatUsdThousands } from '../utils/format';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend,
-  LineChart, Line, Area, ComposedChart, ReferenceLine
+  Line, Area, ComposedChart, ReferenceLine
 } from 'recharts';
 
 interface CostValueChartData {
@@ -29,6 +29,16 @@ interface CostBreakdownChartProps {
   data: CostBreakdownData[];
   colors: string[];
 }
+
+/*
+ * All four charts use memo's default shallow prop comparison.
+ *
+ * They used to pass custom comparators built on JSON.stringify, because App.tsx rebuilt
+ * their data arrays inline on every render so reference equality never held. That made
+ * every keystroke serialize each chart's data twice — at a 60-month horizon, 61 objects
+ * per pass — to conclude nothing had changed. The data is memoized in App.tsx now, so a
+ * reference check reaches the same answer for free.
+ */
 
 /**
  * Memoized Cost vs Value Bar Chart
@@ -68,12 +78,6 @@ export const CostValueChart = memo<CostValueChartProps>(({ data, formatMoney }) 
       </BarChart>
     </ResponsiveContainer>
   );
-}, (prevProps, nextProps) => {
-  // Custom comparison function - only re-render if data actually changed
-  return (
-    JSON.stringify(prevProps.data) === JSON.stringify(nextProps.data) &&
-    prevProps.formatMoney === nextProps.formatMoney
-  );
 });
 
 CostValueChart.displayName = 'CostValueChart';
@@ -110,12 +114,6 @@ export const CostBreakdownChart = memo<CostBreakdownChartProps>(({ data, colors 
         />
       </PieChart>
     </ResponsiveContainer>
-  );
-}, (prevProps, nextProps) => {
-  // Custom comparison - only re-render if data or colors changed
-  return (
-    JSON.stringify(prevProps.data) === JSON.stringify(nextProps.data) &&
-    JSON.stringify(prevProps.colors) === JSON.stringify(nextProps.colors)
   );
 });
 
@@ -215,12 +213,6 @@ export const ROICurveChart = memo<ROICurveChartProps>(({ data, breakEvenMonth, f
       </ComposedChart>
     </ResponsiveContainer>
   );
-}, (prevProps, nextProps) => {
-  return (
-    JSON.stringify(prevProps.data) === JSON.stringify(nextProps.data) &&
-    prevProps.breakEvenMonth === nextProps.breakEvenMonth &&
-    prevProps.formatMoney === nextProps.formatMoney
-  );
 });
 
 ROICurveChart.displayName = 'ROICurveChart';
@@ -313,8 +305,6 @@ export const TornadoChart = memo<TornadoChartProps>(({ data }) => {
       </BarChart>
     </ResponsiveContainer>
   );
-}, (prevProps, nextProps) => {
-  return JSON.stringify(prevProps.data) === JSON.stringify(nextProps.data);
 });
 
 TornadoChart.displayName = 'TornadoChart';

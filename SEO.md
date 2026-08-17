@@ -1,375 +1,103 @@
-# SEO Configuration Guide
+# SEO & Discoverability
 
-**Last Updated:** January 11, 2026
-**Project:** AI ROI Calculator
+**Last Updated:** August 17, 2026
 
----
-
-## Overview
-
-This document outlines all SEO (Search Engine Optimization) configurations for the AI ROI Calculator deployed on Vercel.
-
----
-
-## Implemented SEO Features
-
-### 1. Meta Tags (index.html)
-
-#### Primary Meta Tags
-```html
-<title>AI ROI Calculator - Calculate Return on Investment for AI Projects | OptimNow</title>
-<meta name="description" content="Free web app to calculate ROI for AI and LLM implementations..." />
-<meta name="keywords" content="AI ROI calculator, LLM cost calculator, AI project ROI..." />
-<meta name="author" content="OptimNow" />
-<meta name="robots" content="index, follow" />
-<link rel="canonical" href="https://ai-roi-calculator.vercel.app/" />
-```
-
-**Key Points:**
-- Title is 62 characters (optimal for Google: 50-60 chars)
-- Description is under 160 characters (optimal for snippets)
-- Keywords target AI/LLM ROI calculation use cases
-- Robots directive allows full crawling
-
-#### Open Graph Tags (Facebook, LinkedIn, etc.)
-```html
-<meta property="og:type" content="website" />
-<meta property="og:title" content="AI ROI Calculator - Calculate Return on Investment for AI Projects" />
-<meta property="og:description" content="Free web app to calculate ROI for AI and LLM implementations..." />
-<meta property="og:image" content="https://ai-roi-calculator.vercel.app/images/Logo.png" />
-<meta property="og:url" content="https://ai-roi-calculator.vercel.app/" />
-```
-
-**Purpose:** Rich previews when shared on Facebook, LinkedIn, Slack, etc.
-
-#### Twitter Card Tags
-```html
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="AI ROI Calculator - Calculate Return on Investment for AI Projects" />
-<meta name="twitter:description" content="Free web app to calculate ROI for AI and LLM implementations..." />
-<meta name="twitter:image" content="https://ai-roi-calculator.vercel.app/images/Logo.png" />
-```
-
-**Purpose:** Rich cards when tweeted or shared on X/Twitter
-
-#### Theme Color
-```html
-<meta name="theme-color" content="#ACE849" />
-```
-
-**Purpose:** Sets browser chrome color on mobile devices (Chartreuse brand color)
+This document records **decisions and known gaps**. It deliberately does not reproduce the
+contents of `index.html`, `vercel.json` or `public/*` — the previous version did, and every
+copied block drifted: it documented a canonical URL, two security headers and an
+`aggregateRating` that no longer existed. Read the files for what is configured; read this for
+why, and for what is still wrong.
 
 ---
 
-### 2. Structured Data (JSON-LD)
-
-Located in `index.html` `<head>` section:
-
-```json
-{
-  "@context": "https://schema.org",
-  "@type": "WebApplication",
-  "name": "AI ROI Calculator",
-  "applicationCategory": "BusinessApplication",
-  "operatingSystem": "Any",
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "USD"
-  },
-  "aggregateRating": {
-    "@type": "AggregateRating",
-    "ratingValue": "5.0",
-    "ratingCount": "1"
-  },
-  "description": "Free web application to calculate return on investment for AI and LLM implementations...",
-  "url": "https://ai-roi-calculator.vercel.app/",
-  "creator": {
-    "@type": "Organization",
-    "name": "OptimNow",
-    "url": "https://www.optimnow.io"
-  },
-  "featureList": [...]
-}
-```
-
-**Purpose:**
-- Rich results in Google search (star ratings, price, features)
-- Enhanced visibility with application info panel
-- Helps Google understand what the tool does
-
-**Validation:** Test at https://search.google.com/test/rich-results
-
----
-
-### 3. Vercel Configuration (vercel.json)
-
-#### Security Headers
-```json
-{
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "DENY" },
-        { "key": "X-XSS-Protection", "value": "1; mode=block" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" }
-      ]
-    }
-  ]
-}
-```
-
-**Benefits:**
-- Improves security score (Google ranking factor)
-- Protects against XSS, clickjacking, and MIME sniffing
-- Better privacy with referrer policy
-
-#### SPA Routing
-```json
-{
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ]
-}
-```
-
-**Purpose:** Ensures all routes serve the React SPA (single-page application)
-
----
-
-### 4. Robots.txt (public/robots.txt)
-
-```txt
-User-agent: *
-Allow: /
-
-Sitemap: https://ai-roi-calculator.vercel.app/sitemap.xml
-```
-
-**Purpose:**
-- Allows all search engines to crawl entire site
-- Points crawlers to sitemap for efficient indexing
-
-**Access:** https://airoicalculator.optimnow.io/robots.txt
-
----
-
-### 5. Sitemap.xml (public/sitemap.xml)
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://ai-roi-calculator.vercel.app/</loc>
-    <lastmod>2026-01-11</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>1.0</priority>
-  </url>
-</urlset>
-```
-
-**Purpose:**
-- Helps search engines discover all pages
-- Indicates update frequency and priority
-- Speeds up indexing
-
-**Access:** https://airoicalculator.optimnow.io/sitemap.xml
-
-**Update:** Change `<lastmod>` date when making significant content changes
-
----
-
-## SEO Best Practices Applied
-
-### ✅ Technical SEO
-- [x] Mobile-responsive design (viewport meta tag)
-- [x] Fast load times (Vite optimization, CDN delivery)
-- [x] HTTPS enabled (automatic via Vercel)
-- [x] Clean URL structure (no query params for routing)
-- [x] Semantic HTML (proper heading hierarchy)
-- [x] Accessible (WCAG 2.1 AA compliant)
-
-### ✅ On-Page SEO
-- [x] Descriptive title tag with brand name
-- [x] Compelling meta description under 160 chars
-- [x] Relevant keywords naturally integrated
-- [x] Canonical URL to prevent duplicate content
-- [x] Alt text for images (in Logo.png usage)
-
-### ✅ Content SEO
-- [x] Clear value proposition ("Free web app to calculate ROI...")
-- [x] Target audience keywords (AI, LLM, ROI, calculator)
-- [x] Feature-rich description in structured data
-- [x] Professional branding (OptimNow)
-
-### ✅ Social SEO
-- [x] Open Graph tags for social sharing
-- [x] Twitter Card tags for X/Twitter
-- [x] High-quality preview image (Logo.png)
-- [x] Consistent messaging across platforms
-
----
-
-## Monitoring & Analytics
-
-### Vercel Analytics
-Already integrated via `@vercel/analytics` package:
-- Page views and user sessions
-- Geographic traffic sources
-- Device types (mobile/desktop)
-- Web Vitals (LCP, FID, CLS)
-
-**Dashboard:** Vercel Project → Analytics tab
-
-### Google Search Console (Recommended)
-To track search performance:
-
-1. **Add Property:**
-   - Go to https://search.google.com/search-console
-   - Add property: `https://airoicalculator.optimnow.io`
-
-2. **Verify Ownership:**
-   - **HTML File Method:** Download verification file, add to `public/`
-   - **HTML Tag Method:** Add meta tag to `index.html` `<head>`
-   - **DNS Method:** Add TXT record to domain (if using custom domain)
-
-3. **Submit Sitemap:**
-   - In Search Console, go to Sitemaps
-   - Submit: `https://airoicalculator.optimnow.io/sitemap.xml`
-
-4. **Monitor:**
-   - Search queries driving traffic
-   - Click-through rates (CTR)
-   - Index coverage issues
-   - Mobile usability
-   - Core Web Vitals
-
----
-
-## Testing & Validation
-
-### Meta Tags Testing
-- **Facebook Debugger:** https://developers.facebook.com/tools/debug/
-- **Twitter Card Validator:** https://cards-dev.twitter.com/validator
-- **LinkedIn Post Inspector:** https://www.linkedin.com/post-inspector/
-
-### Structured Data Testing
-- **Google Rich Results Test:** https://search.google.com/test/rich-results
-- **Schema Markup Validator:** https://validator.schema.org/
-
-### Performance Testing
-- **PageSpeed Insights:** https://pagespeed.web.dev/
-- **Lighthouse:** Built into Chrome DevTools (F12 → Lighthouse tab)
-
-### Mobile-Friendly Test
-- **Google Mobile-Friendly Test:** https://search.google.com/test/mobile-friendly
-
----
-
-## Updating SEO Content
-
-### When to Update
-
-1. **Major Feature Releases:** Update description and structured data featureList
-2. **Monthly:** Update sitemap.xml `<lastmod>` date if content changed
-3. **Rebranding:** Update all meta tags, Open Graph, Twitter Card
-4. **New Pages:** Add entries to sitemap.xml (when adding multi-page routing)
-
-### How to Update
-
-#### Update Meta Description (index.html:10)
-```html
-<meta name="description" content="Your new description here (max 160 chars)" />
-```
-
-#### Update Open Graph Title/Description (index.html:19-20)
-```html
-<meta property="og:title" content="Your new title" />
-<meta property="og:description" content="Your new description" />
-```
-
-#### Update Structured Data (index.html:57)
-```json
-"description": "Your new description here",
-"featureList": ["New feature 1", "New feature 2", ...]
-```
-
-#### Update Sitemap Last Modified (public/sitemap.xml:5)
-```xml
-<lastmod>2026-MM-DD</lastmod>
-```
-
----
-
-## Custom Domain Setup (Optional)
-
-The project uses the custom domain `airoicalculator.optimnow.io`.
-
-### Custom Domain Already Configured
-The custom domain `https://airoicalculator.optimnow.io` is already configured and all SEO files have been updated with the correct URL.
-
----
-
-## SEO Checklist for Future Updates
-
-Before each major release:
-- [ ] Update `<title>` tag if feature set changed
-- [ ] Update meta description if value proposition changed
-- [ ] Update structured data featureList
-- [ ] Update sitemap.xml lastmod date
-- [ ] Test all meta tags with Facebook Debugger & Twitter Validator
-- [ ] Run Lighthouse audit (target 90+ SEO score)
-- [ ] Verify mobile responsiveness
-- [ ] Check Core Web Vitals in PageSpeed Insights
-- [ ] Submit updated sitemap to Google Search Console
-
----
-
-## Current SEO Status
-
-### ✅ Implemented
-- Primary meta tags (title, description, keywords, robots, canonical)
-- Open Graph tags (Facebook, LinkedIn, etc.)
-- Twitter Card tags
-- Structured data (JSON-LD) for rich results
-- Security headers via vercel.json
-- robots.txt allowing all crawlers
-- sitemap.xml with homepage entry
-- Theme color for mobile browsers
-
-### 🔄 In Progress
-- Google Search Console verification (pending manual setup)
-- Initial indexing by Google (typically 1-7 days after submission)
-
-### 📋 Future Enhancements
-- Add custom domain (optional)
-- Track search performance in Search Console
-- Add blog/content pages for more SEO opportunities
-- Implement FAQ schema if adding FAQ section
-- Add BreadcrumbList schema if adding navigation
-
----
-
-## Resources
-
-### Official Documentation
-- **Vercel SEO:** https://vercel.com/docs/concepts/analytics
-- **Schema.org:** https://schema.org/WebApplication
-- **Open Graph Protocol:** https://ogp.me/
-- **Twitter Cards:** https://developer.twitter.com/en/docs/twitter-for-websites/cards/overview/abouts-cards
-
-### SEO Tools
-- **Google Search Console:** https://search.google.com/search-console
-- **Google PageSpeed Insights:** https://pagespeed.web.dev/
-- **Facebook Sharing Debugger:** https://developers.facebook.com/tools/debug/
-- **Schema Markup Validator:** https://validator.schema.org/
-
----
-
-**Questions or Issues?** See index.html:7-73 for current meta tag implementation.
+## Domains
+
+`https://airoicalculator.optimnow.io` is canonical. `ai-roi-calculator.vercel.app` is the
+Vercel default and used to return `200` with the same content, leaving deduplication entirely
+to the canonical tag — which Google treats as a hint, not a directive. `vercel.json` now
+`308`s it to the custom domain. The `has: host` condition matches that exact hostname, so
+preview deployments on `ai-roi-calculator-<hash>.vercel.app` are unaffected.
+
+## What each surface carries
+
+| File | Carries |
+|---|---|
+| `index.html` | Title, description, canonical, Open Graph, Twitter Card, `WebApplication` JSON-LD, and a `<noscript>` block that is the entire site to a non-rendering crawler |
+| `public/methodology.html` | Generated page, `TechArticle` JSON-LD, its own canonical — see below |
+| `public/robots.txt` | `Allow: /` for everyone, absolute sitemap URL |
+| `public/sitemap.xml` | Two URLs: home and methodology |
+| `public/llms.txt` | Link-list per the llmstxt.org convention |
+| `vercel.json` | Security headers, the `308` above, immutable caching on `/assets/*` |
+
+**No `aggregateRating` in the JSON-LD, on purpose.** An earlier version self-declared
+`"ratingValue": "5.0", "ratingCount": "1"`. A self-authored rating is a Google structured-data
+policy violation and risks a manual action. Do not restore it.
+
+## The SPA crawlability problem, and what actually fixes it
+
+The app is client-rendered: the served HTML is an empty `<div id="root">`.
+
+- **Googlebot renders JavaScript** and sees the full app. For the navigational, tool-seeking
+  queries this product wants — "AI ROI calculator", "LLM cost calculator" — that is fine.
+- **Non-rendering fetchers** — GPTBot, ClaudeBot, PerplexityBot, CCBot, most social unfurlers —
+  get only the raw HTML. For them the `<noscript>` block *is* the site.
+
+Prerendering was considered and rejected: it would hand Googlebot the same label-and-number
+soup it already renders, and add a headless-Chrome dependency to CI for no new content.
+
+What was actually missing was **content**, not rendering. `public/methodology.html` is the
+full mathematical specification (~5,900 words) as static, zero-JavaScript HTML on our own
+domain, generated from `METHODOLOGY.md` by `scripts/build-methodology.mjs` and regenerated on
+every `prebuild`. Before it existed, the app linked users to `METHODOLOGY.md` on GitHub, so
+every citation an AI search engine could make pointed at github.com rather than optimnow.io.
+
+The `<noscript>` block links to it. That link is the path non-rendering crawlers follow.
+
+## AI crawler policy
+
+`robots.txt` is `Allow: /` with no per-agent rules, so GPTBot, ClaudeBot, PerplexityBot, CCBot
+and Google-Extended are all permitted. **This is intended** — the calculator is a free lead-
+generation tool that wants to be found and cited. The permission is currently implicit; adding
+explicit per-agent `Allow` blocks would document the intent so a future well-meaning "block the
+scrapers" edit has to be deliberate.
+
+## Known gaps
+
+Ordered by impact. None of these are configuration mistakes — they need assets or a decision.
+
+1. **`og:image` is the wrong shape.** It points at `/images/Logo.png`, a 1323×270 wordmark
+   (4.9:1). `summary_large_image`, Facebook and LinkedIn all want ~1200×630 (1.91:1), so every
+   share card letterboxes or centre-crops it. Needs a purpose-built 1200×630 render of the
+   calculator UI. The declared `og:image:width/height` do match the real file, so the markup is
+   at least honest about it.
+2. **No PNG favicon set, so the PWA is not installable.** `manifest.webmanifest` declares a
+   single 400×400 icon; Chrome requires 192×192 and 512×512. There is also no service worker
+   behind `display: standalone`. Either ship the icons, or drop the standalone claim.
+   `favicon.jpg` is also 28.7 kB for something rendered at 16px — a real icon set would be
+   1–2 kB.
+3. **`X-Frame-Options: ALLOWALL` in `vercel.json` is not a valid value** (the header allows only
+   `DENY` and `SAMEORIGIN`). Browsers ignore it, and the `Content-Security-Policy:
+   frame-ancestors` two entries below is what actually permits the Wix embedding. The line
+   should be deleted, but it is load-bearing-looking enough that it deserves a deliberate
+   change rather than a drive-by one.
+4. **Title is 76 characters, description 187.** Google truncates around 60 and 160
+   respectively. Both are currently cut off in results.
+5. **`Ayuthaya` is not a Google Font.** The stylesheet URL in `index.html` requests it and
+   Google silently drops it — the response is byte-identical with the family removed — so
+   `--font-label` falls back to Arial in production. A brand-fidelity issue, not an SEO one.
+6. **`/favicon.ico` returns the SPA shell** as `200 text/html`, because the catch-all rewrite
+   answers it. Browsers and some crawlers request it unconditionally.
+7. **No `FAQPage` schema.** `components/HelpGuide.tsx` contains ~25 sections of genuinely good
+   explanatory content that no crawler ever sees, since the modal returns `null` until a human
+   clicks. Lifting six to ten of those into FAQ schema would be eligible for rich results and is
+   heavily favoured by AI answer engines.
+
+## Maintenance
+
+- `sitemap.xml` `<lastmod>` is hand-maintained and has drifted before. Update it with content
+  changes, or automate it at build time.
+- After changing `METHODOLOGY.md`, `npm run build:methodology` regenerates the page;
+  `npm run check:methodology` fails if the committed copy is stale.
+- Validate structured data at <https://validator.schema.org/> and rich results at
+  <https://search.google.com/test/rich-results>.
+- Search Console property is `https://airoicalculator.optimnow.io`; submit the sitemap there.

@@ -25,18 +25,45 @@ export const pluralize = (unit: string, count = 2): string => {
 };
 
 /**
+ * Intl.NumberFormat construction costs ~40x more than formatting with an existing
+ * instance, and these helpers are called ~50 times per render of the results column
+ * — every keystroke in the form. Only the decimal count varies, so one instance per
+ * distinct count is cached for the life of the module.
+ */
+const usdFormatters = new Map<number, Intl.NumberFormat>();
+const countFormatters = new Map<number, Intl.NumberFormat>();
+
+const usdFormatter = (decimals: number): Intl.NumberFormat => {
+  let formatter = usdFormatters.get(decimals);
+  if (!formatter) {
+    formatter = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+    });
+    usdFormatters.set(decimals, formatter);
+  }
+  return formatter;
+};
+
+const countFormatter = (maximumFractionDigits: number): Intl.NumberFormat => {
+  let formatter = countFormatters.get(maximumFractionDigits);
+  if (!formatter) {
+    formatter = new Intl.NumberFormat('en-US', { maximumFractionDigits });
+    countFormatters.set(maximumFractionDigits, formatter);
+  }
+  return formatter;
+};
+
+/**
  * Format USD with the sign in front of the currency symbol.
  *
  * Hand-built "$" + number produced "$-49.2k" on the cumulative-profit axis, which
  * starts negative by definition. Intl puts the sign where a reader expects it.
  */
 export const formatUsd = (value: number, decimals = 2): string =>
-  new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: decimals,
-    maximumFractionDigits: decimals,
-  }).format(value);
+  usdFormatter(decimals).format(value);
 
 /** Same, abbreviated to thousands for chart axes: -$49k, not $-49k. */
 export const formatUsdThousands = (value: number, decimals = 0): string =>
@@ -44,4 +71,4 @@ export const formatUsdThousands = (value: number, decimals = 0): string =>
 
 /** Plain number with thousands separators, no currency. */
 export const formatCount = (value: number, maximumFractionDigits = 1): string =>
-  new Intl.NumberFormat('en-US', { maximumFractionDigits }).format(value);
+  countFormatter(maximumFractionDigits).format(value);

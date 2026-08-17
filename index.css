@@ -7,7 +7,6 @@
   /* Brand Colors */
   --color-primary: #ACE849;        /* Chartreuse */
   --color-secondary: #F4F4F4;      /* Light Grey */
-  --color-white: #FFFFFF;          /* White */
   --color-charcoal: #2C2C2C;       /* Charcoal Black */
   --color-dark-grey: #C1C1C1;      /* Dark Grey */
 
@@ -16,13 +15,6 @@
   --font-body: 'Almarai', Arial, Helvetica, sans-serif;
   --font-label: 'Ayuthaya', Arial, Helvetica, sans-serif;
   --font-primary: var(--font-body);
-
-  /* Spacing */
-  --spacing-xs: 0.25rem;
-  --spacing-sm: 0.5rem;
-  --spacing-md: 1rem;
-  --spacing-lg: 1.5rem;
-  --spacing-xl: 2rem;
 }
 
 * {
@@ -87,17 +79,7 @@ button:hover .text-accent {
     position: static !important;
   }
 
-  .no-print {
-    display: none !important;
-  }
-
   body {
     background: white !important;
-  }
-
-  .bg-slate-800 {
-    background: white !important;
-    color: black !important;
-    border: 1px solid #ccc !important;
   }
 }

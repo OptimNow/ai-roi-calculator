@@ -140,5 +140,8 @@ export interface Scenario {
   results: CalculationResults;
   createdAt: number;
   color?: string; // For visual differentiation in comparison view
+  // Absent on anything saved before versioning existed; see utils/scenario.ts,
+  // which backfills missing UseCaseInputs fields rather than rejecting the record.
+  schemaVersion?: number;
 }
 

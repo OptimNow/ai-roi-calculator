@@ -1,6 +1,6 @@
 # AI ROI Calculator - User Acceptance Testing (UAT) Scenarios
 
-**Version:** 1.1 (Phase 1 Complete)
+**Version:** 0.6.0
 **Date:** January 1, 2025
 **Tester:** ________________
 **Environment:** Production / Staging (circle one)
