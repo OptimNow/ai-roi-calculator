@@ -22,7 +22,7 @@ The logo and favicon are in the `public/images/` folder. Vite automatically copi
 
 After deployment, check:
 - https://your-app.vercel.app/images/Logo.png (should display logo)
-- https://your-app.vercel.app/images/favicon.jpg (should display favicon)
+- https://your-app.vercel.app/favicon.ico (should display favicon)
 
 If these URLs return 404, the build didn't copy the public folder correctly.
 
@@ -54,7 +54,7 @@ Visit http://localhost:5173 - logo should appear immediately.
 npm run build
 ```
 
-Check `dist/images/` folder - Logo.png and favicon.jpg should be present.
+Check `dist/images/` folder - Logo.png, og-image.png and the icon-*.png set should be present.
 
 Serve locally to test:
 ```bash

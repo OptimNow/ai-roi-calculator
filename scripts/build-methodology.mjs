@@ -117,7 +117,8 @@ const html = `<!DOCTYPE html>
     <meta name="twitter:title" content="${escapeHtml(TITLE)}" />
     <meta name="twitter:description" content="${escapeHtml(DESCRIPTION)}" />
 
-    <link rel="icon" type="image/jpeg" href="/images/favicon.jpg" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/icon-32.png" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

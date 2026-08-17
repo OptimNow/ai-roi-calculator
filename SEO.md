@@ -65,32 +65,39 @@ scrapers" edit has to be deliberate.
 
 Ordered by impact. None of these are configuration mistakes — they need assets or a decision.
 
-1. **`og:image` is the wrong shape.** It points at `/images/Logo.png`, a 1323×270 wordmark
-   (4.9:1). `summary_large_image`, Facebook and LinkedIn all want ~1200×630 (1.91:1), so every
-   share card letterboxes or centre-crops it. Needs a purpose-built 1200×630 render of the
-   calculator UI. The declared `og:image:width/height` do match the real file, so the markup is
-   at least honest about it.
-2. **No PNG favicon set, so the PWA is not installable.** `manifest.webmanifest` declares a
-   single 400×400 icon; Chrome requires 192×192 and 512×512. There is also no service worker
-   behind `display: standalone`. Either ship the icons, or drop the standalone claim.
-   `favicon.jpg` is also 28.7 kB for something rendered at 16px — a real icon set would be
-   1–2 kB.
-3. **`X-Frame-Options: ALLOWALL` in `vercel.json` is not a valid value** (the header allows only
+1. **No service worker behind `display: standalone`.** `manifest.webmanifest` now declares
+   192×192 and 512×512 PNG icons, so the PWA is installable, but it promises an app-like
+   experience with zero offline capability. Either add a service worker, or drop the claim.
+2. **`X-Frame-Options: ALLOWALL` in `vercel.json` is not a valid value** (the header allows only
    `DENY` and `SAMEORIGIN`). Browsers ignore it, and the `Content-Security-Policy:
    frame-ancestors` two entries below is what actually permits the Wix embedding. The line
    should be deleted, but it is load-bearing-looking enough that it deserves a deliberate
    change rather than a drive-by one.
-4. **Title is 76 characters, description 187.** Google truncates around 60 and 160
+3. **Title is 76 characters, description 187.** Google truncates around 60 and 160
    respectively. Both are currently cut off in results.
-5. **`Ayuthaya` is not a Google Font.** The stylesheet URL in `index.html` requests it and
+4. **`Ayuthaya` is not a Google Font.** The stylesheet URL in `index.html` requests it and
    Google silently drops it — the response is byte-identical with the family removed — so
    `--font-label` falls back to Arial in production. A brand-fidelity issue, not an SEO one.
-6. **`/favicon.ico` returns the SPA shell** as `200 text/html`, because the catch-all rewrite
-   answers it. Browsers and some crawlers request it unconditionally.
-7. **No `FAQPage` schema.** `components/HelpGuide.tsx` contains ~25 sections of genuinely good
+5. **No `FAQPage` schema.** `components/HelpGuide.tsx` contains ~25 sections of genuinely good
    explanatory content that no crawler ever sees, since the modal returns `null` until a human
    clicks. Lifting six to ten of those into FAQ schema would be eligible for rich results and is
    heavily favoured by AI answer engines.
+
+## Images
+
+`public/images/icon-*.png`, `public/favicon.ico` and `public/images/og-image.png` are generated
+by `scripts/build-icons.mjs` — run `npm run build:icons` and commit the output. Do not hand-edit
+them.
+
+The icons are resampled from `public/images/favicon.jpg`, the existing OptimNow "Cloud" badge,
+which stays in the repository as the source of truth for the mark even though nothing links to
+it directly any more. The social card is composed from the real `Logo.png` plus brand tokens;
+its type falls back to Arial, which is the sanctioned fallback in `index.css`
+(`'Manrope', Arial, Helvetica`), since the brand faces are Google Fonts and are not available to
+the rasteriser.
+
+`/favicon.ico` exists at the site root, so the catch-all rewrite no longer answers that request
+with the SPA shell as `200 text/html`.
 
 ## Maintenance
 

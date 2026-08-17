@@ -1,238 +1,244 @@
-# 🤝 Guide de Contribution
+# 🤝 Contributing Guide
 
-Merci de votre intérêt pour contribuer au **AI ROI Calculator** ! Ce projet est open source et nous accueillons toutes les contributions.
+Thanks for your interest in contributing to the **AI ROI Calculator**! This project is open
+source and all contributions are welcome.
 
-## 📋 Table des Matières
+## 📋 Table of Contents
 
-- [Code de Conduite](#code-de-conduite)
-- [Comment Contribuer](#comment-contribuer)
-- [Configuration de l'Environnement](#configuration-de-lenvironnement)
-- [Processus de Pull Request](#processus-de-pull-request)
-- [Standards de Code](#standards-de-code)
+- [Code of Conduct](#code-of-conduct)
+- [Ways to Contribute](#ways-to-contribute)
+- [Environment Setup](#environment-setup)
+- [Pull Request Process](#pull-request-process)
+- [Code Standards](#code-standards)
 - [Tests](#tests)
-- [Besoin d'Aide ?](#besoin-daide-)
+- [Need Help?](#need-help)
 
 ---
 
-## Code de Conduite
+## Code of Conduct
 
-Ce projet suit un code de conduite simple :
-- 🤝 Soyez respectueux et bienveillant
-- 💬 Communiquez de manière constructive
-- 🎯 Restez concentré sur l'amélioration du projet
-- 🙏 Acceptez les critiques constructives avec gratitude
-
----
-
-## Comment Contribuer
-
-Il existe plusieurs façons de contribuer :
-
-### 🐛 Signaler un Bug
-1. Vérifiez que le bug n'a pas déjà été signalé dans les [Issues](https://github.com/OptimNow/ai-roi-calculator/issues)
-2. Ouvrez une nouvelle issue avec le label `bug`
-3. Décrivez le problème de manière détaillée :
-   - Qu'avez-vous essayé de faire ?
-   - Qu'attendiez-vous comme résultat ?
-   - Qu'avez-vous obtenu à la place ?
-   - Comment reproduire le bug ? (étapes précises)
-   - Captures d'écran si possible
-
-### 💡 Proposer une Fonctionnalité
-1. Ouvrez une issue avec le label `enhancement`
-2. Expliquez clairement :
-   - Le problème que cette fonctionnalité résout
-   - Comment elle devrait fonctionner
-   - Pourquoi elle est utile pour les utilisateurs
-
-### 🔧 Corriger un Bug ou Ajouter une Fonctionnalité
-1. Choisissez une issue existante ou créez-en une
-2. Commentez l'issue pour signaler que vous travaillez dessus
-3. Suivez le [Processus de Pull Request](#processus-de-pull-request) ci-dessous
-
-### 📖 Améliorer la Documentation
-La documentation peut toujours être améliorée ! N'hésitez pas à proposer des corrections, clarifications ou ajouts.
+This project follows a simple code of conduct:
+- 🤝 Be respectful and kind
+- 💬 Communicate constructively
+- 🎯 Stay focused on improving the project
+- 🙏 Accept constructive criticism gracefully
 
 ---
 
-## Configuration de l'Environnement
+## Ways to Contribute
 
-### Prérequis
+### 🐛 Report a Bug
+1. Check that the bug has not already been reported in [Issues](https://github.com/OptimNow/ai-roi-calculator/issues)
+2. Open a new issue with the `bug` label
+3. Describe the problem in detail:
+   - What were you trying to do?
+   - What did you expect to happen?
+   - What happened instead?
+   - How can it be reproduced? (precise steps)
+   - Screenshots if possible
 
-Assurez-vous d'avoir installé :
-- **Node.js** : version 20.x ou supérieure
-- **npm** : version 10.x ou supérieure
-- **Git** : pour cloner le repository
+If the bug is a wrong **number** rather than a broken interface, include the inputs you used.
+[METHODOLOGY.md](METHODOLOGY.md) documents every formula, so a report that names the metric and
+the inputs can usually be turned into a failing test straight away.
+
+### 💡 Propose a Feature
+1. Open an issue with the `enhancement` label
+2. Explain clearly:
+   - The problem the feature solves
+   - How it should work
+   - Why it is useful to users
+
+### 🔧 Fix a Bug or Add a Feature
+1. Pick an existing issue or create one
+2. Comment on the issue to say you are working on it
+3. Follow the [Pull Request Process](#pull-request-process) below
+
+### 📖 Improve the Documentation
+Documentation can always be improved! Corrections, clarifications and additions are welcome.
+
+---
+
+## Environment Setup
+
+### Prerequisites
+
+Make sure you have installed:
+- **Node.js**: version 20.x or later
+- **npm**: version 10.x or later
+- **Git**: to clone the repository
 
 ### Installation
 
-1. **Forkez le repository**
-   - Cliquez sur le bouton "Fork" en haut à droite de la page GitHub
+1. **Fork the repository**
+   - Click the "Fork" button at the top right of the GitHub page
 
-2. **Clonez votre fork**
+2. **Clone your fork**
    ```bash
-   git clone https://github.com/VOTRE-USERNAME/ai-roi-calculator.git
+   git clone https://github.com/YOUR-USERNAME/ai-roi-calculator.git
    cd ai-roi-calculator
    ```
 
-3. **Ajoutez le repository original comme remote**
+3. **Add the original repository as a remote**
    ```bash
    git remote add upstream https://github.com/OptimNow/ai-roi-calculator.git
    ```
 
-4. **Installez les dépendances**
+4. **Install dependencies**
    ```bash
    npm install
    ```
 
-5. **Lancez le serveur de développement**
+5. **Start the development server**
    ```bash
    npm run dev
    ```
-   L'application sera accessible sur `http://localhost:3000`
+   The app will be available at `http://localhost:3000`
 
-### Vérifier que tout fonctionne
+### Check that everything works
 
 ```bash
-# Vérifier les types — Vite ne typecheck PAS, c'est la seule barrière
+# Check types — Vite does NOT typecheck, so this is the only gate
 npm run typecheck
 
-# Vérifier que le build fonctionne
+# Check the build works
 npm run build
 
-# Lancer les tests
+# Run the tests
 npm test
 ```
 
 ---
 
-## Processus de Pull Request
+## Pull Request Process
 
-### 1. Créer une Branche
+### 1. Create a Branch
 
-Créez toujours une nouvelle branche pour vos modifications :
+Always create a new branch for your changes:
 
 ```bash
-# Assurez-vous d'être à jour avec le repository original
+# Make sure you are up to date with the original repository
 git checkout main
 git pull upstream main
 
-# Créez une nouvelle branche avec un nom descriptif
-git checkout -b fix/description-du-bug
-# ou
-git checkout -b feature/nom-de-la-fonctionnalite
+# Create a new branch with a descriptive name
+git checkout -b fix/bug-description
+# or
+git checkout -b feature/feature-name
 ```
 
-**Convention de nommage des branches :**
-- `fix/...` pour les corrections de bugs
-- `feature/...` pour les nouvelles fonctionnalités
-- `docs/...` pour les modifications de documentation
-- `refactor/...` pour les refactorisations de code
+**Branch naming convention:**
+- `fix/...` for bug fixes
+- `feature/...` for new features
+- `docs/...` for documentation changes
+- `refactor/...` for refactoring
 
-### 2. Faites vos Modifications
+### 2. Make your Changes
 
-- Écrivez du code propre et lisible
-- Suivez les [Standards de Code](#standards-de-code)
-- Ajoutez des tests si nécessaire
-- Mettez à jour la documentation si nécessaire
+- Write clean, readable code
+- Follow the [Code Standards](#code-standards)
+- Add tests where needed
+- Update the documentation where needed
 
-### 3. Testez vos Modifications
+### 3. Test your Changes
 
-Avant de soumettre, assurez-vous que :
+Before submitting, make sure that:
 ```bash
-# Les tests passent
+# Types pass
+npm run typecheck
+
+# Tests pass
 npm test
 
-# Le build fonctionne
+# The build works
 npm run build
 ```
 
-### 4. Committez vos Changements
+### 4. Commit your Changes
 
-Utilisez des messages de commit clairs et descriptifs :
+Use clear, descriptive commit messages:
 
 ```bash
 git add .
-git commit -m "fix: correction du calcul du ROI pour les valeurs négatives"
+git commit -m "fix: correct ROI calculation for negative values"
 ```
 
-**Convention des messages de commit :**
-- `feat:` nouvelle fonctionnalité
-- `fix:` correction de bug
-- `docs:` modification de documentation
-- `style:` changements de formatage (sans impact sur le code)
-- `refactor:` refactorisation de code
-- `test:` ajout ou modification de tests
-- `chore:` tâches de maintenance
+**Commit message convention:**
+- `feat:` new feature
+- `fix:` bug fix
+- `docs:` documentation change
+- `style:` formatting changes (no code impact)
+- `refactor:` code refactoring
+- `test:` adding or changing tests
+- `chore:` maintenance tasks
 
-### 5. Poussez vers votre Fork
+### 5. Push to your Fork
 
 ```bash
-git push origin fix/description-du-bug
+git push origin fix/bug-description
 ```
 
-### 6. Ouvrez une Pull Request
+### 6. Open a Pull Request
 
-1. Allez sur votre fork sur GitHub
-2. Cliquez sur **"Compare & pull request"**
-3. Remplissez le template de PR avec :
-   - **Titre clair** : résumé en une ligne
-   - **Description** : qu'est-ce qui change et pourquoi ?
-   - **Issue liée** : mettez `Closes #123` si votre PR résout une issue
-   - **Tests** : comment avez-vous testé vos changements ?
-   - **Captures d'écran** : si pertinent (changements UI)
+1. Go to your fork on GitHub
+2. Click **"Compare & pull request"**
+3. Fill in the PR template with:
+   - **Clear title**: a one-line summary
+   - **Description**: what changes and why?
+   - **Linked issue**: add `Closes #123` if your PR resolves an issue
+   - **Tests**: how did you test your changes?
+   - **Screenshots**: if relevant (UI changes)
 
-4. Attendez la revue de code
+4. Wait for code review
 
-### 7. Répondez aux Retours
+### 7. Respond to Feedback
 
-- Les mainteneurs peuvent demander des modifications
-- Répondez aux commentaires et poussez de nouveaux commits si nécessaire
-- Les nouveaux commits seront automatiquement ajoutés à la PR
+- Maintainers may request changes
+- Reply to comments and push new commits as needed
+- New commits are added to the PR automatically
 
-### 8. Fusion
+### 8. Merge
 
-Une fois approuvée par les mainteneurs, votre PR sera fusionnée ! 🎉
+Once approved by the maintainers, your PR will be merged! 🎉
 
 ---
 
-## Standards de Code
+## Code Standards
 
 ### TypeScript
 
-- **Utilisez TypeScript** pour tout nouveau code
-- **Typez explicitement** les paramètres et retours de fonction
-- **Évitez `any`** autant que possible
-- Utilisez les types définis dans `types.ts`
+- **Use TypeScript** for all new code
+- **Type parameters and return values explicitly**
+- **Avoid `any`** wherever possible
+- Use the types defined in `types.ts`
 
-Exemple :
+Example:
 ```typescript
-// ✅ Bon — types explicites, importés depuis types.ts
+// ✅ Good — explicit types, imported from types.ts
 import type { UseCaseInputs, CalculationResults } from '../types';
 
 export const calculateROI = (inputs: UseCaseInputs): CalculationResults => {
   // ...
 };
 
-// ❌ Éviter — paramètres implicitement `any`
+// ❌ Avoid — implicitly `any` parameters
 export const calculateROI = (inputs) => {
   // ...
 };
 ```
 
-`calculateROI` est la vraie signature du moteur (`utils/calculations.ts`) : elle prend
-l'objet d'entrées complet et renvoie l'objet de résultats, pas deux nombres.
+`calculateROI` above is the engine's real signature (`utils/calculations.ts`): it takes the
+full inputs object and returns the full results object, not two numbers.
 
 ### React
 
-- **Composants fonctionnels** avec hooks
-- **Props typées** avec TypeScript
-- **Nommage PascalCase** pour les composants
-- **Un composant par fichier** (sauf composants très petits)
+- **Functional components** with hooks
+- **Typed props** with TypeScript
+- **PascalCase naming** for components
+- **One component per file** (except very small ones)
 
-Exemple :
+Example:
 ```typescript
-// ✅ Bon
+// ✅ Good
 interface ButtonProps {
   label: string;
   onClick: () => void;
@@ -250,72 +256,76 @@ export function Button({ label, onClick, disabled = false }: ButtonProps) {
 
 ### Styling
 
-- **Tailwind CSS** pour tous les styles
-- **Classes utilitaires** plutôt que CSS custom
-- **Responsive design** : utilisez les préfixes `sm:`, `md:`, `lg:`
-- **Dark mode** : pas encore implémenté (contributions bienvenues !)
+- **Tailwind CSS** for all styles
+- **Utility classes** rather than custom CSS
+- **Responsive design**: use the `sm:`, `md:`, `lg:` prefixes
+- **Dark mode**: not implemented yet (contributions welcome!)
 
-### Structure des Fichiers
+### File Structure
 
 ```
 /
-├── components/          # Composants et leurs tests
-│   ├── Charts.tsx              # 4 graphiques mémoïsés
-│   ├── HelpGuide.tsx           # Guide intégré (modale)
+├── components/          # Components and their tests
+│   ├── Charts.tsx              # 4 memoized charts
+│   ├── HelpGuide.tsx           # In-app guide (modal)
 │   ├── InputComponents.tsx     # MoneyInput, NumberInput, PercentInput
-│   ├── ModelPicker.tsx         # Sélecteur de modèle (catalogue OptimToken)
+│   ├── ModelPicker.tsx         # Model picker (OptimToken catalog)
 │   ├── ScenarioComparison.tsx
 │   ├── ScenarioManager.tsx
 │   └── ErrorBoundary.tsx
-├── utils/              # Logique métier et utilitaires
-│   ├── calculations.ts         # Le moteur ROI (fonction pure unique)
-│   ├── modelCatalog.ts         # Prix des modèles : fetch, cache, snapshot
-│   ├── deepLink.ts             # Paramètres d'URL venant du hub
-│   ├── scenario.ts             # Validation/migration des scénarios sauvegardés
-│   ├── format.ts               # Formatage monétaire et pluralisation
-│   └── *.test.ts               # Un fichier de test par module
-├── public/             # Assets statiques servis tels quels
-│   ├── methodology.html        # GÉNÉRÉ depuis METHODOLOGY.md — ne pas éditer
-│   └── images/
-├── scripts/            # Scripts de build (snapshot de prix, page méthodologie)
-├── App.tsx             # Composant principal (~1 450 lignes)
-├── types.ts            # Définitions de types TypeScript
-└── constants.ts        # Constantes et presets
+├── utils/              # Business logic and utilities
+│   ├── calculations.ts         # The ROI engine (a single pure function)
+│   ├── modelCatalog.ts         # Model prices: fetch, cache, embedded snapshot
+│   ├── deepLink.ts             # URL parameters handed over by the hub
+│   ├── scenario.ts             # Validation/migration of saved scenarios
+│   ├── format.ts               # Money formatting and pluralisation
+│   └── *.test.ts               # One test file per module
+├── public/             # Static assets served as-is
+│   ├── methodology.html        # GENERATED from METHODOLOGY.md — do not edit
+│   └── images/                 # Icons and social card, generated by scripts/
+├── scripts/            # Build scripts (price snapshot, methodology page, icons)
+├── App.tsx             # Main component (~1,450 lines)
+├── types.ts            # TypeScript type definitions
+└── constants.ts        # Constants and presets
 ```
 
-**Attention — cinq fichiers sont synchronisés vers un autre dépôt.**
-`utils/calculations.ts`, `types.ts`, `constants.ts`, `utils/modelCatalog.ts` et
-`utils/format.ts` sont copiés verbatim dans le serveur MCP
-([ai-roi-calculator-mcp](https://github.com/OptimNow/ai-roi-calculator-mcp)). Ils doivent
-compiler sous un `tsconfig` plus strict et tourner sous Node : gardez les imports de type
-explicites (`import type`) et ne supposez aucun objet global du navigateur. Une modification
-du moteur demande aussi un test et une mise à jour de `METHODOLOGY.md`.
+**Careful — five files are synced to another repository.**
+`utils/calculations.ts`, `types.ts`, `constants.ts`, `utils/modelCatalog.ts` and
+`utils/format.ts` are copied verbatim into the MCP server
+([ai-roi-calculator-mcp](https://github.com/OptimNow/ai-roi-calculator-mcp)). They must compile
+under a stricter `tsconfig` and run on Node, so keep type-only imports explicit (`import type`)
+and do not assume any browser global exists. A change to the engine also needs a test and a
+`METHODOLOGY.md` update.
+
+**Generated files — never edit by hand.** `public/methodology.html` (from `METHODOLOGY.md`),
+`public/images/icon-*.png`, `public/images/og-image.png`, `public/favicon.ico`, and the
+embedded price snapshot inside `utils/modelCatalog.ts`. Each has a script under `scripts/`.
 
 ---
 
 ## Tests
 
-### Lancer les Tests
+### Running Tests
 
 ```bash
-# Tous les tests
+# All tests
 npm test
 
-# Tests en mode watch (pendant le développement)
+# Watch mode (during development)
 npm test -- --watch
 
-# Tests avec couverture
+# With coverage
 npm test -- --coverage
 ```
 
-### Écrire des Tests
+### Writing Tests
 
-Les tests vivent à côté du module qu'ils couvrent : `utils/*.test.ts` et
-`components/*.test.tsx`. **Vitest** tourne en environnement `node` par défaut ; un test de
-composant demande un DOM avec un docblock `// @vitest-environment jsdom` en toute première
-ligne du fichier. Utilisez `vi.fn()`, jamais `jest.fn()` — il n'y a pas de jest ici.
+Tests live next to the module they cover: `utils/*.test.ts` and `components/*.test.tsx`.
+**Vitest** runs in the `node` environment by default; a component test opts into a DOM with a
+`// @vitest-environment jsdom` docblock on the very first line of the file. Use `vi.fn()`, never
+`jest.fn()` — there is no jest here.
 
-Exemple :
+Example:
 ```typescript
 import { describe, it, expect } from 'vitest';
 import { calculateROI } from './calculations';
@@ -323,12 +333,12 @@ import { DEFAULT_INPUTS } from '../constants';
 import { ValueMethod } from '../types';
 
 describe('calculateROI', () => {
-  it('plafonne la réduction de churn au churn de départ', () => {
+  it('caps churn reduction at the baseline churn rate', () => {
     const result = calculateROI({
       ...DEFAULT_INPUTS,
       valueMethod: ValueMethod.RETENTION,
       baselineChurnRate: 0.5,
-      churnReductionAbsolute: 5.0, // dix fois le churn réel
+      churnReductionAbsolute: 5.0, // ten times the churn that actually happens
       customersImpactedPerMonth: 10000,
       annualValuePerCustomer: 1200,
       successRate: 100,
@@ -339,62 +349,63 @@ describe('calculateROI', () => {
 });
 ```
 
-**Quand ajouter des tests :**
-- Nouvelles fonctions dans `utils/`
-- Corrections de bugs (test de non-régression)
-- Logique métier complexe
+**When to add tests:**
+- New functions under `utils/`
+- Bug fixes (regression tests)
+- Complex business logic
 
 ---
 
-## Besoin d'Aide ?
+## Need Help?
 
-### Ressources
+### Resources
 
-- **README.md** : Documentation utilisateur
-- **METHODOLOGY.md** : Spécifications mathématiques du calculateur
-- **CLAUDE.MD** : Guide pour travailler avec Claude Code
-- **ROADMAP.md** : Fonctionnalités prévues
-- **SEO.md** : Décisions de référencement et écarts connus
-- **UAT_SCENARIOS.md** : Scénarios de recette
+- **README.md**: user documentation
+- **METHODOLOGY.md**: the calculator's mathematical specification
+- **CLAUDE.MD**: guide for working with Claude Code
+- **ROADMAP.md**: planned features
+- **SEO.md**: search and discoverability decisions, and known gaps
+- **UAT_SCENARIOS.md**: acceptance test scenarios
 
 ### Communication
 
-- 💬 **Issues GitHub** : pour les questions techniques
-- 📧 **Email** : [contact@optimnow.io](mailto:contact@optimnow.io) pour les questions générales
-- 🐛 **Bugs** : ouvrez une issue avec le label `bug`
-- 💡 **Idées** : ouvrez une issue avec le label `enhancement`
+- 💬 **GitHub Issues**: for technical questions
+- 📧 **Email**: [contact@optimnow.io](mailto:contact@optimnow.io) for general questions
+- 🐛 **Bugs**: open an issue with the `bug` label
+- 💡 **Ideas**: open an issue with the `enhancement` label
 
-### Débutant sur GitHub ?
+### New to GitHub?
 
-Pas de problème ! Voici quelques ressources pour débuter :
-- [Guide GitHub : Fork a Repo](https://docs.github.com/en/get-started/quickstart/fork-a-repo)
-- [Guide GitHub : Pull Requests](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests)
-- [Guide Git Basics](https://git-scm.com/book/en/v2/Getting-Started-Git-Basics)
+No problem! Here are a few resources to get started:
+- [GitHub Guide: Fork a Repo](https://docs.github.com/en/get-started/quickstart/fork-a-repo)
+- [GitHub Guide: Pull Requests](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests)
+- [Git Basics Guide](https://git-scm.com/book/en/v2/Getting-Started-Git-Basics)
 
 ---
 
-## Checklist avant de Soumettre
+## Checklist Before Submitting
 
-Avant d'ouvrir votre PR, vérifiez que :
+Before opening your PR, check that:
 
-- [ ] Les types passent (`npm run typecheck`) — Vite ne le fait pas pour vous
-- [ ] Mon code compile sans erreur (`npm run build`)
-- [ ] Les tests passent (`npm test`)
-- [ ] J'ai testé mes changements manuellement
-- [ ] J'ai ajouté des tests si nécessaire
-- [ ] J'ai mis à jour la documentation si nécessaire
-- [ ] Mon commit suit les conventions de nommage
-- [ ] Ma branche est à jour avec `main` (`git pull upstream main`)
-- [ ] J'ai supprimé tout code commenté ou de debug
+- [ ] Types pass (`npm run typecheck`) — Vite will not do this for you
+- [ ] My code builds without errors (`npm run build`)
+- [ ] Tests pass (`npm test`)
+- [ ] I tested my changes manually
+- [ ] I added tests where needed
+- [ ] I updated the documentation where needed
+- [ ] My commit follows the naming convention
+- [ ] My branch is up to date with `main` (`git pull upstream main`)
+- [ ] I removed any commented-out or debug code
 
 ---
 
 ## Licence
 
-En contribuant à ce projet, vous acceptez que vos contributions soient publiées sous la même licence que le projet (voir LICENSE).
+By contributing to this project, you agree that your contributions are published under the same
+licence as the project (see LICENSE).
 
 ---
 
-**🙏 Merci de contribuer au AI ROI Calculator !**
+**🙏 Thanks for contributing to the AI ROI Calculator!**
 
-Chaque contribution, petite ou grande, aide à améliorer le projet pour tous les utilisateurs.
+Every contribution, large or small, helps improve the project for everyone.
