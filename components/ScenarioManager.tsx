@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Save, FolderOpen, Trash2, X, Download, Upload, GitCompare } from 'lucide-react';
 import { Scenario, UseCaseInputs, CalculationResults } from '../types';
+import { parseScenarioList } from '../utils/scenario';
+import { formatUsd } from '../utils/format';
 
 interface ScenarioManagerProps {
   isOpen: boolean;
@@ -12,7 +14,7 @@ interface ScenarioManagerProps {
   onLoadScenario: (scenario: Scenario) => void;
   onDeleteScenario: (id: string) => void;
   onExportScenarios: () => void;
-  onImportScenarios: (scenarios: Scenario[]) => void;
+  onImportScenarios: (scenarios: Scenario[], rejected: number) => void;
   onCompareScenarios: (scenarioIds: string[]) => void;
 }
 
@@ -61,17 +63,27 @@ export const ScenarioManager: React.FC<ScenarioManagerProps> = ({
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
-        const imported = JSON.parse(event.target?.result as string);
-        if (Array.isArray(imported)) {
-          onImportScenarios(imported);
-        } else {
+        const parsed = JSON.parse(event.target?.result as string);
+        if (!Array.isArray(parsed)) {
           alert('Invalid scenario file format');
+          return;
         }
+        // Every entry is shape-checked and migrated before it reaches state, because
+        // state is persisted to localStorage on the next render — an unrenderable
+        // entry accepted here used to survive reloads and break the app for good.
+        const { scenarios: valid, rejected } = parseScenarioList(parsed);
+        if (valid.length === 0) {
+          alert('No readable scenarios in that file.');
+          return;
+        }
+        onImportScenarios(valid, rejected);
       } catch (error) {
         alert('Error importing scenarios');
       }
     };
     reader.readAsText(file);
+    // Allow re-importing the same file after a failed attempt
+    e.target.value = '';
   };
 
   const toggleScenarioSelection = (id: string) => {
@@ -80,8 +92,7 @@ export const ScenarioManager: React.FC<ScenarioManagerProps> = ({
     );
   };
 
-  const formatMoney = (val: number) =>
-    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(val);
+  const formatMoney = (val: number) => formatUsd(val, 0);
 
   const formatDate = (timestamp: number) =>
     new Date(timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });

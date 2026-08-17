@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { Scenario } from '../types';
+import { formatCount, formatUsd } from '../utils/format';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 interface ScenarioComparisonProps {
@@ -16,11 +17,8 @@ export const ScenarioComparison: React.FC<ScenarioComparisonProps> = ({
 }) => {
   if (!isOpen || scenarios.length < 2) return null;
 
-  const formatMoney = (val: number) =>
-    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(val);
-
-  const formatNumber = (val: number) =>
-    new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 }).format(val);
+  const formatMoney = (val: number) => formatUsd(val, 0);
+  const formatNumber = (val: number) => formatCount(val);
 
   // Prepare comparison data
   const comparisonMetrics = [

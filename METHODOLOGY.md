@@ -430,13 +430,22 @@ Total Value = 0.0765 × 100,000 = $7,650/month
 
 **Formula:**
 ```
-Total_Value = (Ci × Cra × (S / 100) × M_value) × (Av / 12)
+Cra_effective = min(Cra × M_value, Cb)
+Total_Value = (Ci × Cra_effective × (S / 100)) × (Av / 12)
 ```
 
 **Where:**
 - `Ci` = Customers impacted per month
+- `Cb` = Baseline churn rate (percentage points)
 - `Cra` = Churn reduction absolute (percentage points, e.g., 0.5 for 2.5% → 2.0%)
+- `Cra_effective` = Churn reduction after the baseline cap
 - `Av` = Annual value per customer ($)
+
+**Why the cap:** the reduction cannot exceed the churn that was there to remove — retaining
+more customers than were leaving is not an improvement, it is a negative churn rate. Uncapped,
+a 5-point reduction entered against a 0.5% baseline "saved" 425 customers out of the 50 that
+churn, and returned roughly 1,300% ROI from arithmetic alone. The cap is applied after the
+sensitivity multiplier, so a Value slider above 1× cannot push past the baseline either.
 
 **Example Calculation:**
 
@@ -653,6 +662,30 @@ V_breakeven = 2,000 / 2.20 = 909 units/month
 - Unit margin ≤ 0: no break-even volume exists (the card shows "N/A")
 - `Cf_amortized = 0` with a positive unit margin: break-even volume is 0 — every unit is profitable
 - The result is rounded up to a whole unit
+- **Retention Uplift: not reported.** See below.
+
+**Scope: only value methods whose total value scales with volume.**
+
+The derivation cancels `V_breakeven` out of both sides, which is only legitimate while `GV`
+is itself independent of volume. Under Cost Displacement and Revenue Uplift it is: value is
+defined per unit, and total value really is `GV × V`.
+
+Under **Retention Uplift** it is not. Total value is driven by `Ci`, customers impacted per
+month, which is a separate input from `V`; `GV` is then back-derived as `Total_Value / V`.
+So `GV × V` is a constant, the two sides of the equation no longer both depend on volume,
+and the formula returns a number with no meaning. On the shipped `retention` preset it
+returned 7,051 units/month at a volume already earning +$1,253/month — not a floor, and off
+by more than an order of magnitude from the volume that actually matters there.
+
+Because more volume under Retention adds cost without adding value, the meaningful threshold
+is a **ceiling** — `V_max = (Total_Value − Cf_amortized) / C₂`, the volume beyond which
+running costs consume the fixed retention benefit. That is a different quantity than this
+field reports, so `V_breakeven` is left undefined for Retention and the break-even cards are
+hidden, rather than showing a floor that points the wrong way.
+
+*Premium Monetization is a borderline case:* total value is driven by subscriber count, but
+the app keeps subscribers synchronised with monthly volume, so at baseline `GV` is genuinely
+volume-invariant and the formula holds. It is still reported.
 
 ---
 

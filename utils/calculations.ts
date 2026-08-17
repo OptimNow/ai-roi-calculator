@@ -181,7 +181,15 @@ export const calculateROI = (inputs: UseCaseInputs, modifiers: SensitivityModifi
     case ValueMethod.RETENTION: {
         // Here unit math is tricky because churn is usually cohort based.
         // We calculate monthly value directly then back into unit.
-        const churnRed = inputs.churnReductionAbsolute * modifiers.valueMultiplier / 100;
+        //
+        // The reduction is capped at the baseline rate: you cannot retain more
+        // customers than you were losing. Uncapped, a 5-point reduction against a
+        // 0.5% baseline "saved" 425 customers out of a population that only churned
+        // 50, inventing value out of a negative churn rate.
+        const churnRed = Math.min(
+          inputs.churnReductionAbsolute * modifiers.valueMultiplier,
+          inputs.baselineChurnRate
+        ) / 100;
         const savedCustomers = inputs.customersImpactedPerMonth * churnRed * successFactor;
         // Annual value converted to monthly for the "Monthly Value" metric
         const monthlyValuePerSavedCustomer = inputs.annualValuePerCustomer / 12;
@@ -229,12 +237,26 @@ export const calculateROI = (inputs: UseCaseInputs, modifiers: SensitivityModifi
   // Formula: grossValuePerUnit * volume = (layer2CostPerUnit * volume) + monthlyAmortizedFixedCost
   // Rearranging: volume * (grossValuePerUnit - layer2CostPerUnit) = monthlyAmortizedFixedCost
   // volume = monthlyAmortizedFixedCost / (grossValuePerUnit - layer2CostPerUnit)
+  //
+  // That rearrangement only holds while total value is proportional to volume, i.e.
+  // while grossValuePerUnit is itself volume-invariant. Under Retention it is not:
+  // total value is driven by customersImpactedPerMonth, which is independent of
+  // monthlyVolume, and grossValuePerUnit is back-derived by dividing by the volume.
+  // Value x volume is then a constant, the equation has no solution of this shape,
+  // and the number it produced was not a floor but nonsense — on the shipped preset
+  // it read 7,051 at a volume that was already making +$1,253 a month. More volume
+  // there adds cost without adding value, so the meaningful threshold is a ceiling,
+  // a different quantity than this field reports. Reporting nothing beats reporting
+  // a floor that points the wrong way.
+  const valueScalesWithVolume = inputs.valueMethod !== ValueMethod.RETENTION;
 
   let breakEvenVolume: number | undefined = undefined;
 
   const unitMargin = grossValuePerUnit - layer2CostPerUnit;
 
-  if (unitMargin > 0 && monthlyAmortizedFixedCost > 0) {
+  if (!valueScalesWithVolume) {
+    breakEvenVolume = undefined;
+  } else if (unitMargin > 0 && monthlyAmortizedFixedCost > 0) {
     // Calculate the exact volume where net benefit = 0
     breakEvenVolume = Math.ceil(monthlyAmortizedFixedCost / unitMargin);
   } else if (monthlyAmortizedFixedCost === 0 && unitMargin > 0) {

@@ -8,17 +8,18 @@ import { MoneyInput, NumberInput, PercentInput, SectionHeader } from './componen
 import { CatalogStatus, ModelCostInputs, useModelCatalog } from './components/ModelPicker';
 import { catalogModelToParams, repriceModels, toModelId, PRICING_HUB_URL } from './utils/modelCatalog';
 import { applyDeepLink, hasDeepLink, parseDeepLink, presetLabel } from './utils/deepLink';
-import { pluralize } from './utils/format';
+import { SCENARIO_SCHEMA_VERSION, parseScenarioList } from './utils/scenario';
+import { formatCount, formatUsd, pluralize } from './utils/format';
 import { HelpGuide } from './components/HelpGuide';
 import { CostValueChart, CostBreakdownChart, ROICurveChart, TornadoChart } from './components/Charts';
 import { ScenarioManager } from './components/ScenarioManager';
 import { ScenarioComparison } from './components/ScenarioComparison';
 
-const formatMoney = (val: number, decimals = 2) => 
-  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(val);
-
-const formatNumber = (val: number) => 
-  new Intl.NumberFormat('en-US', { maximumFractionDigits: 1 }).format(val);
+// Both were local re-implementations of the shared helpers, rebuilding an
+// Intl.NumberFormat on every one of their ~50 calls per render. Kept as aliases so
+// the call sites read the same.
+const formatMoney = formatUsd;
+const formatNumber = formatCount;
 
 const SCENARIOS_STORAGE_KEY = 'ai-roi-calculator-scenarios';
 
@@ -54,12 +55,19 @@ export default function App() {
   const [showDeepLinkBanner, setShowDeepLinkBanner] = useState(hasDeepLink(deepLink));
   const deepLinkModelApplied = useRef(false);
 
-  // Load scenarios from localStorage on mount
+  // Load scenarios from localStorage on mount.
+  // Whatever is in storage is untrusted — an older schema, or a bad import that a
+  // previous version persisted before crashing on it. Anything unrenderable is
+  // dropped here so it cannot poison every subsequent load.
   useEffect(() => {
     try {
       const saved = localStorage.getItem(SCENARIOS_STORAGE_KEY);
       if (saved) {
-        setScenarios(JSON.parse(saved));
+        const { scenarios: valid, rejected } = parseScenarioList(JSON.parse(saved));
+        if (rejected > 0) {
+          console.warn(`Discarded ${rejected} unreadable scenario(s) from localStorage.`);
+        }
+        setScenarios(valid);
       }
     } catch (error) {
       console.error('Failed to load scenarios from localStorage:', error);
@@ -350,6 +358,7 @@ export default function App() {
       inputs: { ...inputs },
       results: { ...results },
       createdAt: Date.now(),
+      schemaVersion: SCENARIO_SCHEMA_VERSION,
       color: `hsl(${(scenarios.length * 137.5) % 360}, 70%, 50%)` // Golden angle for color distribution
     };
     setScenarios([...scenarios, newScenario]);
@@ -375,9 +384,13 @@ export default function App() {
     link.click();
   };
 
-  const handleImportScenarios = (importedScenarios: Scenario[]) => {
+  const handleImportScenarios = (importedScenarios: Scenario[], rejected: number) => {
     setScenarios([...scenarios, ...importedScenarios]);
-    alert(`Imported ${importedScenarios.length} scenario(s) successfully!`);
+    alert(
+      rejected > 0
+        ? `Imported ${importedScenarios.length} scenario(s). Skipped ${rejected} entr${rejected === 1 ? 'y' : 'ies'} that were not readable scenarios.`
+        : `Imported ${importedScenarios.length} scenario(s) successfully!`
+    );
   };
 
   const handleCompareScenarios = (scenarioIds: string[]) => {

@@ -439,6 +439,82 @@ describe('calculateROI', () => {
         // Total: 0.95 * 100 = 95
         expect(result.totalMonthlyValue).toBeCloseTo(95, 1);
       });
+
+      it('should cap churn reduction at the baseline churn rate', () => {
+        const inputs: UseCaseInputs = {
+          ...DEFAULT_INPUTS,
+          monthlyVolume: 10000,
+          successRate: 100,
+          valueMethod: ValueMethod.RETENTION,
+          baselineChurnRate: 0.5,
+          churnReductionAbsolute: 5.0, // ten times the customers actually churning
+          annualValuePerCustomer: 1200,
+          customersImpactedPerMonth: 10000,
+        };
+
+        const result = calculateROI(inputs, defaultModifiers);
+
+        // Clamped to the 0.5% baseline: 10000 * 0.005 * 1 = 50 customers saved,
+        // 50 * (1200 / 12) = 5000. Uncapped this returned 42,500 — value invented
+        // from a negative churn rate.
+        expect(result.totalMonthlyValue).toBeCloseTo(5000, 0);
+      });
+
+      it('should cap churn reduction after the value multiplier is applied', () => {
+        const inputs: UseCaseInputs = {
+          ...DEFAULT_INPUTS,
+          monthlyVolume: 10000,
+          successRate: 100,
+          valueMethod: ValueMethod.RETENTION,
+          baselineChurnRate: 1.0,
+          churnReductionAbsolute: 0.9,
+          annualValuePerCustomer: 1200,
+          customersImpactedPerMonth: 10000,
+        };
+
+        // 0.9 x 1.2 = 1.08 points, above the 1.0 baseline, so it clamps to 1.0
+        const result = calculateROI(inputs, { ...defaultModifiers, valueMultiplier: 1.2 });
+
+        expect(result.totalMonthlyValue).toBeCloseTo(10000, 0);
+      });
+
+      it('should not report a break-even volume, since value does not scale with volume', () => {
+        const inputs: UseCaseInputs = {
+          ...DEFAULT_INPUTS,
+          monthlyVolume: 10000,
+          valueMethod: ValueMethod.RETENTION,
+          baselineChurnRate: 2.5,
+          churnReductionAbsolute: 0.5,
+          annualValuePerCustomer: 1200,
+          customersImpactedPerMonth: 10000,
+          integrationCost: 20000,
+          trainingTuningCost: 10000,
+          changeManagementCost: 5000,
+          amortizationMonths: 12,
+        };
+
+        const result = calculateROI(inputs, defaultModifiers);
+
+        // The per-unit formula used to answer 7,051 here — a volume at which the
+        // project was already making money, so not a break-even point at all.
+        expect(result.breakEvenVolume).toBeUndefined();
+      });
+
+      it('should still report a break-even volume for a per-unit value method', () => {
+        const inputs: UseCaseInputs = {
+          ...DEFAULT_INPUTS,
+          monthlyVolume: 10000,
+          valueMethod: ValueMethod.COST_DISPLACEMENT,
+          integrationCost: 20000,
+          trainingTuningCost: 10000,
+          changeManagementCost: 5000,
+          amortizationMonths: 12,
+        };
+
+        const result = calculateROI(inputs, defaultModifiers);
+
+        expect(result.breakEvenVolume).toBeGreaterThan(0);
+      });
     });
 
     describe('Premium Monetization', () => {
