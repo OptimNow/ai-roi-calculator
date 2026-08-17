@@ -60,8 +60,8 @@ La documentation peut toujours être améliorée ! N'hésitez pas à proposer de
 ### Prérequis
 
 Assurez-vous d'avoir installé :
-- **Node.js** : version 18.x ou supérieure
-- **npm** : version 9.x ou supérieure
+- **Node.js** : version 20.x ou supérieure
+- **npm** : version 10.x ou supérieure
 - **Git** : pour cloner le repository
 
 ### Installation
@@ -94,6 +94,9 @@ Assurez-vous d'avoir installé :
 ### Vérifier que tout fonctionne
 
 ```bash
+# Vérifier les types — Vite ne typecheck PAS, c'est la seule barrière
+npm run typecheck
+
 # Vérifier que le build fonctionne
 npm run build
 
@@ -204,16 +207,21 @@ Une fois approuvée par les mainteneurs, votre PR sera fusionnée ! 🎉
 
 Exemple :
 ```typescript
-// ✅ Bon
-function calculateROI(costs: number, benefits: number): number {
-  return (benefits - costs) / costs * 100;
-}
+// ✅ Bon — types explicites, importés depuis types.ts
+import type { UseCaseInputs, CalculationResults } from '../types';
 
-// ❌ Éviter
-function calculateROI(costs, benefits) {
-  return (benefits - costs) / costs * 100;
-}
+export const calculateROI = (inputs: UseCaseInputs): CalculationResults => {
+  // ...
+};
+
+// ❌ Éviter — paramètres implicitement `any`
+export const calculateROI = (inputs) => {
+  // ...
+};
 ```
+
+`calculateROI` est la vraie signature du moteur (`utils/calculations.ts`) : elle prend
+l'objet d'entrées complet et renvoie l'objet de résultats, pas deux nombres.
 
 ### React
 
@@ -251,17 +259,37 @@ export function Button({ label, onClick, disabled = false }: ButtonProps) {
 
 ```
 /
-├── components/          # Composants réutilisables
-│   ├── ResultsDisplay.tsx
-│   └── ...
+├── components/          # Composants et leurs tests
+│   ├── Charts.tsx              # 4 graphiques mémoïsés
+│   ├── HelpGuide.tsx           # Guide intégré (modale)
+│   ├── InputComponents.tsx     # MoneyInput, NumberInput, PercentInput
+│   ├── ModelPicker.tsx         # Sélecteur de modèle (catalogue OptimToken)
+│   ├── ScenarioComparison.tsx
+│   ├── ScenarioManager.tsx
+│   └── ErrorBoundary.tsx
 ├── utils/              # Logique métier et utilitaires
-│   ├── calculations.ts
-│   └── calculations.test.ts
-├── images/             # Assets statiques
-├── App.tsx             # Composant principal
+│   ├── calculations.ts         # Le moteur ROI (fonction pure unique)
+│   ├── modelCatalog.ts         # Prix des modèles : fetch, cache, snapshot
+│   ├── deepLink.ts             # Paramètres d'URL venant du hub
+│   ├── scenario.ts             # Validation/migration des scénarios sauvegardés
+│   ├── format.ts               # Formatage monétaire et pluralisation
+│   └── *.test.ts               # Un fichier de test par module
+├── public/             # Assets statiques servis tels quels
+│   ├── methodology.html        # GÉNÉRÉ depuis METHODOLOGY.md — ne pas éditer
+│   └── images/
+├── scripts/            # Scripts de build (snapshot de prix, page méthodologie)
+├── App.tsx             # Composant principal (~1 450 lignes)
 ├── types.ts            # Définitions de types TypeScript
 └── constants.ts        # Constantes et presets
 ```
+
+**Attention — cinq fichiers sont synchronisés vers un autre dépôt.**
+`utils/calculations.ts`, `types.ts`, `constants.ts`, `utils/modelCatalog.ts` et
+`utils/format.ts` sont copiés verbatim dans le serveur MCP
+([ai-roi-calculator-mcp](https://github.com/OptimNow/ai-roi-calculator-mcp)). Ils doivent
+compiler sous un `tsconfig` plus strict et tourner sous Node : gardez les imports de type
+explicites (`import type`) et ne supposez aucun objet global du navigateur. Une modification
+du moteur demande aussi un test et une mise à jour de `METHODOLOGY.md`.
 
 ---
 
@@ -282,22 +310,31 @@ npm test -- --coverage
 
 ### Écrire des Tests
 
-Les tests sont dans `utils/calculations.test.ts`. Utilisez **Vitest** pour les tests unitaires.
+Les tests vivent à côté du module qu'ils couvrent : `utils/*.test.ts` et
+`components/*.test.tsx`. **Vitest** tourne en environnement `node` par défaut ; un test de
+composant demande un DOM avec un docblock `// @vitest-environment jsdom` en toute première
+ligne du fichier. Utilisez `vi.fn()`, jamais `jest.fn()` — il n'y a pas de jest ici.
 
 Exemple :
 ```typescript
 import { describe, it, expect } from 'vitest';
 import { calculateROI } from './calculations';
+import { DEFAULT_INPUTS } from '../constants';
+import { ValueMethod } from '../types';
 
 describe('calculateROI', () => {
-  it('devrait calculer le ROI correctement', () => {
-    const result = calculateROI(100, 150);
-    expect(result).toBe(50);
-  });
+  it('plafonne la réduction de churn au churn de départ', () => {
+    const result = calculateROI({
+      ...DEFAULT_INPUTS,
+      valueMethod: ValueMethod.RETENTION,
+      baselineChurnRate: 0.5,
+      churnReductionAbsolute: 5.0, // dix fois le churn réel
+      customersImpactedPerMonth: 10000,
+      annualValuePerCustomer: 1200,
+      successRate: 100,
+    });
 
-  it('devrait gérer les valeurs nulles', () => {
-    const result = calculateROI(0, 100);
-    expect(result).toBe(Infinity);
+    expect(result.totalMonthlyValue).toBeCloseTo(5000, 0);
   });
 });
 ```
@@ -317,6 +354,8 @@ describe('calculateROI', () => {
 - **METHODOLOGY.md** : Spécifications mathématiques du calculateur
 - **CLAUDE.MD** : Guide pour travailler avec Claude Code
 - **ROADMAP.md** : Fonctionnalités prévues
+- **SEO.md** : Décisions de référencement et écarts connus
+- **UAT_SCENARIOS.md** : Scénarios de recette
 
 ### Communication
 
@@ -338,6 +377,7 @@ Pas de problème ! Voici quelques ressources pour débuter :
 
 Avant d'ouvrir votre PR, vérifiez que :
 
+- [ ] Les types passent (`npm run typecheck`) — Vite ne le fait pas pour vous
 - [ ] Mon code compile sans erreur (`npm run build`)
 - [ ] Les tests passent (`npm test`)
 - [ ] J'ai testé mes changements manuellement

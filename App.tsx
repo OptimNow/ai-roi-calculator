@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { Suspense, lazy, useState, useMemo, useEffect, useRef } from 'react';
 import { Download, Copy, Check, RefreshCw, Settings, HelpCircle, FolderOpen, Info, BookOpen, X } from 'lucide-react';
 
 import { UseCaseInputs, CalculationResults, ValueMethod, SensitivityModifiers, ModelParams, Scenario } from './types';
@@ -10,10 +10,15 @@ import { catalogModelToParams, repriceModels, toModelId, PRICING_HUB_URL } from 
 import { applyDeepLink, hasDeepLink, parseDeepLink, presetLabel } from './utils/deepLink';
 import { SCENARIO_SCHEMA_VERSION, parseScenarioList } from './utils/scenario';
 import { formatCount, formatUsd, pluralize } from './utils/format';
-import { HelpGuide } from './components/HelpGuide';
 import { CostValueChart, CostBreakdownChart, ROICurveChart, TornadoChart } from './components/Charts';
-import { ScenarioManager } from './components/ScenarioManager';
-import { ScenarioComparison } from './components/ScenarioComparison';
+
+// The three modals are code-split: together they are ~74 kB of the bundle, and most
+// visitors never open any of them. Charts stay eagerly loaded — they sit in the results
+// column and are visible on arrival, so deferring them would trade bundle size for a
+// layout shift. Named exports, hence the .then() unwrap.
+const HelpGuide = lazy(() => import('./components/HelpGuide').then(m => ({ default: m.HelpGuide })));
+const ScenarioManager = lazy(() => import('./components/ScenarioManager').then(m => ({ default: m.ScenarioManager })));
+const ScenarioComparison = lazy(() => import('./components/ScenarioComparison').then(m => ({ default: m.ScenarioComparison })));
 
 // Both were local re-implementations of the shared helpers, rebuilding an
 // Intl.NumberFormat on every one of their ~50 calls per render. Kept as aliases so
@@ -22,6 +27,8 @@ const formatMoney = formatUsd;
 const formatNumber = formatCount;
 
 const SCENARIOS_STORAGE_KEY = 'ai-roi-calculator-scenarios';
+
+const COST_BREAKDOWN_COLORS = ['#3b82f6', '#8b5cf6', '#64748b'];
 
 export default function App() {
   // Scenario handed over from the OptimToken, read once per mount
@@ -406,17 +413,25 @@ export default function App() {
   const selectedScenarios = scenarios.filter(s => selectedScenarioIds.includes(s.id));
 
   // --- Charts Data Preparation ---
-  const chartDataMonthly = [
+  // Memoized so the chart components' props keep a stable identity between renders.
+  // Rebuilt inline, they were new arrays on every keystroke, which defeated React.memo's
+  // default shallow compare — the charts papered over that with JSON.stringify comparators,
+  // paying an O(n) double-serialize per keystroke to reach the same answer a reference
+  // check gives for free.
+  const chartDataMonthly = useMemo(() => [
     { name: 'Cost', value: results.totalMonthlyCost, fill: '#ef4444' },
     { name: 'Value', value: results.totalMonthlyValue, fill: '#22c55e' },
-  ];
+  ], [results.totalMonthlyCost, results.totalMonthlyValue]);
 
-  const pieDataCost = [
+  const pieDataCost = useMemo(() => [
     { name: 'Model (L1)', value: results.layer1MonthlyCost },
     { name: 'Harness (L2)', value: results.layer2MonthlyCost - results.layer1MonthlyCost },
     { name: 'Fixed (Amort)', value: results.monthlyAmortizedFixedCost },
-  ];
-  const COLORS = ['#3b82f6', '#8b5cf6', '#64748b'];
+  ], [results.layer1MonthlyCost, results.layer2MonthlyCost, results.monthlyAmortizedFixedCost]);
+
+  // Module-level constant would do, but it is only used here; hoisting it out of the
+  // component is what makes the identity stable.
+  const COLORS = COST_BREAKDOWN_COLORS;
 
   // ROI Curve Data - Calculate cumulative profit over analysis period
   const roiCurveData = useMemo(() => {
@@ -512,30 +527,39 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#F4F4F4] flex flex-col font-sans text-slate-900">
-      {/* Help Guide Modal */}
-      <HelpGuide isOpen={showHelp} onClose={() => setShowHelp(false)} />
+      {/* Modals are code-split and mounted only while open — see the lazy imports above.
+          Rendering them unconditionally would fetch their chunks on first paint and undo
+          the split, since each one only returns null internally when closed. */}
+      <Suspense fallback={null}>
+        {/* Help Guide Modal */}
+        {showHelp && <HelpGuide isOpen onClose={() => setShowHelp(false)} />}
 
-      {/* Scenario Manager Modal */}
-      <ScenarioManager
-        isOpen={showScenarios}
-        onClose={() => setShowScenarios(false)}
-        currentInputs={inputs}
-        currentResults={results}
-        scenarios={scenarios}
-        onSaveScenario={handleSaveScenario}
-        onLoadScenario={handleLoadScenario}
-        onDeleteScenario={handleDeleteScenario}
-        onExportScenarios={handleExportScenarios}
-        onImportScenarios={handleImportScenarios}
-        onCompareScenarios={handleCompareScenarios}
-      />
+        {/* Scenario Manager Modal */}
+        {showScenarios && (
+          <ScenarioManager
+            isOpen
+            onClose={() => setShowScenarios(false)}
+            currentInputs={inputs}
+            currentResults={results}
+            scenarios={scenarios}
+            onSaveScenario={handleSaveScenario}
+            onLoadScenario={handleLoadScenario}
+            onDeleteScenario={handleDeleteScenario}
+            onExportScenarios={handleExportScenarios}
+            onImportScenarios={handleImportScenarios}
+            onCompareScenarios={handleCompareScenarios}
+          />
+        )}
 
-      {/* Scenario Comparison Modal */}
-      <ScenarioComparison
-        isOpen={showComparison}
-        onClose={() => setShowComparison(false)}
-        scenarios={selectedScenarios}
-      />
+        {/* Scenario Comparison Modal */}
+        {showComparison && (
+          <ScenarioComparison
+            isOpen
+            onClose={() => setShowComparison(false)}
+            scenarios={selectedScenarios}
+          />
+        )}
+      </Suspense>
 
       {/* Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-30">

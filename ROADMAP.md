@@ -1,15 +1,15 @@
 # AI ROI Calculator - Product Roadmap
 
-## Current Version: v1.1
+## Current Version: v0.6.0
 Built with React + TypeScript, implementing a 3-layer ROI framework for AI projects.
 
-**Latest Release:** January 1, 2026
+**Latest Release:** August 17, 2026
 - ✅ Core 3-layer ROI calculator with 4 value methods
 - ✅ ROI curve visualization showing cumulative profit over time
 - ✅ Tornado chart for sensitivity analysis (±20% variable impact)
 - ✅ Visual UI hierarchy (grey inputs, white results)
 - ✅ Brand guidelines applied (Chartreuse #ACE849, professional UI)
-- ✅ Comprehensive testing (30+ unit & integration tests)
+- ✅ Comprehensive testing (114 unit & component tests)
 - ✅ Error boundary for graceful error handling
 - ✅ WCAG 2.1 AA accessibility compliance
 - ✅ Performance optimizations (React.memo for charts)
@@ -341,9 +341,9 @@ To suggest new features or report issues:
 ---
 
 ## 🎯 Current Status
-**Latest Release:** v1.1 with Phase 1 Complete (January 2026)
+**Latest Release:** v0.6.0 (August 2026)
 **Next Focus:** Phase 2 - Advanced Projections (Q2 2026)
 
 ---
 
-*Last Updated: January 1, 2026*
+*Last Updated: August 17, 2026*

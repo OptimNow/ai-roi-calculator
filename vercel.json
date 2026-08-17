@@ -35,6 +35,19 @@
       ]
     }
   ],
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "ai-roi-calculator.vercel.app"
+        }
+      ],
+      "destination": "https://airoicalculator.optimnow.io/$1",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/(.*)",

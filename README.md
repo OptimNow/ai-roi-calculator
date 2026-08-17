@@ -8,7 +8,7 @@
 [![Prices](https://img.shields.io/badge/prices-OptimToken-7C3AED)](https://optimtoken.optimnow.io)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/tests-73%20passing-brightgreen)](#testing)
+[![Tests](https://img.shields.io/badge/tests-114%20passing-brightgreen)](#testing)
 [![License: MIT](https://img.shields.io/badge/License-MIT-lightgrey.svg)](./LICENSE)
 
 **[Open the calculator](https://airoicalculator.optimnow.io)** · [Methodology](METHODOLOGY.md)
@@ -79,7 +79,7 @@ npm install
 npm run dev        # http://localhost:3000
 npm run build      # production build to dist/
 npm run preview    # serve the production build
-npm test           # 95 tests
+npm test           # 114 tests
 ```
 
 Requires Node.js 20+. No API keys, no backend, no account.
@@ -150,8 +150,8 @@ Tests sit beside the code they cover, as `*.test.ts`.
 
 ## Testing
 
-95 tests run under Vitest, covering the calculation engine, the modules around it, and the
-shared input components:
+114 tests run under Vitest, covering the calculation engine, the modules around it, scenario
+validation, and the shared input components:
 
 ```bash
 npm test
@@ -205,7 +205,7 @@ asset troubleshooting and cache clearing.
 | | |
 |---|---|
 | [**OptimToken**](https://optimtoken.optimnow.io) | Compare what 250+ models cost per request, with caching and batch factored in. Source of this calculator's prices. |
-| **MCP server** | The same engine as an MCP tool, so an assistant can size a business case in conversation. Repository opening shortly. |
+| [**MCP server**](https://github.com/OptimNow/ai-roi-calculator-mcp) | The same engine as an MCP tool, so an assistant can size a business case in conversation. |
 | [**cloud-finops-skills**](https://github.com/OptimNow/cloud-finops-skills) | FinOps knowledge for AI agents: AWS, Azure, GCP, AI inference, SaaS. |
 
 The MCP server consumes this repository's engine verbatim through a sync script, so both

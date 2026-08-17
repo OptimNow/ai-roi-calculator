@@ -33,9 +33,15 @@
     <meta name="twitter:description" content="Free web app to calculate ROI for AI and LLM implementations. Analyze costs, value generation, and break-even scenarios with our 3-layer framework." />
     <meta name="twitter:image" content="https://airoicalculator.optimnow.io/images/Logo.png" />
 
-    <!-- Favicons -->
-    <link rel="icon" type="image/x-icon" href="/images/favicon.jpg" />
-    <link rel="apple-touch-icon" href="/images/Logo.png" />
+    <!-- Favicons.
+         The MIME type said image/x-icon on a JPEG; browsers sniff, so it rendered, but the
+         declaration was simply false. apple-touch-icon pointed at Logo.png, a 1323x270
+         banner, where iOS wants a square — it squashed it. favicon.jpg is 400x400, so iOS
+         only has to downscale.
+         Still missing: a real PNG set at 16/32/180/192/512. Chrome needs 192 and 512 for
+         the PWA in manifest.webmanifest to be installable at all. -->
+    <link rel="icon" type="image/jpeg" href="/images/favicon.jpg" />
+    <link rel="apple-touch-icon" href="/images/favicon.jpg" />
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.webmanifest" />
@@ -97,18 +103,6 @@
         }
       };
     </script>
-
-  <script type="importmap">
-{
-  "imports": {
-    "recharts": "https://esm.sh/recharts@^3.6.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react": "https://esm.sh/react@^19.2.3",
-    "lucide-react": "https://esm.sh/lucide-react@^0.562.0"
-  }
-}
-</script>
 
 </head>
   <body class="bg-slate-50 text-slate-900 antialiased">

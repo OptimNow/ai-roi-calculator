@@ -2,7 +2,7 @@
 
 **Last Updated:** August 17, 2026
 **Project:** AI ROI Calculator
-**Version:** 0.5.0
+**Version:** 0.6.0
 **Live Demo:** https://airoicalculator.optimnow.io (custom domain) / https://ai-roi-calculator.vercel.app (Vercel default)
 
 ---
@@ -44,8 +44,17 @@ Deployment:   Vercel
 1. **Single-Page Application:** All logic runs client-side (no backend)
 2. **Client-Side State:** Uses React hooks (useState, useMemo, useCallback)
 3. **LocalStorage Persistence:** Scenarios saved in browser storage
-4. **Memoization:** Charts wrapped in React.memo for performance
-5. **TypeScript Strict Mode:** `"strict": true` in tsconfig.json, and it passes clean. Nothing in the build enforces it — Vite strips types without checking them — so `npm run typecheck` is the only gate.
+4. **Memoization:** Charts wrapped in React.memo, with its **default shallow compare** — their
+   data is memoized in App.tsx so prop identity is stable. Do not reintroduce custom
+   comparators; the previous `JSON.stringify` ones existed only to paper over data arrays
+   rebuilt inline on every render.
+5. **Code splitting:** the three modals (HelpGuide, ScenarioManager, ScenarioComparison) are
+   `React.lazy` and mounted only while open — ~74 kB off the critical path. They must stay
+   conditionally rendered: each returns null internally when closed, so rendering them
+   unconditionally would fetch their chunks on first paint and undo the split. Charts stay
+   eager: they are visible on arrival and deferring them would trade bundle size for a layout
+   shift.
+6. **TypeScript Strict Mode:** `"strict": true` in tsconfig.json, and it passes clean. Nothing in the build enforces it — Vite strips types without checking them — so `npm run typecheck` is the only gate.
 
 ### Brand Identity
 
@@ -516,6 +525,10 @@ out-of-range field on blur. Assert clearing and negative-value behaviour with
 filenames Vite content-hashes. `index.html` deliberately keeps Vercel's revalidating default —
 it is the file that must never be stale, since it points at the hashed bundles.
 
+**Canonical host:** `vercel.json` `308`s `ai-roi-calculator.vercel.app` to
+`airoicalculator.optimnow.io`. The `has: host` condition matches that exact hostname, so
+preview deployments on `ai-roi-calculator-<hash>.vercel.app` are untouched.
+
 **Important:** After Tailwind config changes, clear Vercel cache:
 ```bash
 # See DEPLOYMENT.md for full instructions
@@ -544,7 +557,7 @@ recurring.
 
 ## Roadmap Context
 
-**Current state (August 2026, v0.5.0).** Live model prices from OptimToken with automatic
+**Current state (August 2026, v0.6.0).** Live model prices from OptimToken with automatic
 repricing, per-token and per-call billing, published cache-read and batch rates, deep links
 from the hub, per-1,000 harness entry, 114 tests, WCAG 2.1 AA.
 
