@@ -1,20 +1,43 @@
 # AI ROI Calculator by OptimNow
-# https://airoicalculator.optimnow.io
 
-> Free web application to calculate return on investment for AI and LLM implementations.
+> Free web application to calculate return on investment for AI and LLM implementations,
+> using a 3-layer cost framework that separates model inference, orchestration harness,
+> and business value. Built and maintained by OptimNow, a cloud and AI FinOps advisory.
 
-This is a client-side React application that helps organizations make data-driven decisions about AI implementations by analyzing costs, value generation, break-even scenarios, and sensitivity analysis.
+The calculator itself is a client-side React application, so its interface is rendered in
+the browser. The complete mathematical specification behind it is published as a static
+page and is the best source for how any of these figures are derived.
 
-## Features
+## Documentation
 
-- 3-layer cost framework: Infrastructure (model inference), Harness (orchestration, retrieval, monitoring), Business Value
-- 4 value measurement methods: Cost Displacement, Revenue Uplift, Retention Uplift, Premium Monetization
-- Break-even analysis with ROI curve visualization
-- Sensitivity analysis with tornado charts
-- Unlimited scenario comparison
-- 11 preset use cases: Customer Support Bot, Knowledge Q&A, Meeting Summary, Marketing Content, Coding Task, Invoice Processing, Call Summary, Agent Workflow, E-commerce Recommendations, Customer Retention AI, AI Premium Features
-- Client-side only — no data collection, fully offline-capable after initial load
+- [Methodology](https://airoicalculator.optimnow.io/methodology.html): the complete
+  specification — 3-layer cost model, all four value methods, break-even and payback
+  derivations, sensitivity analysis, and a worked end-to-end example with real numbers.
+- [Calculator](https://airoicalculator.optimnow.io/): the interactive tool, with 11 preset
+  use cases and live model prices.
+- [Source](https://github.com/OptimNow/ai-roi-calculator): TypeScript implementation of the
+  engine described above.
 
-## Built by
+## Related
 
-OptimNow — https://www.optimnow.io
+- [OptimToken](https://optimtoken.optimnow.io): the model price catalog this calculator
+  consumes — per-million-token input, output, cache-read and batch rates across providers,
+  refreshed daily.
+- [OptimNow](https://www.optimnow.io): cloud and AI financial management advisory.
+
+## What it computes
+
+- Layer 1, infrastructure: token-priced or per-call model inference, blended across two
+  routing slots, with prompt-cache and batch-API rates and a retry multiplier.
+- Layer 2, harness: orchestration, retrieval, tool APIs, logging, guardrails, egress and
+  storage, plus an operational overhead multiplier. Layer 2 is cumulative — it contains
+  Layer 1.
+- Layer 3, business value, by one of four methods: Cost Displacement, Revenue Uplift,
+  Retention Uplift, Premium Monetization.
+- Derived metrics: ROI percentage, monthly net benefit, payback period, break-even volume,
+  and a four-variable sensitivity analysis.
+
+## Notes
+
+- Free, no account, no data collection. Scenarios are stored in the browser only.
+- Self-hosted GPU amortization is not modeled; token-based and flat per-request billing are.

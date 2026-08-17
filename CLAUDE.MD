@@ -107,12 +107,14 @@ ai-roi-calculator/
 ├── index.css                   # Tailwind v4 import + @config + custom CSS
 ├── index.html                  # HTML shell: metadata (OG, Twitter, JSON-LD, manifest) + GA4 with hostname guard
 ├── public/
+│   ├── methodology.html        # GENERATED from METHODOLOGY.md — never hand-edit
 │   ├── robots.txt              # Crawler directives + sitemap reference
-│   ├── sitemap.xml             # Search engine sitemap
-│   ├── llms.txt                # LLM-discoverability descriptor
+│   ├── sitemap.xml             # Search engine sitemap (home + methodology)
+│   ├── llms.txt                # LLM-discoverability descriptor (link-list convention)
 │   ├── manifest.webmanifest    # PWA manifest
 │   └── images/                 # Logo.png, favicon.jpg
 ├── scripts/
+│   ├── build-methodology.mjs   # METHODOLOGY.md -> public/methodology.html (runs on prebuild)
 │   └── refresh-model-snapshot.mjs  # Regenerates the embedded price snapshot (weekly CI)
 ├── .github/workflows/          # refresh-model-snapshot.yml
 ├── vercel.json                 # Security headers, SPA rewrite, immutable cache on /assets/*
@@ -425,6 +427,30 @@ A dismissible banner confirms what carried over. (Both form sections are expande
 
 All seven harness fields now have a control — `networkEgressCostPerUnit` was summed in `calculations.ts` but had no UI, so presets charged it invisibly.
 
+## Discoverability: the static methodology page
+
+The app is a client-rendered SPA whose served HTML is an empty `<div id="root">`. Googlebot
+renders JS and sees the app, but non-rendering fetchers — GPTBot, ClaudeBot, PerplexityBot,
+CCBot, most social unfurlers — see only the `<noscript>` block. The one genuinely citable asset
+this project owns, the 1,000-line mathematical specification, lived only on GitHub, so every
+answer an AI search engine could give about this methodology cited github.com, not optimnow.io.
+
+`public/methodology.html` fixes that: ~5,900 words of specification, zero JavaScript (the only
+`<script>` is the `TechArticle` JSON-LD), on the product's own domain.
+
+- **Generated, never hand-edited.** `scripts/build-methodology.mjs` renders METHODOLOGY.md with
+  `marked` (a devDependency — it never reaches the client bundle). `prebuild` runs it, so a
+  Vercel deploy always ships a page matching the markdown. `npm run check:methodology` fails if
+  the committed copy is stale.
+- **METHODOLOGY.md stays the single source of truth.** Edit the markdown, never the HTML.
+- h2 headings get GitHub-style anchor ids and feed the in-page table of contents. Tables are
+  wrapped in an `overflow-x: auto` box so the page body never scrolls sideways on mobile.
+- Linked from the header `BookOpen` icon, the value summary card, `public/llms.txt`,
+  `public/sitemap.xml` and the `<noscript>` block — that last one is what non-JS crawlers follow.
+
+Static files in `public/` are served ahead of the SPA rewrite in `vercel.json`, so
+`/methodology.html` resolves to the page and not to `index.html`.
+
 ## Analytics & Event Tracking
 
 GA4 is wired in `index.html` via `window.trackEvent(eventName, params)`. From TypeScript, always call it with optional chaining to avoid runtime errors and TS complaints:
@@ -616,6 +642,10 @@ npm run typecheck              # tsc --noEmit under strict
 
 # Model prices
 npm run refresh:models         # Regenerate the embedded price snapshot
+
+# Methodology page
+npm run build:methodology      # Regenerate public/methodology.html from METHODOLOGY.md
+npm run check:methodology      # Fail if the committed page is stale
 
 # Git workflow
 git status                     # Check status

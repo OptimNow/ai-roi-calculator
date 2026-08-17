@@ -5,7 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "npm run build:methodology",
     "build": "vite build",
+    "build:methodology": "node scripts/build-methodology.mjs",
+    "check:methodology": "node scripts/build-methodology.mjs --check",
     "preview": "vite preview",
     "test": "vitest run",
     "refresh:models": "node scripts/refresh-model-snapshot.mjs",
@@ -28,6 +31,7 @@
     "@vitejs/plugin-react": "^5.0.0",
     "autoprefixer": "^10.4.23",
     "jsdom": "^29.1.1",
+    "marked": "^18.0.9",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.18",
     "typescript": "~5.8.2",

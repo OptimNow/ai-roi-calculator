@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>AI ROI Methodology — The 3-Layer Cost Framework | OptimNow</title>
+    <meta name="description" content="Complete mathematical specification for calculating AI and LLM return on investment: the 3-layer cost framework, four business value methods, break-even analysis, sensitivity analysis, and a worked end-to-end example." />
+    <meta name="author" content="OptimNow" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://airoicalculator.optimnow.io/methodology.html" />
+
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="https://airoicalculator.optimnow.io/methodology.html" />
+    <meta property="og:title" content="AI ROI Methodology — The 3-Layer Cost Framework | OptimNow" />
+    <meta property="og:description" content="Complete mathematical specification for calculating AI and LLM return on investment: the 3-layer cost framework, four business value methods, break-even analysis, sensitivity analysis, and a worked end-to-end example." />
+    <meta property="og:site_name" content="AI ROI Calculator" />
+    <meta property="og:locale" content="en_US" />
+
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="AI ROI Methodology — The 3-Layer Cost Framework | OptimNow" />
+    <meta name="twitter:description" content="Complete mathematical specification for calculating AI and LLM return on investment: the 3-layer cost framework, four business value methods, break-even analysis, sensitivity analysis, and a worked end-to-end example." />
+
+    <link rel="icon" type="image/jpeg" href="/images/favicon.jpg" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&family=Almarai:wght@300;400;700&display=swap" rel="stylesheet">
+
+    <meta name="theme-color" content="#ACE849" />
+
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "AI ROI Methodology: The 3-Layer Cost Framework",
+  "description": "Complete mathematical specification for calculating AI and LLM return on investment: the 3-layer cost framework, four business value methods, break-even analysis, sensitivity analysis, and a worked end-to-end example.",
+  "url": "https://airoicalculator.optimnow.io/methodology.html",
+  "inLanguage": "en",
+  "isAccessibleForFree": true,
+  "author": {
+    "@type": "Organization",
+    "name": "OptimNow",
+    "url": "https://www.optimnow.io"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "OptimNow",
+    "url": "https://www.optimnow.io"
+  },
+  "about": [
+    "Artificial intelligence return on investment",
+    "Large language model cost modeling",
+    "Break-even analysis"
+  ],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://airoicalculator.optimnow.io/methodology.html"
+  },
+  "isPartOf": {
+    "@type": "WebApplication",
+    "name": "AI ROI Calculator",
+    "url": "https://airoicalculator.optimnow.io/"
+  }
+}
+    </script>
+
+    <style>
+      /* Brand: charcoal text, light grey ground, chartreuse as punctuation only.
+         No gradients, no shadows — flat and system-diagram plain. */
+      :root {
+        --charcoal: #2C2C2C;
+        --light-grey: #F4F4F4;
+        --dark-grey: #C1C1C1;
+        --accent: #ACE849;
+        --white: #FFFFFF;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--light-grey);
+        color: var(--charcoal);
+        font-family: 'Almarai', system-ui, -apple-system, sans-serif;
+        font-weight: 400;
+        line-height: 1.7;
+        font-size: 16px;
+      }
+      header.site {
+        background: var(--charcoal);
+        padding: 1rem 1.5rem;
+      }
+      header.site .inner {
+        max-width: 860px; margin: 0 auto;
+        display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      }
+      header.site img { height: 32px; width: auto; max-width: 160px; display: block; }
+      header.site a.cta {
+        color: var(--charcoal); background: var(--accent);
+        padding: 0.5rem 1rem; border-radius: 6px;
+        font-weight: 700; text-decoration: none; font-size: 0.875rem;
+      }
+      main { max-width: 860px; margin: 0 auto; padding: 2.5rem 1.5rem 4rem; }
+      h1, h2, h3, h4, h5, h6 {
+        font-family: 'Manrope', system-ui, sans-serif;
+        font-weight: 800; line-height: 1.25; margin: 2.5rem 0 1rem;
+      }
+      h1 { font-size: 2rem; margin-top: 0; }
+      h2 { font-size: 1.5rem; border-top: 1px solid var(--dark-grey); padding-top: 1.75rem; }
+      h3 { font-size: 1.175rem; }
+      h4 { font-size: 1rem; }
+      p, li { overflow-wrap: break-word; }
+      a { color: var(--charcoal); text-decoration: underline; text-underline-offset: 2px; }
+      a:hover { text-decoration-color: var(--accent); text-decoration-thickness: 2px; }
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.875em; background: var(--white);
+        border: 1px solid var(--dark-grey); border-radius: 3px; padding: 0.1em 0.35em;
+      }
+      pre {
+        background: var(--white); border: 1px solid var(--dark-grey); border-radius: 6px;
+        padding: 1rem; overflow-x: auto; line-height: 1.5;
+      }
+      pre code { background: none; border: none; padding: 0; font-size: 0.8125rem; }
+      /* Wide tables scroll inside their own box; the page body never scrolls sideways. */
+      .table-scroll { overflow-x: auto; margin: 1.25rem 0; }
+      table { border-collapse: collapse; width: 100%; font-size: 0.9375rem; }
+      th, td { border: 1px solid var(--dark-grey); padding: 0.5rem 0.75rem; text-align: left; vertical-align: top; }
+      th { background: var(--white); font-family: 'Manrope', sans-serif; font-weight: 700; }
+      blockquote {
+        margin: 1.25rem 0; padding: 0.5rem 1rem;
+        border-left: 3px solid var(--accent); background: var(--white);
+      }
+      hr { border: none; border-top: 1px solid var(--dark-grey); margin: 2.5rem 0; }
+      nav.toc {
+        background: var(--white); border: 1px solid var(--dark-grey);
+        border-radius: 6px; padding: 1.25rem 1.5rem; margin: 2rem 0 3rem;
+      }
+      nav.toc h2 {
+        font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.05em;
+        margin: 0 0 0.75rem; border: none; padding: 0;
+      }
+      nav.toc ul { margin: 0; padding-left: 1.25rem; }
+      nav.toc li { margin: 0.25rem 0; }
+      footer.site {
+        background: var(--charcoal); color: var(--white);
+        padding: 2rem 1.5rem; font-size: 0.875rem;
+      }
+      footer.site .inner { max-width: 860px; margin: 0 auto; }
+      footer.site a { color: var(--white); }
+      @media (max-width: 640px) {
+        body { font-size: 15px; }
+        h1 { font-size: 1.625rem; }
+        h2 { font-size: 1.3125rem; }
+        main { padding: 1.75rem 1rem 3rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site">
+      <div class="inner">
+        <a href="/" aria-label="AI ROI Calculator home">
+          <img src="/images/Logo.png" width="160" height="32" alt="OptimNow" />
+        </a>
+        <a class="cta" href="/">Open the calculator</a>
+      </div>
+    </header>
+
+    <main>
+      <nav class="toc" aria-label="Table of contents">
+        <h2>On this page</h2>
+        <ul>
+        <li><a href="#table-of-contents">Table of Contents</a></li>
+        <li><a href="#executive-summary">Executive Summary</a></li>
+        <li><a href="#framework-overview">Framework Overview</a></li>
+        <li><a href="#mathematical-foundations">Mathematical Foundations</a></li>
+        <li><a href="#layer-1-infrastructure-costs">Layer 1: Infrastructure Costs</a></li>
+        <li><a href="#layer-2-harness-amp-operational-costs">Layer 2: Harness &amp; Operational Costs</a></li>
+        <li><a href="#layer-3-business-value-methods">Layer 3: Business Value Methods</a></li>
+        <li><a href="#roi-metrics-calculation">ROI Metrics Calculation</a></li>
+        <li><a href="#break-even-analysis">Break-even Analysis</a></li>
+        <li><a href="#sensitivity-analysis">Sensitivity Analysis</a></li>
+        <li><a href="#assumptions-amp-limitations">Assumptions &amp; Limitations</a></li>
+        <li><a href="#validation-amp-testing">Validation &amp; Testing</a></li>
+        <li><a href="#references-amp-citations">References &amp; Citations</a></li>
+        <li><a href="#changelog">Changelog</a></li>
+        <li><a href="#appendix-worked-example-end-to-end">Appendix: Worked Example (End-to-End)</a></li>
+        <li><a href="#contact-amp-support">Contact &amp; Support</a></li>
+        </ul>
+      </nav>
+
+<h1 id="ai-roi-calculator---methodology-amp-mathematical-specification">AI ROI Calculator - Methodology &amp; Mathematical Specification</h1>
+<p><strong>Version:</strong> 1.3
+<strong>Last Updated:</strong> August 15, 2026
+<strong>Authors:</strong> OptimNow Team
+<strong>Purpose:</strong> Comprehensive documentation of the ROI calculation methodology for transparency, auditability, and academic rigor.</p>
+<hr>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ol>
+<li><a href="#executive-summary">Executive Summary</a></li>
+<li><a href="#framework-overview">Framework Overview</a></li>
+<li><a href="#mathematical-foundations">Mathematical Foundations</a></li>
+<li><a href="#layer-1-infrastructure-costs">Layer 1: Infrastructure Costs</a></li>
+<li><a href="#layer-2-harness--operational-costs">Layer 2: Harness &amp; Operational Costs</a></li>
+<li><a href="#layer-3-business-value-methods">Layer 3: Business Value Methods</a></li>
+<li><a href="#roi-metrics-calculation">ROI Metrics Calculation</a></li>
+<li><a href="#break-even-analysis">Break-even Analysis</a></li>
+<li><a href="#sensitivity-analysis">Sensitivity Analysis</a></li>
+<li><a href="#assumptions--limitations">Assumptions &amp; Limitations</a></li>
+<li><a href="#references--citations">References &amp; Citations</a></li>
+</ol>
+<hr>
+<h2 id="executive-summary">Executive Summary</h2>
+<p>The AI ROI Calculator uses a <strong>3-layer framework</strong> to comprehensively model the total cost of ownership (TCO) and business value of AI/LLM implementations. This methodology separates concerns into:</p>
+<ol>
+<li><strong>Infrastructure Layer</strong>: Direct model inference costs</li>
+<li><strong>Harness Layer</strong>: Operational overhead and auxiliary systems</li>
+<li><strong>Business Value Layer</strong>: Quantified economic benefits via four distinct methods</li>
+</ol>
+<p>The calculator produces rigorous ROI metrics including percentage return, payback period, break-even analysis, and cumulative profit projections. All calculations are transparent, auditable, and based on industry-standard financial formulas.</p>
+<hr>
+<h2 id="framework-overview">Framework Overview</h2>
+<h3 id="design-philosophy">Design Philosophy</h3>
+<p>The 3-layer architecture prevents common pitfalls in AI cost estimation:</p>
+<ul>
+<li><strong>Underestimation</strong>: Many organizations only account for API costs, ignoring orchestration, monitoring, and integration overhead</li>
+<li><strong>Oversimplification</strong>: Single-value methods fail to capture diverse use cases (cost savings vs. revenue generation)</li>
+<li><strong>Opacity</strong>: Black-box calculators erode trust; our methodology is fully documented</li>
+</ul>
+<h3 id="layer-definitions">Layer Definitions</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Component</th>
+<th>What It Captures</th>
+<th>Industry Analog</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>L1</strong></td>
+<td>Infrastructure</td>
+<td>Model inference, tokens, API calls</td>
+<td>AWS EC2/Lambda costs</td>
+</tr>
+<tr>
+<td><strong>L2</strong></td>
+<td>Harness</td>
+<td>Orchestration, retrieval, monitoring, DevOps</td>
+<td>AWS CloudWatch, VPC, ECS overhead</td>
+</tr>
+<tr>
+<td><strong>L3</strong></td>
+<td>Business Value</td>
+<td>Revenue, cost savings, retention, subscriptions</td>
+<td>Revenue/EBITDA impact</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="mathematical-foundations">Mathematical Foundations</h2>
+<h3 id="notation-amp-conventions">Notation &amp; Conventions</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Description</th>
+<th>Units</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>V</code></td>
+<td>Monthly volume (units processed)</td>
+<td>units/month</td>
+</tr>
+<tr>
+<td><code>S</code></td>
+<td>Realization rate</td>
+<td>% (0-100)</td>
+</tr>
+<tr>
+<td><code>C₁</code></td>
+<td>Layer 1 cost per unit</td>
+<td>$/unit</td>
+</tr>
+<tr>
+<td><code>C₂</code></td>
+<td>Layer 2 cost per unit</td>
+<td>$/unit</td>
+</tr>
+<tr>
+<td><code>Cf</code></td>
+<td>Fixed costs (one-time)</td>
+<td>$</td>
+</tr>
+<tr>
+<td><code>A</code></td>
+<td>Amortization period (spreads fixed costs into monthly cost)</td>
+<td>months</td>
+</tr>
+<tr>
+<td><code>N</code></td>
+<td>Analysis horizon (length of the ROI curve chart only)</td>
+<td>months</td>
+</tr>
+<tr>
+<td><code>GV</code></td>
+<td>Gross value per unit</td>
+<td>$/unit</td>
+</tr>
+<tr>
+<td><code>NV</code></td>
+<td>Net value per unit (after realization rate)</td>
+<td>$/unit</td>
+</tr>
+<tr>
+<td><code>ROI</code></td>
+<td>Return on Investment</td>
+<td>%</td>
+</tr>
+<tr>
+<td><code>M</code></td>
+<td>Sensitivity multiplier</td>
+<td>scalar (1.0 = baseline)</td>
+</tr>
+</tbody></table></div>
+<h3 id="key-principles">Key Principles</h3>
+<ol>
+<li><strong>Additive Costs</strong>: All cost components sum linearly</li>
+<li><strong>Multiplicative Success</strong>: Value scales by realization rate (<code>S/100</code>)</li>
+<li><strong>Amortization</strong>: Fixed costs are spread over the amortization period <code>A</code>, which is a separate input from the analysis horizon <code>N</code></li>
+<li><strong>Monthly Frame</strong>: Every headline metric except payback is a monthly figure; <code>N</code> never enters <code>calculateROI()</code>, it only sets how far the ROI curve chart runs</li>
+<li><strong>Conservative Estimation</strong>: When uncertain, favor higher costs / lower value</li>
+</ol>
+<hr>
+<h2 id="layer-1-infrastructure-costs">Layer 1: Infrastructure Costs</h2>
+<h3 id="where-the-prices-come-from">Where the Prices Come From</h3>
+<p>Model prices are not typed in by default: they are selected from the
+<a href="https://optimtoken.optimnow.io">OptimToken</a> catalog through the model picker, which
+resolves in this order and never fails — fresh browser cache (&lt; 24h) → live hub API →
+stale cache → the catalog snapshot embedded in the app. The UI states which layer answered
+and the date the prices were published.</p>
+<p>A selected model carries an <strong>identity</strong> alongside its prices (<code>modelId</code>, <code>modelName</code>,
+<code>provider</code>, <code>pricedAt</code>) plus the provider&#39;s published <strong>cache-read</strong> and <strong>batch</strong> rates,
+which is what makes the optimizations below computable rather than guessed.</p>
+<p><strong>Auto-repricing.</strong> Whenever the catalog resolves — on load, on a manual refresh, on preset
+load and on reset — every model carrying a <code>modelId</code> is repriced to the current rates
+(input, output, cache-read, batch, and <code>pricedAt</code>). Two deliberate exceptions:</p>
+<ul>
+<li><strong>Custom-priced models</strong> (no <code>modelId</code>) are never touched. Editing any price field, or
+switching the billing basis to per call, drops the identity — that is how a negotiated
+rate survives a refresh, and it stops a scenario from claiming a model&#39;s name with prices
+it no longer uses.</li>
+<li><strong>Scenarios loaded from storage</strong> keep their recorded prices, because loading one does not
+change the catalog. A scenario is the record of a decision at a point in time. An explicit
+refresh afterwards will reprice it.</li>
+</ul>
+<p><strong>Presets.</strong> The 11 example profiles are each bound to a real catalog model, with token
+profiles aligned to the hub&#39;s business use-case profiles, so a preset and the hub agree on
+the cost basis before any of your own numbers are entered.</p>
+<p><strong>Deep links.</strong> The hub can hand a scenario over via
+<code>?useCase=&amp;volume=&amp;model=&amp;batch=</code>; each parameter is validated independently and ignored if
+unknown. The model is applied once the catalog has loaded, since the embedded snapshot only
+carries the top models.</p>
+<hr>
+<h3 id="token-based-pricing">Token-Based Pricing</h3>
+<p><strong>Formula:</strong></p>
+<pre><code>C₁_base = [(Ti / 1,000,000) × Pi] + [(To / 1,000,000) × Po]
+</code></pre>
+<p><strong>Where:</strong></p>
+<ul>
+<li><code>Ti</code> = Average input tokens per unit</li>
+<li><code>To</code> = Average output tokens per unit</li>
+<li><code>Pi</code> = Price per 1M input tokens ($)</li>
+<li><code>Po</code> = Price per 1M output tokens ($)</li>
+</ul>
+<p><strong>Rationale:</strong> Industry-standard API pricing (OpenAI, Anthropic, Google) charges per million tokens.</p>
+<hr>
+<h3 id="call-based-pricing-alternative">Call-Based Pricing (Alternative)</h3>
+<p><strong>Formula:</strong></p>
+<pre><code>C₁_base = Pc
+</code></pre>
+<p><strong>Where:</strong></p>
+<ul>
+<li><code>Pc</code> = Price per API call ($)</li>
+</ul>
+<p><strong>How to select it:</strong> in the Infrastructure (Layer 1) section, choose &quot;Custom pricing&quot; for the model, then switch the billing basis to <strong>per call</strong>. It is offered only on custom-priced models because the OptimToken catalog is entirely token-priced.</p>
+<p><strong>Use Case:</strong> services billed per request rather than per token, in three families:</p>
+<ol>
+<li><strong>Non-text modalities</strong>, where a token has no meaning — OCR and document extraction billed per page (AWS Textract, Google Document AI, Azure Document Intelligence), image generation billed per image, transcription billed per minute of audio.</li>
+<li><strong>Tooling around the model</strong> — web search APIs (per query), rerankers (per search), moderation endpoints (per transaction). These usually belong in Layer 2 rather than Layer 1.</li>
+<li><strong>Negotiated contracts</strong> — a committed rate such as &quot;$0.12 per document processed&quot;, where modelling the contract as signed is more honest than reverse-engineering a token count.</li>
+</ol>
+<p><strong>Interactions:</strong> a per-call model ignores token counts, prompt-cache discounts and batch rates entirely — there is no token quantity for them to act on. Retries still apply, since a retried call is billed again.</p>
+<hr>
+<h3 id="model-routing-strategy">Model Routing Strategy</h3>
+<p>Blends primary (cheaper, simpler) and secondary (expensive, complex) models.</p>
+<p><strong>Formula:</strong></p>
+<pre><code>C₁_blended = (C₁_primary × Rp) + (C₁_secondary × Rs)
+</code></pre>
+<p><strong>Where:</strong></p>
+<ul>
+<li><code>Rp</code> = Routing percentage to primary model (e.g., 70%)</li>
+<li><code>Rs</code> = 1 - Rp (routing to secondary model)</li>
+</ul>
+<p><strong>Example:</strong></p>
+<ul>
+<li>Primary: Claude Haiku 4.5 @ $1.00/1M input tokens → 70% traffic</li>
+<li>Secondary: Claude Sonnet 5 @ $2.00/1M input tokens → 30% traffic</li>
+<li>Blended cost reduces overall spend while maintaining quality for complex queries</li>
+</ul>
+<hr>
+<h3 id="batch-processing-async-workloads">Batch Processing (Async Workloads)</h3>
+<p>When the workload tolerates delayed responses (document processing, summaries, scoring),
+most providers offer a batch API at roughly -50%. When batch processing is enabled and the
+selected model has published batch rates (sourced from the OptimToken), those rates
+replace the list prices:</p>
+<pre><code>Pi_base = Pi_batch  (if batch enabled and published, else Pi)
+Po_base = Po_batch  (if batch enabled and published, else Po)
+</code></pre>
+<p>Models without published batch rates keep list prices even when batch is enabled.</p>
+<hr>
+<h3 id="cache-optimization">Cache Optimization</h3>
+<p><strong>Formula (aligned with the OptimToken&#39;s optimized cost):</strong></p>
+<pre><code>P_cache_read = published cache-read price     (halved again under batch)
+             | Pi_base × (1 - Dr)             (manual fallback when no published rate)
+
+Pi_effective = P_cache_read × Hr + Pi_base × (1 - Hr)
+C₁_cached    = (Ti / 1M) × Pi_effective + (To / 1M) × Po_base
+</code></pre>
+<p><strong>Where:</strong></p>
+<ul>
+<li><code>Hr</code> = Cache hit rate (share of input tokens served from the prompt cache, 0-100%)</li>
+<li><code>Dr</code> = Manual cached-token discount (%, 0-100) — used <strong>only</strong> when the model carries no published cache-read price</li>
+<li>Example: Claude Haiku 4.5 lists input at $1.00/1M and cache reads at $0.10/1M (90% off); with a 50% hit rate the effective input price is $0.55/1M</li>
+</ul>
+<p><strong>Rationale:</strong></p>
+<ul>
+<li><strong>Input tokens</strong> can be cached (prompt templates, system instructions)</li>
+<li><strong>Output tokens</strong> cannot be cached (unique responses)</li>
+<li>When a model is picked from the OptimToken catalog, its published cache-read price is used; providers apply the batch discount to cache reads too, hence the halving under batch</li>
+</ul>
+<hr>
+<h3 id="retry-logic">Retry Logic</h3>
+<p><strong>Formula:</strong></p>
+<pre><code>C₁_with_retries = C₁_cached × (1 + Rr)
+</code></pre>
+<p><strong>Where:</strong></p>
+<ul>
+<li><code>Rr</code> = Retry rate (0.1 = 10% of calls retry once). Entered as a percentage in the UI (&quot;Retry Rate&quot;, Advanced mode) and stored as a 0-1 fraction.</li>
+</ul>
+<p><strong>Rationale:</strong> API failures, timeouts, and rate limits necessitate retries. Conservative estimate assumes full model cost for retries (no caching benefit on retry).</p>
+<p><strong>Layer placement:</strong> the retry multiplier belongs to <strong>Layer 1</strong>, not Layer 2 — a retry re-runs
+the model, while harness components (storage, logging, egress) are not re-incurred. The UI
+puts the control under the harness block for convenience, but the cost lands in Layer 1 and
+is visible there in the Unit Economics table. Per-call models are multiplied the same way: a
+retried call is billed again.</p>
+<hr>
+<h3 id="layer-1-final-cost">Layer 1 Final Cost</h3>
+<p><strong>Per Unit:</strong></p>
+<pre><code>C₁ = C₁_with_retries × M_cost
+</code></pre>
+<p><strong>Monthly:</strong></p>
+<pre><code>C₁_monthly = C₁ × V × M_volume
+</code></pre>
+<p><strong>Where:</strong></p>
+<ul>
+<li><code>M_cost</code> = Cost sensitivity multiplier (default 1.0)</li>
+<li><code>M_volume</code> = Volume sensitivity multiplier (default 1.0)</li>
+</ul>
+<hr>
+<h2 id="layer-2-harness-amp-operational-costs">Layer 2: Harness &amp; Operational Costs</h2>
+<h3 id="component-breakdown">Component Breakdown</h3>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Symbol</th>
+<th>Description</th>
+<th>Typical Range</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Orchestration</td>
+<td><code>Co</code></td>
+<td>LangChain, agent frameworks, workflow logic</td>
+<td>$0.001 - $0.01/unit</td>
+</tr>
+<tr>
+<td>Retrieval</td>
+<td><code>Cr</code></td>
+<td>Vector DB queries (Pinecone, Weaviate), embeddings</td>
+<td>$0.001 - $0.05/unit</td>
+</tr>
+<tr>
+<td>Tool APIs</td>
+<td><code>Ct</code></td>
+<td>External API calls (web search, calculators, databases)</td>
+<td>$0.00 - $0.10/unit</td>
+</tr>
+<tr>
+<td>Logging/Monitoring</td>
+<td><code>Cl</code></td>
+<td>CloudWatch, DataDog, LangSmith traces</td>
+<td>$0.0001 - $0.001/unit</td>
+</tr>
+<tr>
+<td>Safety Guardrails</td>
+<td><code>Cg</code></td>
+<td>Content moderation, PII detection APIs</td>
+<td>$0.0001 - $0.005/unit</td>
+</tr>
+<tr>
+<td>Network Egress</td>
+<td><code>Cn</code></td>
+<td>Data transfer out of cloud provider</td>
+<td>$0.00001 - $0.0005/unit</td>
+</tr>
+<tr>
+<td>Storage</td>
+<td><code>Cs</code></td>
+<td>S3, RDS for conversation history</td>
+<td>$0.00001 - $0.0005/unit</td>
+</tr>
+</tbody></table></div>
+<p>All seven have an input control. Simple mode shows Orchestration and Retrieval only; the
+other five keep their preset values and are still charged (the running subtotal under the
+fields states this).</p>
+<p><strong>Entry unit:</strong> these services are almost always quoted per 1,000 calls, so the block
+defaults to a <strong>per 1,000</strong> entry mode. This is a display transform only — values are stored
+per unit — and a toggle switches back to per-unit entry.</p>
+<hr>
+<h3 id="harness-sum">Harness Sum</h3>
+<p><strong>Formula:</strong></p>
+<pre><code>H_sum = Co + Cr + Ct + Cl + Cg + Cn + Cs
+</code></pre>
+<hr>
+<h3 id="combined-layer-1-layer-2-cost-per-unit">Combined Layer 1 + Layer 2 Cost Per Unit</h3>
+<p><strong>Formula:</strong></p>
+<pre><code>C₂ = (C₁_with_retries + H_sum) × Oh × M_cost
+</code></pre>
+<p><strong>Important Note:</strong> Despite the notation <code>C₂</code>, this represents the <strong>total variable cost per unit</strong> combining:</p>
+<ul>
+<li>Layer 1 (infrastructure/model inference with retries)</li>
+<li>Layer 2 (harness components)</li>
+<li>Overhead multiplier applied to the sum</li>
+</ul>
+<p><strong>Where:</strong></p>
+<ul>
+<li><code>Oh</code> = Overhead multiplier (1.0 - 1.5). Entered in the UI as <strong>Ops Overhead</strong>, a percentage
+(Advanced mode): 10% means <code>Oh = 1.1</code>.<ul>
+<li>1.0 = Perfectly optimized system (0%)</li>
+<li>1.1 = 10% DevOps/maintenance overhead</li>
+<li>1.2-1.5 = Early-stage systems with inefficiencies (20-50%)</li>
+</ul>
+</li>
+</ul>
+<p><strong>Rationale:</strong> Overhead captures:</p>
+<ul>
+<li>Failed requests consuming resources but not generating value</li>
+<li>Development/testing traffic</li>
+<li>Idle infrastructure costs</li>
+<li>Monitoring/alerting overhead</li>
+</ul>
+<hr>
+<h3 id="total-monthly-operating-cost">Total Monthly Operating Cost</h3>
+<p><strong>Formula:</strong></p>
+<pre><code>C_monthly_var = C₂ × V × M_volume
+</code></pre>
+<p><strong>Note:</strong> <code>C₂</code> already includes both Layer 1 and Layer 2 costs, so this gives total monthly variable operating costs.</p>
+<hr>
+<h2 id="layer-3-business-value-methods">Layer 3: Business Value Methods</h2>
+<p>The calculator supports <strong>four distinct value quantification methods</strong>, selected based on the use case&#39;s economic impact mechanism.</p>
+<hr>
+<h3 id="method-1-cost-displacement">Method 1: Cost Displacement</h3>
+<p><strong>Use Cases:</strong> Customer support automation, document processing, data entry</p>
+<p><strong>Formula:</strong></p>
+<pre><code>GV = [(Bh × Dr) - (Rrc × Rr)] × (S / 100) × M_value
+</code></pre>
+<p><strong>Where:</strong></p>
+<ul>
+<li><code>Bh</code> = Baseline human cost per unit ($)</li>
+<li><code>Dr</code> = Deflection rate (% of work AI handles without escalation)</li>
+<li><code>Rrc</code> = Residual review cost per unit ($)</li>
+<li><code>Rr</code> = Residual review rate (% of AI outputs requiring human review)</li>
+</ul>
+<p><strong>Example Calculation:</strong></p>
+<p><strong>Inputs</strong> (the Customer Support Bot preset):</p>
+<ul>
+<li>Baseline human cost: $0.50/ticket</li>
+<li>Deflection rate: 35% (AI resolves without human)</li>
+<li>Residual review rate: 5% (AI draft requires human review)</li>
+<li>Residual review cost: $0.10/ticket</li>
+<li>Realization rate: 90%</li>
+</ul>
+<p><strong>Math:</strong></p>
+<pre><code>GV = [(0.50 × 0.35) - (0.10 × 0.05)] × 0.90
+   = [0.175 - 0.005] × 0.90
+   = 0.170 × 0.90
+   = $0.153 per ticket
+</code></pre>
+<p><strong>Interpretation:</strong> Each ticket saves $0.153 compared to pure human handling.</p>
+<p><strong>Realization Rate Explanation (90%):</strong></p>
+<ul>
+<li><strong>What it means:</strong> Technical realization rate - 90% of AI attempts produce usable output, 10% fail completely (timeouts, errors, no response)</li>
+<li><strong>Why 90% for this scenario:</strong> Customer support systems face real-world variability (unclear questions, edge cases, system integrations). 90% is realistic for production chatbots.</li>
+<li><strong>Independence from deflection/review rates:</strong> Realization rate is orthogonal to quality metrics. An AI can successfully generate output (counted in the 90%) that still requires human review (the 5% residual review rate). These are separate dimensions:<ul>
+<li><strong>Realization rate:</strong> Did the AI produce output at all?</li>
+<li><strong>Deflection rate:</strong> Of successful outputs, how many fully resolve the issue?</li>
+<li><strong>Review rate:</strong> Of successful outputs, how many need human editing before use?</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="method-2-revenue-uplift">Method 2: Revenue Uplift</h3>
+<p><strong>Use Cases:</strong> E-commerce recommendations, personalized marketing, dynamic pricing</p>
+<p><strong>Formula:</strong></p>
+<pre><code>GV = AOV × ΔConv × Gm × (S / 100) × M_value
+</code></pre>
+<p><strong>Where:</strong></p>
+<ul>
+<li><code>AOV</code> = Average order value ($)</li>
+<li><code>ΔConv</code> = Absolute conversion uplift (percentage points, e.g., 0.5 for 2.0% → 2.5%)</li>
+<li><code>Gm</code> = Gross margin (% as decimal, e.g., 0.45 for 45%)</li>
+</ul>
+<p><strong>Example Calculation:</strong></p>
+<p><strong>Inputs:</strong></p>
+<ul>
+<li>Average order value: $85</li>
+<li>Baseline conversion: 3.0%</li>
+<li>Absolute uplift: +0.2 percentage points (3.0% → 3.2%)</li>
+<li>Gross margin: 45%</li>
+<li>Realization rate: 100% (all users see recommendations)</li>
+</ul>
+<p><strong>Math:</strong></p>
+<pre><code>ΔConv = 0.002 (0.2 percentage points as decimal)
+GV = 85 × 0.002 × 0.45 × 1.00
+   = 0.17 × 0.45 × 1.00
+   = $0.0765 per order
+</code></pre>
+<p><strong>At 100,000 orders/month (default recommendation preset):</strong></p>
+<pre><code>Total Value = 0.0765 × 100,000 = $7,650/month
+</code></pre>
+<p><strong>Note:</strong> Absolute uplift ≠ relative uplift. 3% → 3.2% is:</p>
+<ul>
+<li><strong>Absolute:</strong> +0.2 percentage points ✓ (enter this)</li>
+<li><strong>Relative:</strong> +6.67% ✗ (do NOT enter this)</li>
+</ul>
+<p><strong>Realization Rate Explanation (100%):</strong></p>
+<ul>
+<li><strong>What it means:</strong> 100% of orders receive AI-generated recommendations without technical failures</li>
+<li><strong>Why 100% for this scenario:</strong> E-commerce recommendation engines are typically stateless, pre-computed systems with high reliability. Unlike interactive chatbots, they serve cached/pre-generated recommendations, so technical failure rates approach zero in production.</li>
+<li><strong>No quality dependency:</strong> Realization rate measures technical delivery, not recommendation quality. A poorly-targeted recommendation still counts as &quot;successful&quot; if delivered. The conversion uplift metric captures quality - if recommendations are bad, uplift will be low/zero.</li>
+</ul>
+<hr>
+<h3 id="method-3-retention-uplift">Method 3: Retention Uplift</h3>
+<p><strong>Use Cases:</strong> Churn prevention, loyalty programs, proactive customer success</p>
+<p><strong>Formula:</strong></p>
+<pre><code>Cra_effective = min(Cra × M_value, Cb)
+Total_Value = (Ci × Cra_effective × (S / 100)) × (Av / 12)
+</code></pre>
+<p><strong>Where:</strong></p>
+<ul>
+<li><code>Ci</code> = Customers impacted per month</li>
+<li><code>Cb</code> = Baseline churn rate (percentage points)</li>
+<li><code>Cra</code> = Churn reduction absolute (percentage points, e.g., 0.5 for 2.5% → 2.0%)</li>
+<li><code>Cra_effective</code> = Churn reduction after the baseline cap</li>
+<li><code>Av</code> = Annual value per customer ($)</li>
+</ul>
+<p><strong>Why the cap:</strong> the reduction cannot exceed the churn that was there to remove — retaining
+more customers than were leaving is not an improvement, it is a negative churn rate. Uncapped,
+a 5-point reduction entered against a 0.5% baseline &quot;saved&quot; 425 customers out of the 50 that
+churn, and returned roughly 1,300% ROI from arithmetic alone. The cap is applied after the
+sensitivity multiplier, so a Value slider above 1× cannot push past the baseline either.</p>
+<p><strong>Example Calculation:</strong></p>
+<p><strong>Inputs:</strong></p>
+<ul>
+<li>Customers impacted: 10,000/month</li>
+<li>Baseline churn: 2.5%/month</li>
+<li>Churn reduction: 0.5 percentage points absolute</li>
+<li>Annual customer value: $1,200</li>
+<li>Realization rate: 85%</li>
+</ul>
+<p><strong>Math:</strong></p>
+<pre><code>Saved customers = 10,000 × 0.005 × 0.85 = 42.5 customers/month
+Monthly value per saved customer = 1,200 / 12 = $100
+Total Value = 42.5 × 100 = $4,250/month
+</code></pre>
+<p><strong>Interpretation:</strong> Preventing 42.5 customers from churning each month generates $4,250 in retained revenue.</p>
+<p><strong>Realization Rate Explanation (85%):</strong></p>
+<ul>
+<li><strong>What it means:</strong> 85% of AI retention interventions execute successfully (personalized emails sent, proactive support tickets created, loyalty rewards delivered)</li>
+<li><strong>Why 85% for this scenario:</strong> Retention systems integrate with multiple services (email platforms, CRM, support ticketing, payment systems). Integration complexity and external dependencies reduce reliability compared to standalone systems. 85% accounts for:<ul>
+<li>Email delivery failures</li>
+<li>API timeouts with external services</li>
+<li>Data availability issues (incomplete customer profiles)</li>
+<li>Rate limiting on third-party platforms</li>
+</ul>
+</li>
+<li><strong>Impact on value:</strong> Only successful interventions contribute to churn reduction. If AI fails to reach a customer, no retention impact occurs for that customer.</li>
+</ul>
+<hr>
+<h3 id="method-4-premium-monetization">Method 4: Premium Monetization</h3>
+<p><strong>Use Cases:</strong> AI-powered subscription tiers, freemium upgrades, add-on features</p>
+<p><strong>Formula:</strong></p>
+<pre><code>Total_Value = (Ps - Cn) × Ns × (S / 100) × M_value
+</code></pre>
+<p><strong>Where:</strong></p>
+<ul>
+<li><code>Ps</code> = Price per subscriber per month ($)</li>
+<li><code>Cn</code> = Non-AI COGS per subscriber ($)</li>
+<li><code>Ns</code> = Number of subscribers</li>
+<li><strong>UI behavior:</strong> In Premium Monetization mode, the calculator keeps Monthly Volume and Total Subscribers synchronized so value and cost drivers stay consistent.</li>
+</ul>
+<p><strong>Example Calculation:</strong></p>
+<p><strong>Inputs</strong> (the AI Premium Features preset):</p>
+<ul>
+<li>Subscription price: $15/month</li>
+<li>Non-AI COGS (hosting, support): $3/month</li>
+<li>Subscribers: 1,000</li>
+<li>Realization rate: 100%</li>
+</ul>
+<p><strong>Math:</strong></p>
+<pre><code>Margin per subscriber = 15 - 3 = $12
+Total Value = 12 × 1,000 × 1.00 = $12,000/month
+</code></pre>
+<p><strong>Realization Rate Explanation (100%):</strong></p>
+<ul>
+<li><strong>What it means:</strong> 100% of premium AI features are available and functional for paying subscribers</li>
+<li><strong>Why 100% for this scenario:</strong> Premium features have high uptime requirements. Subscribers paying specifically for AI capabilities expect near-perfect availability. Production systems typically achieve 99.9%+ uptime, modeled as 100% for monthly calculations.</li>
+<li><strong>Revenue model - Marginal vs Total:</strong><ul>
+<li><strong>Subscription price ($15/month):</strong> This is the <strong>marginal revenue</strong> directly attributed to the AI premium feature, NOT the total subscription price</li>
+<li><strong>Example:</strong> If your base plan is $50/month and AI Premium tier is $65/month, enter $15 (the incremental revenue from AI)</li>
+<li><strong>Rationale:</strong> We only calculate ROI on the AI-specific revenue. If users would pay $50 regardless, that&#39;s not AI-attributable value</li>
+</ul>
+</li>
+<li><strong>Non-AI COGS ($3/month):</strong> Incremental costs to serve premium subscribers, EXCLUDING AI costs (which are in Layers 1 &amp; 2):<ul>
+<li><strong>Hosting/infrastructure:</strong> Additional database storage, CDN bandwidth, server capacity for premium users</li>
+<li><strong>Customer support:</strong> Premium support tiers, priority handling</li>
+<li><strong>Payment processing:</strong> Credit card fees on the premium increment</li>
+<li><strong>Compliance/security:</strong> Enhanced data protection for premium features</li>
+<li><strong>Do NOT include:</strong> AI model costs (already in Layer 1), orchestration (Layer 2), or fixed costs (amortized separately)</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="roi-metrics-calculation">ROI Metrics Calculation</h2>
+<h3 id="net-monthly-benefit">Net Monthly Benefit</h3>
+<p><strong>Formula:</strong></p>
+<pre><code>NMB = Total_Value - C_monthly_total
+</code></pre>
+<p><strong>Where:</strong></p>
+<pre><code>C_monthly_total = C_monthly_var + Cf_amortized
+Cf_amortized = (Ci + Ct + Cm) / A
+</code></pre>
+<p><strong>Components:</strong></p>
+<ul>
+<li><code>Ci</code> = Integration &amp; development cost ($)</li>
+<li><code>Ct</code> = Training &amp; tuning cost ($)</li>
+<li><code>Cm</code> = Change management cost ($)</li>
+<li><code>A</code> = Amortization period (months, typically 12-36)</li>
+</ul>
+<hr>
+<h3 id="roi-percentage">ROI Percentage</h3>
+<p><strong>Formula:</strong></p>
+<pre><code>ROI% = (NMB / C_monthly_total) × 100
+</code></pre>
+<p><strong>Interpretation:</strong></p>
+<ul>
+<li><strong>ROI &gt; 0%:</strong> Project is profitable</li>
+<li><strong>ROI = 100%:</strong> Returns double the investment each month</li>
+<li><strong>ROI &lt; 0%:</strong> Monthly losses</li>
+</ul>
+<p><strong>This is a monthly ratio.</strong> Both sides of the fraction are monthly figures: monthly value
+against monthly cost (variable + amortized fixed). It is not annualized and not cumulative,
+and the analysis horizon <code>N</code> plays no part in it — only the amortization period <code>A</code>, through
+<code>Cf_amortized</code>. Lengthening <code>A</code> lowers monthly cost and therefore raises ROI; lengthening <code>N</code>
+only stretches the ROI curve chart.</p>
+<p><strong>Example:</strong></p>
+<pre><code>Monthly Value = $50,000
+Monthly Cost = $12,000
+NMB = 50,000 - 12,000 = $38,000
+ROI% = (38,000 / 12,000) × 100 = 316.7%
+</code></pre>
+<hr>
+<h3 id="payback-period">Payback Period</h3>
+<p><strong>Formula:</strong></p>
+<pre><code>NCB = V_total_monthly - C₂_monthly          (monthly cash net benefit, before amortization)
+Payback_months = Cf_total / NCB  (if NCB &gt; 0)
+</code></pre>
+<p><strong>Why NCB and not NMB:</strong> <code>NMB</code> already subtracts the amortized fixed costs. Dividing
+<code>Cf_total</code> by <code>NMB</code> would count the fixed costs twice (once in the numerator, once inside
+the denominator). Payback is a cash metric: one-time investment divided by the monthly
+cash the project generates before amortization.</p>
+<p><strong>Special Cases:</strong></p>
+<ul>
+<li><code>NCB ≤ 0</code>: &quot;No Payback&quot; (project never recoups fixed costs)</li>
+<li><code>Cf_total = 0</code>: &quot;Immediate&quot; (no upfront investment)</li>
+</ul>
+<p><strong>Example:</strong></p>
+<pre><code>Fixed costs = $25,000
+Monthly cash net benefit = $8,000
+Payback = 25,000 / 8,000 = 3.1 months
+</code></pre>
+<hr>
+<h3 id="cumulative-profit-over-time">Cumulative Profit Over Time</h3>
+<p><strong>Formula:</strong></p>
+<pre><code>CP(t) = -Cf_total + (NCB × t)
+</code></pre>
+<p><strong>Where:</strong></p>
+<ul>
+<li><code>t</code> = Number of months elapsed</li>
+<li><code>CP(0) = -Cf_total</code> (initial investment)</li>
+<li>Break-even occurs when <code>CP(t) = 0</code></li>
+</ul>
+<p><strong>Example Trajectory:</strong></p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Month</th>
+<th>Cumulative Profit</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>-$25,000</td>
+</tr>
+<tr>
+<td>1</td>
+<td>-$17,000</td>
+</tr>
+<tr>
+<td>2</td>
+<td>-$9,000</td>
+</tr>
+<tr>
+<td>3</td>
+<td>-$1,000</td>
+</tr>
+<tr>
+<td>4</td>
+<td>+$7,000 ← Break-even month 3.1</td>
+</tr>
+<tr>
+<td>12</td>
+<td>+$71,000</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="break-even-analysis">Break-even Analysis</h2>
+<h3 id="break-even-volume">Break-even Volume</h3>
+<p><strong>Definition:</strong> The monthly volume at which <code>Total Value = Total Cost</code> (net benefit = $0)</p>
+<p><strong>Formula:</strong></p>
+<pre><code>V_breakeven = Cf_amortized / (GV - C₂)
+</code></pre>
+<p><strong>Where:</strong></p>
+<ul>
+<li><code>GV - C₂</code> = Unit margin (value minus variable cost per unit)</li>
+</ul>
+<p><strong>Derivation:</strong></p>
+<pre><code>At break-even: Total_Value = Total_Cost
+GV × V_breakeven = (C₂ × V_breakeven) + Cf_amortized
+GV × V_breakeven - C₂ × V_breakeven = Cf_amortized
+V_breakeven × (GV - C₂) = Cf_amortized
+V_breakeven = Cf_amortized / (GV - C₂)
+</code></pre>
+<p><strong>Example:</strong></p>
+<pre><code>Gross value per unit = $2.50
+Variable cost per unit = $0.30
+Amortized fixed cost = $2,000/month
+
+Unit margin = 2.50 - 0.30 = $2.20
+V_breakeven = 2,000 / 2.20 = 909 units/month
+</code></pre>
+<p><strong>Interpretation:</strong> Need 909 units/month to cover all costs. Below this, project loses money.</p>
+<p><strong>Special cases:</strong></p>
+<ul>
+<li>Unit margin ≤ 0: no break-even volume exists (the card shows &quot;N/A&quot;)</li>
+<li><code>Cf_amortized = 0</code> with a positive unit margin: break-even volume is 0 — every unit is profitable</li>
+<li>The result is rounded up to a whole unit</li>
+<li><strong>Retention Uplift: not reported.</strong> See below.</li>
+</ul>
+<p><strong>Scope: only value methods whose total value scales with volume.</strong></p>
+<p>The derivation cancels <code>V_breakeven</code> out of both sides, which is only legitimate while <code>GV</code>
+is itself independent of volume. Under Cost Displacement and Revenue Uplift it is: value is
+defined per unit, and total value really is <code>GV × V</code>.</p>
+<p>Under <strong>Retention Uplift</strong> it is not. Total value is driven by <code>Ci</code>, customers impacted per
+month, which is a separate input from <code>V</code>; <code>GV</code> is then back-derived as <code>Total_Value / V</code>.
+So <code>GV × V</code> is a constant, the two sides of the equation no longer both depend on volume,
+and the formula returns a number with no meaning. On the shipped <code>retention</code> preset it
+returned 7,051 units/month at a volume already earning +$1,253/month — not a floor, and off
+by more than an order of magnitude from the volume that actually matters there.</p>
+<p>Because more volume under Retention adds cost without adding value, the meaningful threshold
+is a <strong>ceiling</strong> — <code>V_max = (Total_Value − Cf_amortized) / C₂</code>, the volume beyond which
+running costs consume the fixed retention benefit. That is a different quantity than this
+field reports, so <code>V_breakeven</code> is left undefined for Retention and the break-even cards are
+hidden, rather than showing a floor that points the wrong way.</p>
+<p><em>Premium Monetization is a borderline case:</em> total value is driven by subscriber count, but
+the app keeps subscribers synchronised with monthly volume, so at baseline <code>GV</code> is genuinely
+volume-invariant and the formula holds. It is still reported.</p>
+<hr>
+<h3 id="break-even-months-time-to-cumulative-break-even">Break-even Months (Time to Cumulative Break-even)</h3>
+<p><strong>Formula:</strong></p>
+<pre><code>M_breakeven = Cf_total / NCB   (if NCB &gt; 0)
+            | 0                (if Cf_total = 0 and NCB &gt; 0)
+            | undefined        (if NCB ≤ 0 — never recovers at this volume)
+</code></pre>
+<p><strong>What it measures:</strong> the month at which cumulative cash flow crosses zero — that is, when
+the one-time investment has been repaid — <strong>at today&#39;s volume</strong>. No volume growth is assumed.
+It is the point where the ROI curve crosses the axis, which is exactly what the chart&#39;s
+vertical marker points at.</p>
+<p><strong>Relationship to payback.</strong> They are the same quantity: <code>Cf_total / NCB</code>. Payback is
+reported as a headline KPI, <code>M_breakeven</code> positions the chart marker. They agree by
+construction, which is the point.</p>
+<p><strong>Previous definition (removed).</strong> This used to extrapolate volume growth:
+<code>(V_breakeven − V_effective) / V_effective × 12</code>. Solving for the growth rate that would make
+that correct gives <code>V_effective / 12</code> per month — an implied doubling every year that no
+input expresses and nobody chose; it fell out of the <code>× 12</code> used to turn a dimensionless
+ratio into months. On a stable-volume project the threshold is never reached, yet a month was
+still displayed — and displayed on a cumulative-cash axis measuring something else entirely.
+A chart could show the curve crossing zero at month 17 with the marker drawn at month 6.</p>
+<hr>
+<h3 id="visual-representation">Visual Representation</h3>
+<p>The <strong>ROI Curve Chart</strong> plots <code>CP(t)</code> from month 0 to the analysis horizon <code>N</code>:</p>
+<ul>
+<li><strong>Y-axis:</strong> Cumulative profit ($)</li>
+<li><strong>X-axis:</strong> Months</li>
+<li><strong>Horizontal dashed line at y=0:</strong> Break-even threshold</li>
+<li><strong>Vertical chartreuse line:</strong> <code>M_breakeven</code> rounded up — the month the curve crosses zero.
+Absent when there are no fixed costs to repay, or when the project never recovers at this
+volume, since there is no crossing to mark</li>
+<li><strong>Green area fill:</strong> under the cumulative-profit line</li>
+</ul>
+<hr>
+<h2 id="sensitivity-analysis">Sensitivity Analysis</h2>
+<h3 id="purpose">Purpose</h3>
+<p>Test how ROI changes when key assumptions vary. Helps stakeholders understand:</p>
+<ul>
+<li><strong>Upside potential</strong> (optimistic scenarios)</li>
+<li><strong>Downside risk</strong> (pessimistic scenarios)</li>
+<li><strong>Critical variables</strong> (which inputs most impact ROI)</li>
+</ul>
+<hr>
+<h3 id="multiplier-system">Multiplier System</h3>
+<p>Four independent multipliers modify baseline assumptions:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Multiplier</th>
+<th>Symbol</th>
+<th>Affects</th>
+<th>Range</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Volume</td>
+<td><code>M_volume</code></td>
+<td>Monthly volume</td>
+<td>0.5x - 3.0x</td>
+</tr>
+<tr>
+<td>Realization Rate</td>
+<td><code>M_realization</code></td>
+<td>AI quality/accuracy</td>
+<td>0.5x - 1.5x</td>
+</tr>
+<tr>
+<td>Cost</td>
+<td><code>M_cost</code></td>
+<td>All Layer 1+2 costs</td>
+<td>0.5x - 2.0x</td>
+</tr>
+<tr>
+<td>Value</td>
+<td><code>M_value</code></td>
+<td>All Layer 3 value drivers</td>
+<td>0.5x - 2.0x</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h3 id="application-logic">Application Logic</h3>
+<p><strong>Modified Calculations:</strong></p>
+<pre><code>V_effective = V × M_volume
+S_effective = clamp(S × M_realization, 0, 100)
+C₁_effective = C₁ × M_cost
+C₂_effective = C₂ × M_cost
+GV_effective = GV × M_value   (applied to the value driver, see below)
+</code></pre>
+<p><strong>Where <code>M_value</code> actually acts:</strong> on the value <em>driver</em> of the selected method, not on the
+finished gross value — deflection rate (capped at 100%), absolute conversion uplift, churn
+reduction, or subscriber margin. For Cost Displacement this means the residual review cost is
+<strong>not</strong> scaled, so <code>GV</code> moves slightly more than proportionally with <code>M_value</code>.</p>
+<p><strong>Example Scenario:</strong></p>
+<p><strong>Conservative Case:</strong></p>
+<ul>
+<li>Volume: 0.8x (80% of expected)</li>
+<li>Realization Rate: 0.9x (90% of expected)</li>
+<li>Costs: 1.2x (20% higher than expected)</li>
+<li>Value: 0.9x (10% lower than expected)</li>
+</ul>
+<p><strong>Result:</strong> ROI drops from 320% to 180%, still profitable but reduced margin.</p>
+<hr>
+<h3 id="tornado-chart---impact-ranking">Tornado Chart - Impact Ranking</h3>
+<p><strong>Purpose:</strong> Visualize which variables have the most impact on ROI when varied by ±20%.</p>
+<p><strong>Methodology:</strong></p>
+<p>For each variable (Volume, Realization Rate, Costs, Value):</p>
+<ol>
+<li>Calculate ROI at baseline (current inputs)</li>
+<li>Calculate ROI at -20% (variable decreased by 20%)</li>
+<li>Calculate ROI at +20% (variable increased by 20%)</li>
+<li>Compute deviation from baseline: <code>Δ_low = ROI_low - ROI_baseline</code> and <code>Δ_high = ROI_high - ROI_baseline</code></li>
+<li>Compute impact range: <code>Range = |Δ_high - Δ_low|</code></li>
+<li>Sort variables by impact range (descending)</li>
+</ol>
+<p><strong>Visualization:</strong></p>
+<p>The tornado chart displays variables as horizontal bars:</p>
+<ul>
+<li><strong>Red bars (left):</strong> Extend left from zero, showing ROI decrease when variable drops 20% (downside risk)</li>
+<li><strong>Green bars (right):</strong> Extend right from zero, showing ROI increase when variable rises 20% (upside potential)</li>
+<li><strong>Vertical ranking:</strong> Most impactful variables appear at the top</li>
+<li><strong>Symmetric center:</strong> All bars pivot from zero baseline</li>
+</ul>
+<p><strong>Example:</strong></p>
+<p>If baseline ROI is 150%:</p>
+<ul>
+<li>Volume at -20%: ROI = 120% → <code>Δ_low = -30%</code></li>
+<li>Volume at +20%: ROI = 180% → <code>Δ_high = +30%</code></li>
+<li>Impact Range = 60%</li>
+</ul>
+<hr>
+<h3 id="how-to-interpret-tornado-charts">How to Interpret Tornado Charts</h3>
+<p><strong>Key Insights:</strong></p>
+<ol>
+<li><p><strong>Focus on the top bars</strong> - These variables have the most impact on your ROI. Small changes in these variables create large ROI swings.</p>
+</li>
+<li><p><strong>Asymmetric bars matter</strong> - If the green bar is much longer than the red bar (or vice versa), it means upside and downside risks are unequal. This indicates non-linear relationships or threshold effects.</p>
+</li>
+<li><p><strong>Prioritize monitoring</strong> - The top 1-2 variables in the tornado chart are your critical metrics to track and optimize in production.</p>
+</li>
+</ol>
+<p><strong>Key Takeaway:</strong> Rank variables by impact range, then focus optimization efforts on the top 1-2 variables.</p>
+<p><strong>Example Decision Making:</strong></p>
+<p>If &quot;Value&quot; has the highest impact range (63%):</p>
+<ul>
+<li><strong>Action:</strong> Invest in maximizing value delivered per unit (better AI quality, higher conversion rates)</li>
+<li><strong>Risk:</strong> Even small degradation in value delivery will significantly reduce ROI</li>
+<li><strong>Opportunity:</strong> Small improvements in value can dramatically boost ROI</li>
+</ul>
+<p>If &quot;Costs&quot; has a smaller impact range (15%):</p>
+<ul>
+<li><strong>Insight:</strong> Cost optimization is important but not as critical as value delivery</li>
+<li><strong>Strategy:</strong> Don&#39;t obsess over minor cost reductions—focus resources on value enhancement instead</li>
+</ul>
+<hr>
+<h2 id="assumptions-amp-limitations">Assumptions &amp; Limitations</h2>
+<h3 id="key-assumptions">Key Assumptions</h3>
+<ol>
+<li><strong>Linear Scaling:</strong> Costs and value scale linearly with volume (no economies/diseconomies of scale)</li>
+<li><strong>Constant Realization Rate:</strong> AI quality remains stable over time (no model drift)</li>
+<li><strong>Static Pricing:</strong> API pricing doesn&#39;t change during the analysis period. Model prices are sourced live from the <a href="https://optimtoken.optimnow.io">OptimToken</a> catalog (refreshed daily); the price date is recorded with each selection (<code>pricedAt</code>), catalog-backed models are repriced automatically, and hand-entered prices are left alone (see &quot;Where the Prices Come From&quot;).</li>
+<li><strong>Independent Variables:</strong> Sensitivity multipliers don&#39;t interact (e.g., higher volume doesn&#39;t reduce unit costs)</li>
+<li><strong>Immediate Value Realization:</strong> Benefits accrue immediately when AI succeeds (no lag)</li>
+<li><strong>API-Based Deployment:</strong> Assumes managed-API pricing — pay-per-token, or a flat per-call rate. Self-hosted GPU economics (hardware amortization, utilization, electricity) are not modelled.</li>
+</ol>
+<hr>
+<h3 id="known-limitations">Known Limitations</h3>
+<ol>
+<li><strong>No Time Value of Money:</strong> Does not apply NPV discounting (reasonable for 12-24 month horizons)</li>
+<li><strong>No Uncertainty Quantification:</strong> Point estimates, not probability distributions (Monte Carlo planned for Phase 2)</li>
+<li><strong>No Learning Curves:</strong> Assumes constant efficiency (ignores optimization over time)</li>
+<li><strong>Single Value Method:</strong> Cannot model hybrid value (e.g., both cost savings AND revenue)</li>
+<li><strong>Deterministic:</strong> No random variation (real-world has stochastic fluctuations)</li>
+</ol>
+<hr>
+<h3 id="when-not-to-use-this-calculator">When NOT to Use This Calculator</h3>
+<ul>
+<li><strong>Very Early-Stage R&amp;D:</strong> If AI feasibility is unproven, ROI is speculative</li>
+<li><strong>Non-Quantifiable Value:</strong> Cultural change, employee satisfaction, brand perception</li>
+<li><strong>Highly Variable Workflows:</strong> If costs/value fluctuate 10x month-to-month</li>
+<li><strong>Multi-Year Horizons:</strong> Beyond 36 months, NPV discounting becomes critical</li>
+<li><strong>Regulatory/Compliance Drivers:</strong> If deployment is mandatory regardless of ROI</li>
+</ul>
+<hr>
+<h2 id="validation-amp-testing">Validation &amp; Testing</h2>
+<h3 id="unit-test-coverage">Unit Test Coverage</h3>
+<p>The <code>calculations.ts</code> module has ~28 test cases covering:</p>
+<ul>
+<li>Edge cases (zero volume, 100% realization rate, negative margins)</li>
+<li>All four value methods with representative scenarios</li>
+<li>Cache optimization, including published cache-read prices vs. the manual discount</li>
+<li>Batch rates, and per-call models ignoring token/cache/batch settings</li>
+<li>Model routing with various split percentages</li>
+<li>Break-even calculations across profitable/unprofitable scenarios</li>
+<li>Sensitivity multiplier interactions</li>
+</ul>
+<p><strong>Test Suites:</strong> <code>utils/calculations.test.ts</code>, plus <code>utils/modelCatalog.test.ts</code> (catalog
+resolution, repricing) and <code>utils/deepLink.test.ts</code> (hub handover parsing). Input handling —
+the clamping that keeps these formulas fed valid numbers — is covered separately in
+<code>components/InputComponents.test.tsx</code>.</p>
+<hr>
+<h3 id="industry-benchmarks">Industry Benchmarks</h3>
+<p>Our methodology aligns with standard practices:</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Industry Standard</th>
+<th>Our Implementation</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ROI Formula</td>
+<td><code>(Gain - Cost) / Cost × 100</code></td>
+<td>✓ Matches</td>
+</tr>
+<tr>
+<td>Payback Period</td>
+<td><code>Investment / Annual Cash Flow</code></td>
+<td>✓ Matches (monthly)</td>
+</tr>
+<tr>
+<td>TCO Components</td>
+<td>Capex + Opex + Overhead</td>
+<td>✓ Fixed + Variable + Overhead</td>
+</tr>
+<tr>
+<td>Cache Discount</td>
+<td>Provider-published cache-read prices (typically 75-90% off input)</td>
+<td>✓ Taken per model from the OptimToken; manual discount only as fallback</td>
+</tr>
+<tr>
+<td>Batch Discount</td>
+<td>Provider batch APIs, typically -50%</td>
+<td>✓ Applied per model where published</td>
+</tr>
+</tbody></table></div>
+<hr>
+<h2 id="references-amp-citations">References &amp; Citations</h2>
+<h3 id="academic-foundations">Academic Foundations</h3>
+<ol>
+<li><strong>TCO Modeling:</strong> Gartner TCO Framework for IT Systems (2020)</li>
+<li><strong>ROI Methodology:</strong> Harvard Business Review - &quot;How to Calculate ROI&quot; (Phillips &amp; Phillips, 2016)</li>
+<li><strong>LLM Cost Modeling:</strong> &quot;The Cost of Training Large Language Models&quot; (Strubell et al., 2019)</li>
+</ol>
+<h3 id="industry-sources">Industry Sources</h3>
+<ol start="4">
+<li><p><strong>Token Pricing:</strong></p>
+<ul>
+<li>OpenAI API Pricing (<a href="https://openai.com/pricing">https://openai.com/pricing</a>)</li>
+<li>Anthropic Claude Pricing (<a href="https://www.anthropic.com/pricing">https://www.anthropic.com/pricing</a>)</li>
+<li>Google Gemini API Pricing (<a href="https://ai.google.dev/pricing">https://ai.google.dev/pricing</a>)</li>
+</ul>
+</li>
+<li><p><strong>Operational Costs:</strong></p>
+<ul>
+<li>AWS Pricing Calculator (<a href="https://calculator.aws/">https://calculator.aws/</a>)</li>
+<li>LangSmith Monitoring Costs (<a href="https://www.langchain.com/langsmith">https://www.langchain.com/langsmith</a>)</li>
+<li>Pinecone Vector DB Pricing (<a href="https://www.pinecone.io/pricing/">https://www.pinecone.io/pricing/</a>)</li>
+</ul>
+</li>
+</ol>
+<h3 id="internal-documentation">Internal Documentation</h3>
+<ol start="6">
+<li><strong>Code Implementation:</strong> <code>utils/calculations.ts</code> (<code>calculateROI</code>)</li>
+<li><strong>Type Definitions:</strong> <code>types.ts</code> (UseCaseInputs, ModelParams, CalculationResults interfaces)</li>
+<li><strong>Model Catalog &amp; Repricing:</strong> <code>utils/modelCatalog.ts</code>; deep links in <code>utils/deepLink.ts</code></li>
+<li><strong>Test Validation:</strong> <code>utils/calculations.test.ts</code></li>
+</ol>
+<hr>
+<h2 id="changelog">Changelog</h2>
+<h3 id="v13-august-2026">v1.3 (August 2026)</h3>
+<ul>
+<li>Documented model prices sourced from the OptimToken catalog, model identity, auto-repricing rules and hub deep links</li>
+<li>Documented per-call billing as a selectable basis, and published cache-read / batch rates taking precedence over the manual cache discount</li>
+<li>Stated explicitly that retries are a Layer 1 cost, that ROI is a monthly ratio, and that the analysis horizon only drives the ROI curve chart</li>
+<li>Corrected Break-even Months: it is a volume-growth estimate feeding the chart marker, not a second payback formula</li>
+<li>Documented the seven harness components, per-1,000 entry mode and subtotal; noted Ops Overhead is entered as a percentage</li>
+<li>Rebuilt the end-to-end worked example on the Customer Support Bot preset with current catalog prices</li>
+</ul>
+<h3 id="v12-february-2026">v1.2 (February 2026)</h3>
+<ul>
+<li>Updated Revenue Uplift worked example wording from sessions to orders for recommendation scenarios</li>
+<li>Updated recommendation volume example to 100,000 orders/month to match current default preset scale</li>
+<li>Clarified Premium Monetization UI behavior: Monthly Volume and Total Subscribers are synchronized</li>
+</ul>
+<h3 id="v11-january-2026">v1.1 (January 2026)</h3>
+<ul>
+<li>Initial public methodology documentation</li>
+<li>Added ROI curve calculation for cumulative profit visualization</li>
+<li>Documented all four value methods with worked examples</li>
+<li>Clarified break-even analysis formulas</li>
+</ul>
+<h3 id="v10-december-2025">v1.0 (December 2025)</h3>
+<ul>
+<li>Core 3-layer framework implementation</li>
+<li>Basic ROI percentage and payback period calculations</li>
+</ul>
+<hr>
+<h2 id="appendix-worked-example-end-to-end">Appendix: Worked Example (End-to-End)</h2>
+<h3 id="scenario-customer-support-chatbot">Scenario: Customer Support Chatbot</h3>
+<p>This is the <strong>Customer Support Bot</strong> preset exactly as it loads, so it can be reproduced in
+the app. Model prices are those of the embedded catalog snapshot; a live catalog may reprice
+the model and shift the figures.</p>
+<p><strong>Inputs:</strong></p>
+<ul>
+<li><p><strong>Value &amp; Scope:</strong></p>
+<ul>
+<li>Monthly Volume: 10,000 tickets</li>
+<li>Realization Rate: 90%</li>
+<li>Analysis Horizon: 12 months (chart only)</li>
+</ul>
+</li>
+<li><p><strong>Fixed Costs:</strong></p>
+<ul>
+<li>Integration: $8,000</li>
+<li>Training: $3,000</li>
+<li>Change Management: $2,000</li>
+<li><strong>Total Fixed:</strong> $13,000</li>
+<li>Amortization: 12 months</li>
+</ul>
+</li>
+<li><p><strong>Layer 1 (Infrastructure):</strong></p>
+<ul>
+<li>Model: Claude Haiku 4.5 (Anthropic, via OptimToken)</li>
+<li>Input tokens: 1,500/ticket</li>
+<li>Output tokens: 500/ticket</li>
+<li>Input price: $1.00/1M tokens</li>
+<li>Output price: $5.00/1M tokens</li>
+<li>Published cache-read price: $0.10/1M tokens (90% off)</li>
+<li>Cache hit rate: 60%</li>
+<li>Batch processing: off (support is interactive)</li>
+<li>Retry rate: 10%</li>
+</ul>
+</li>
+<li><p><strong>Layer 2 (Harness), per ticket:</strong></p>
+<ul>
+<li>Orchestration: $0.0020</li>
+<li>Retrieval: $0.0015</li>
+<li>Tool APIs: $0.0003</li>
+<li>Logging / Monitoring: $0.0008</li>
+<li>Safety / Guardrails: $0.0005</li>
+<li>Network Egress: $0.0002</li>
+<li>Storage: $0.0002</li>
+<li>Ops Overhead: 0% (<code>Oh</code> = 1.0)</li>
+</ul>
+</li>
+<li><p><strong>Layer 3 (Value):</strong></p>
+<ul>
+<li>Method: Cost Displacement</li>
+<li>Baseline human cost: $0.50/ticket</li>
+<li>Deflection rate: 35%</li>
+<li>Residual review rate: 5%</li>
+<li>Residual review cost: $0.10/ticket</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="step-by-step-calculation">Step-by-Step Calculation</h3>
+<p><strong>Layer 1:</strong></p>
+<pre><code>Effective input price = (0.10 × 0.60) + (1.00 × 0.40) = $0.46/1M
+Input cost  = (1,500 / 1,000,000) × 0.46 = $0.00069
+Output cost = (500 / 1,000,000) × 5.00   = $0.00250
+Base cost = 0.00069 + 0.00250 = $0.00319/ticket
+
+With retries: C₁ = 0.00319 × 1.10 = $0.003509/ticket
+</code></pre>
+<p><strong>Layer 2:</strong></p>
+<pre><code>H_sum = 0.0020 + 0.0015 + 0.0003 + 0.0008 + 0.0005 + 0.0002 + 0.0002 = $0.0055
+C₂ = (0.003509 + 0.0055) × 1.0 = $0.009009/ticket
+</code></pre>
+<p><strong>Fixed Costs:</strong></p>
+<pre><code>Cf_amortized = 13,000 / 12 = $1,083.33/month
+</code></pre>
+<p><strong>Layer 3 (Value):</strong></p>
+<pre><code>Deflection savings = 0.50 × 0.35 = $0.175
+Residual cost = 0.10 × 0.05 = $0.005
+Gross value = (0.175 - 0.005) × 0.90 = $0.153/ticket
+</code></pre>
+<p><strong>Monthly Metrics:</strong></p>
+<pre><code>C_monthly_var   = 0.009009 × 10,000 = $90.09
+C_monthly_total = 90.09 + 1,083.33 = $1,173.42
+Cost per ticket = 1,173.42 / 10,000 = $0.1173
+
+Total_Value = 0.153 × 10,000 = $1,530/month
+NMB = 1,530 - 1,173.42 = $356.58/month
+NCB = 1,530 - 90.09 = $1,439.91/month   (cash, before amortization)
+</code></pre>
+<p><strong>ROI Metrics:</strong></p>
+<pre><code>ROI% = (356.58 / 1,173.42) × 100 = 30.4%
+Payback = 13,000 / 1,439.91 = 9.0 months
+</code></pre>
+<p><strong>Break-even:</strong></p>
+<pre><code>Unit margin = 0.153 - 0.009009 = $0.143991
+V_breakeven = ceil(1,083.33 / 0.143991) = 7,524 tickets/month
+M_breakeven = 0  (10,000 tickets already exceeds 7,524, so the chart shows no marker)
+</code></pre>
+<p><strong>Interpretation:</strong></p>
+<ul>
+<li>30% monthly ROI: every month generates $357 of profit after absorbing $1,083 of amortized fixed cost</li>
+<li>The model itself is the smaller half of the running cost ($35/month) — the harness is $55/month</li>
+<li>Break-even at 7,524 tickets, already exceeded at 10,000/month</li>
+<li>The $13,000 investment is repaid in cash in 9.0 months</li>
+<li>After 12 months: cumulative profit = -13,000 + (1,439.91 × 12) = <strong>$4,278.92</strong></li>
+<li>Note how much of the outcome rides on the fixed costs: the running cost is only $90/month
+against $1,083 of amortization, so the ROI headline is mostly a statement about the rollout
+estimate, not about the model. This is why the fixed-cost fields deserve real numbers.</li>
+</ul>
+<hr>
+<h2 id="contact-amp-support">Contact &amp; Support</h2>
+<p>For questions, corrections, or suggestions regarding this methodology:</p>
+<ul>
+<li><strong>GitHub Issues:</strong> <a href="https://github.com/OptimNow/ai-roi-calculator/issues">ai-roi-calculator/issues</a></li>
+<li><strong>Email:</strong> <a href="mailto:contact@optimnow.io">contact@optimnow.io</a></li>
+<li><strong>Website:</strong> <a href="https://www.optimnow.io">www.optimnow.io</a></li>
+</ul>
+<hr>
+<p><strong>Document Version:</strong> 1.4
+<strong>Last Reviewed:</strong> August 15, 2026
+<strong>Next Review:</strong> November 15, 2026 (or upon Phase 2 release)</p>
+
+    </main>
+
+    <footer class="site">
+      <div class="inner">
+        <p>
+          This specification documents the engine behind the
+          <a href="/">AI ROI Calculator</a>, a free tool by
+          <a href="https://www.optimnow.io">OptimNow</a>.
+          Model prices come from <a href="https://optimtoken.optimnow.io">OptimToken</a>.
+        </p>
+        <p>Generated from METHODOLOGY.md — do not edit this file by hand.</p>
+      </div>
+    </footer>
+  </body>
+</html>

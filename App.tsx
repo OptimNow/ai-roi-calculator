@@ -616,8 +616,11 @@ export default function App() {
             >
               <HelpCircle size={18} aria-hidden="true" />
             </button>
+            {/* On-domain, statically rendered — generated from METHODOLOGY.md by
+                scripts/build-methodology.mjs. It used to point at GitHub, which sent both
+                readers and crawlers off the product's own domain. */}
             <a
-              href="https://github.com/OptimNow/ai-roi-calculator/blob/main/METHODOLOGY.md"
+              href="/methodology.html"
               target="_blank"
               rel="noopener noreferrer"
               className="hidden sm:block p-1.5 sm:p-2 text-slate-500 hover:bg-accent hover:bg-opacity-10 rounded-md transition-colors"
@@ -1123,7 +1126,7 @@ export default function App() {
               <p className="text-[10px] text-slate-400 mt-3">
                 Realized = Gross × {inputs.successRate}% success rate.{' '}
                 <a
-                  href="https://github.com/OptimNow/ai-roi-calculator/blob/main/METHODOLOGY.md"
+                  href="/methodology.html"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-accent hover:underline"
