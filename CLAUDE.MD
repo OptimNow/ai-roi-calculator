@@ -1,6 +1,6 @@
 # CLAUDE.MD - AI Assistant Project Guide
 
-**Last Updated:** August 15, 2026
+**Last Updated:** August 17, 2026
 **Project:** AI ROI Calculator
 **Version:** 0.5.0
 **Live Demo:** https://airoicalculator.optimnow.io (custom domain) / https://ai-roi-calculator.vercel.app (Vercel default)
@@ -79,10 +79,11 @@ The full OptimNow brand identity is the `optimnow-brand` skill (source of truth)
 
 ```
 ai-roi-calculator/
-├── App.tsx                     # Main application component (~1,400 lines)
+├── App.tsx                     # Main application component (~1,450 lines)
 │                               # Contains all state management and orchestration
 ├── components/
-│   ├── Charts.tsx              # Memoized ROICurveChart & TornadoChart
+│   ├── Charts.tsx              # Memoized CostValueChart, CostBreakdownChart,
+│   │                           # ROICurveChart & TornadoChart
 │   ├── ErrorBoundary.tsx       # Top-level error boundary
 │   ├── HelpGuide.tsx           # Comprehensive modal with step-by-step instructions
 │   ├── InputComponents.tsx     # MoneyInput, NumberInput, PercentInput, SectionHeader
@@ -97,6 +98,8 @@ ai-roi-calculator/
 │   ├── modelCatalog.ts         # Model price catalog: live fetch from OptimToken API,
 │   │                           # localStorage cache, embedded snapshot fallback, preset helper
 │   ├── deepLink.ts             # Scenario handover from OptimToken (?useCase=&volume=&model=&batch=)
+│   ├── scenario.ts             # Validates + migrates saved scenarios at both untrusted
+│   │                           # boundaries (JSON import, localStorage). NOT synced to the MCP
 │   └── format.ts               # pluralize() + Intl money formatters, SHARED with the MCP server
 ├── types.ts                    # TypeScript interfaces (UseCaseInputs, Scenario, etc.)
 ├── constants.ts                # Presets for common use cases (support, content, etc.)
@@ -112,6 +115,7 @@ ai-roi-calculator/
 ├── scripts/
 │   └── refresh-model-snapshot.mjs  # Regenerates the embedded price snapshot (weekly CI)
 ├── .github/workflows/          # refresh-model-snapshot.yml
+├── vercel.json                 # Security headers, SPA rewrite, immutable cache on /assets/*
 ├── vite.config.ts              # Vite build configuration (dev server on port 3000)
 ├── vitest.config.ts            # Test config — node by default, jsdom per-file, see "Testing Philosophy"
 ├── tailwind.config.js          # Tailwind v4 configuration
@@ -130,7 +134,9 @@ ai-roi-calculator/
 ### 1. `types.ts` - Data Model
 All TypeScript interfaces:
 - `UseCaseInputs`: The main input state (general, fixed, infra, harness, value)
-- `Scenario`: Saved calculation snapshot (name, inputs, metrics, timestamp, color)
+- `Scenario`: Saved calculation snapshot (name, inputs, metrics, timestamp, color, optional
+  `schemaVersion`). Absent `schemaVersion` means it predates versioning — `utils/scenario.ts`
+  backfills rather than rejects it.
 - `ValueMethod`: Four options (costDisplacement, revenueUplift, retentionUplift, premiumMonetization)
 - `ModelParams`: One model's identity and prices (`modelId`, input/output, cache-read, batch, `pricedAt`, or `useCallPricing` + `costPerCall`)
 - Routing is two slots, `primaryModel` and `secondaryModel`, blended by `routingSimplePercent`. There is no `ModelTier` type and no third fallback slot.
@@ -147,7 +153,7 @@ different `modifiers` and compares the results.
 ripples there through its sync script, so it needs a test and a METHODOLOGY update.
 
 ### 3. `App.tsx` - Orchestration
-The main component (~1,400 lines):
+The main component (~1,450 lines):
 - State management for all inputs
 - Preset loading logic
 - Scenario CRUD operations with localStorage
@@ -203,7 +209,7 @@ npm run preview    # Preview production build
 ### Testing
 
 ```bash
-npm test           # Run unit + component tests (95 cases)
+npm test           # Run unit + component tests (114 cases)
 npm run typecheck  # tsc --noEmit under strict. Vite does NOT typecheck, so run this before pushing
 ```
 
@@ -317,6 +323,15 @@ breakEvenVolume = ceil(monthlyAmortizedFixedCost / (grossValuePerUnit - layer2Co
 denominator is the real unit margin. Undefined when that margin is zero or negative: no
 volume ever covers the fixed costs. 0 when there are no fixed costs to cover.
 
+**Only defined for value methods whose total value scales with volume.** The derivation
+cancels volume out of both sides, which needs `grossValuePerUnit` to be volume-invariant.
+Under **Retention Uplift** it is not: total value comes from `customersImpactedPerMonth`, an
+input independent of volume, and the per-unit figure is back-derived by dividing by volume —
+so value x volume is a constant and the equation has no solution of that shape. It returned
+7,051 on the shipped preset at a volume already earning +$1,253/month. Retention now returns
+`undefined` and both break-even cards hide. Premium Monetization keeps it: App.tsx
+synchronises `subscribers` with `monthlyVolume`, so the per-unit margin is real at baseline.
+
 ### Layer 1 Cost (Infrastructure)
 Two model slots, blended by `routingSimplePercent`. There is no third "fallback" tier.
 Cache applies to input tokens only, and a published cache-read price beats the manual
@@ -355,7 +370,10 @@ See `METHODOLOGY.md` for complete formulas for all 4 value methods.
 
 - **No Backend:** All calculations run in browser
 - **Model prices (read-only fetch):** The app fetches the public model-price catalog from `https://optimtoken.optimnow.io/api/llm-models` (anonymous GET, CORS-open, no user data sent) and caches it in localStorage for 24h. An embedded snapshot in `utils/modelCatalog.ts` is the offline fallback. See "Model Price Freshness" below.
-- **LocalStorage:** Scenarios saved locally, never sent to servers
+- **LocalStorage:** Scenarios saved locally, never sent to servers. Treated as untrusted on
+  read — `utils/scenario.ts` shape-checks and migrates every entry, and drops what it cannot
+  render. An unvalidated import used to be persisted before it crashed, so the crash came
+  back on every reload until the user cleared site data.
 - **Analytics:** GA4 (`G-188H55KPFM`) + Vercel Analytics. Both track anonymous usage events (page views, mode toggle, preset loads, exports, OptimNow CTA clicks). **No input values, no scenario data, no PII** are ever sent — only event names and the use-case label (which is a preset name like "Customer Support Bot", not user-entered content).
 - **GA4 hostname guard:** GA4 `config` and `event` calls are gated by a regex matching only `optimnow.io` (and subdomains) + `localhost`. Forks deployed elsewhere will load `gtag.js` but never fire any tracking — protects shared OptimNow analytics from pollution.
 - **Export Only:** User manually exports data as JSON if desired
@@ -437,12 +455,14 @@ When adding new tracking: keep events business-meaningful (decision points, conv
 3. **Component Tests:** Input validation and accessibility, rendered with React Testing Library
 4. **Manual Testing:** Use UAT_SCENARIOS.md for acceptance testing
 
-**Test Coverage:** 95 tests across 5 files — `calculations` (33), `deepLink` (18), `format`
-(11), `modelCatalog` (11) under `utils/`, plus `InputComponents` (22) under `components/`:
+**Test Coverage:** 114 tests across 6 files — `calculations` (37), `deepLink` (18), `format`
+(11), `modelCatalog` (11), `scenario` (15) under `utils/`, plus `InputComponents` (22) under
+`components/`:
 - All 4 value methods
-- Break-even calculations
+- Break-even calculations, including the methods that deliberately report none
 - Sensitivity analysis
 - Edge cases and error conditions
+- Scenario validation and migration: rejected shapes, backfilled fields, recomputed results
 - Clamping, blur normalization and label association in `components/InputComponents.tsx`
 
 **Two environments, one config.** `vitest.config.ts` runs everything in `node` by default and
@@ -465,6 +485,10 @@ out-of-range field on blur. Assert clearing and negative-value behaviour with
 **Branch:** `main` (auto-deploys on push)
 **Build Command:** `npm run build`
 **Output Directory:** `dist/`
+
+**Caching:** `vercel.json` sets `max-age=31536000, immutable` on `/assets/(.*)`, whose
+filenames Vite content-hashes. `index.html` deliberately keeps Vercel's revalidating default —
+it is the file that must never be stale, since it points at the hashed bundles.
 
 **Important:** After Tailwind config changes, clear Vercel cache:
 ```bash
@@ -496,7 +520,7 @@ recurring.
 
 **Current state (August 2026, v0.5.0).** Live model prices from OptimToken with automatic
 repricing, per-token and per-call billing, published cache-read and batch rates, deep links
-from the hub, per-1,000 harness entry, 95 tests, WCAG 2.1 AA.
+from the hub, per-1,000 harness entry, 114 tests, WCAG 2.1 AA.
 
 **Not built.** Self-hosted GPU cost modelling, Monte Carlo confidence intervals, Excel export,
 user accounts, sharing.
@@ -632,7 +656,7 @@ git push origin main           # Auto-deploys to production
 ## Final Notes for AI Assistants
 
 ### Context Window Management
-This is a large codebase (App.tsx alone is ~1,400 lines). When working on specific features:
+This is a large codebase (App.tsx alone is ~1,450 lines). When working on specific features:
 1. Read only the files you need
 2. Use types.ts as the single source of truth for data structures
 3. Refer to METHODOLOGY.md for formula verification
