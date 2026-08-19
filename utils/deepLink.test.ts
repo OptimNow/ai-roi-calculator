@@ -42,6 +42,10 @@ describe('parseDeepLink', () => {
     expect(parseDeepLink('?volume=abc').monthlyVolume).toBeUndefined();
     expect(parseDeepLink('?volume=-5').monthlyVolume).toBeUndefined();
     expect(parseDeepLink('?volume=0').monthlyVolume).toBeUndefined();
+    // Cleared the `> 0` guard, then rounded down to zero behind it — which the
+    // break-even card divides by and renders as "Infinity% increase".
+    expect(parseDeepLink('?volume=0.4').monthlyVolume).toBeUndefined();
+    expect(parseDeepLink('?volume=0.5').monthlyVolume).toBe(1);
   });
 
   it('should cap an absurd volume instead of accepting it', () => {
