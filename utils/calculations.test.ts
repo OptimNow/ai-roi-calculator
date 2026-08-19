@@ -556,12 +556,20 @@ describe('calculateROI', () => {
 
       const result = calculateROI(inputs, defaultModifiers);
 
-      // Value: 5.0 * 0.4 * 0.9 = 1.8 per unit
-      // Monthly value: 1.8 * 10000 = 18000
-      // Monthly cost: result.totalMonthlyCost
-      // ROI = (value - cost) / cost * 100
-      const expectedROI = ((result.totalMonthlyValue - result.totalMonthlyCost) / result.totalMonthlyCost) * 100;
-      expect(result.roiPercentage).toBeCloseTo(expectedROI, 1);
+      // Value: 5.0 * 0.4 * 0.9 = 1.8 per unit, so 18,000/month on 10,000 units.
+      // Pinned independently of the result object — deriving the expectation from
+      // result.totalMonthlyValue and result.totalMonthlyCost only restated the
+      // implementation, so any consistently wrong engine passed.
+      expect(result.grossValuePerUnit).toBeCloseTo(1.8, 10);
+      expect(result.totalMonthlyValue).toBeCloseTo(18000, 6);
+
+      // No fixed costs here, so the whole cost is variable: Layer 2 x volume.
+      const expectedCost = result.layer2CostPerUnit * 10000;
+      expect(result.totalMonthlyCost).toBeCloseTo(expectedCost, 6);
+      expect(result.roiPercentage).toBeCloseTo(
+        ((18000 - expectedCost) / expectedCost) * 100,
+        6
+      );
     });
 
     it('should calculate payback period correctly', () => {
@@ -705,9 +713,12 @@ describe('calculateROI', () => {
       };
 
       const result = calculateROI(inputs, modifiers);
+      const base = calculateROI(inputs, defaultModifiers);
 
-      // 80 * 1.2 = 96%
-      expect(result.grossValuePerUnit).toBeGreaterThan(0);
+      // The realization rate is a plain scalar on gross value: 80% -> 96%, so value
+      // rises by exactly 96/80. Asserting only `> 0` passed even when the multiplier
+      // was ignored altogether.
+      expect(result.grossValuePerUnit).toBeCloseTo(base.grossValuePerUnit * (96 / 80), 10);
     });
 
     it('should apply cost multiplier to all costs', () => {
@@ -746,9 +757,39 @@ describe('calculateROI', () => {
 
       const result = calculateROI(inputs, modifiers);
 
-      // Deflection should be capped at 100%
-      // 40 * 1.5 = 60%
-      expect(result.grossValuePerUnit).toBeGreaterThan(0);
+      // M_value scales the deflection rate (40 -> 60), NOT the finished net saving:
+      // the residual review term is deliberately left unscaled. METHODOLOGY.md
+      // §Method 1 documents the same thing. Computed by hand so this test pins the
+      // semantics rather than restating the implementation.
+      const s = inputs.successRate / 100;
+      const expected =
+        (inputs.baselineHumanCostPerUnit * 0.6 -
+          inputs.residualReviewCostPerUnit * (inputs.residualHumanReviewRate / 100)) * s;
+
+      expect(result.grossValuePerUnit).toBeCloseTo(expected, 10);
+
+      // And it is genuinely not the whole-bracket reading, which the old assertion
+      // could not tell apart.
+      const base = calculateROI(inputs, defaultModifiers);
+      expect(result.grossValuePerUnit).not.toBeCloseTo(base.grossValuePerUnit * 1.5, 6);
+    });
+
+    it('should cap the scaled deflection rate at 100%', () => {
+      const inputs: UseCaseInputs = {
+        ...DEFAULT_INPUTS,
+        valueMethod: ValueMethod.COST_DISPLACEMENT,
+        deflectionRate: 80,
+        residualHumanReviewRate: 0,
+      };
+
+      const capped = calculateROI(inputs, { ...defaultModifiers, valueMultiplier: 1.5 });
+      const atCap = calculateROI(
+        { ...inputs, deflectionRate: 100 },
+        defaultModifiers
+      );
+
+      // 80 x 1.5 = 120, clamped to 100 — you cannot deflect more work than exists.
+      expect(capped.grossValuePerUnit).toBeCloseTo(atCap.grossValuePerUnit, 10);
     });
   });
 
@@ -805,8 +846,20 @@ describe('calculateROI', () => {
 
       const result = calculateROI(inputs, modifiers);
 
-      // Should be capped at 100%
-      expect(result.grossValuePerUnit).toBeLessThanOrEqual(result.totalMonthlyValue / result.effectiveMonthlyVolume);
+      // 90 x 1.5 = 135, clamped to 100. Compare against an unmodified run at
+      // successRate 100: identical value means the clamp bound.
+      //
+      // The previous assertion compared grossValuePerUnit with
+      // totalMonthlyValue / effectiveMonthlyVolume — which, for Cost Displacement,
+      // is the same quantity by construction. It read `x <= x` and passed with the
+      // Math.min removed entirely.
+      const atCap = calculateROI({ ...inputs, successRate: 100 }, defaultModifiers);
+      expect(result.grossValuePerUnit).toBeCloseTo(atCap.grossValuePerUnit, 10);
+
+      // And strictly more than the unclamped baseline, so the multiplier still acts.
+      const base = calculateROI(inputs, defaultModifiers);
+      expect(result.grossValuePerUnit).toBeGreaterThan(base.grossValuePerUnit);
+      expect(result.grossValuePerUnit).toBeLessThan(base.grossValuePerUnit * 1.5);
     });
   });
 });

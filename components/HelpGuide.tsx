@@ -696,7 +696,7 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ onClose }) => {
                   <strong>Break-even volume</strong> is the monthly volume at which this month's account hits zero: amortized fixed cost ÷ (value per unit − variable cost per unit). It is a fixed threshold — changing your current volume does not move it.
                 </p>
                 <p className="text-xs text-slate-500 mt-2">
-                  💡 It reads N/A when value per unit does not cover the variable cost per unit. No volume fixes that: every extra unit loses money, so there is no threshold to reach.
+                  💡 It reads N/A when value per unit does not cover the variable cost per unit. No volume fixes that: every extra unit loses money, so there is no threshold to reach. It also reads N/A under <strong>Retention Uplift</strong>, for a different reason: there, value is driven by the customers you retain, not by how many units you process, so no volume balances the account — even a comfortably profitable one.
                 </p>
               </div>
 

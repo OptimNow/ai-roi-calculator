@@ -164,6 +164,28 @@ export default function App() {
 
   const results = useMemo(() => calculateROI(inputs, modifiers), [inputs, modifiers]);
 
+  const hasActiveModifiers =
+    modifiers.volumeMultiplier !== 1 ||
+    modifiers.successRateMultiplier !== 1 ||
+    modifiers.costMultiplier !== 1 ||
+    modifiers.valueMultiplier !== 1;
+
+  /**
+   * The same inputs with the sensitivity sliders left alone.
+   *
+   * Saving and exporting use this rather than the live `results`. A scenario
+   * records `inputs` unmodified, so pairing them with slider-modified results
+   * produced a record where `results !== calculateROI(inputs)`: the saved card
+   * showed one ROI and loading the scenario back showed another, and two
+   * scenarios saved under different slider positions compared as though their
+   * inputs differed. The simulator's own caption already promised the sliders
+   * "are not saved with a scenario".
+   */
+  const baselineResults = useMemo(
+    () => (hasActiveModifiers ? calculateROI(inputs) : results),
+    [inputs, results, hasActiveModifiers]
+  );
+
   const grossBeforeRealization = useMemo(() => {
     const effectiveRate = Math.min(100, inputs.successRate * modifiers.successRateMultiplier) / 100;
     if (effectiveRate <= 0) return 0;
@@ -302,7 +324,7 @@ export default function App() {
       format: 'json',
       use_case: inputs.useCaseName
     });
-    const dataStr = JSON.stringify({ inputs, results }, null, 2);
+    const dataStr = JSON.stringify({ inputs, results: baselineResults }, null, 2);
     const blob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -316,20 +338,23 @@ export default function App() {
       format: 'markdown',
       use_case: inputs.useCaseName
     });
-    const paybackAsNumber = Number(results.paybackMonths);
+    // Baseline, like the JSON export: the "## Inputs" section below quotes the
+    // unmodified inputs, so quoting slider-modified results beside them would
+    // describe a scenario that does not exist.
+    const paybackAsNumber = Number(baselineResults.paybackMonths);
     const paybackDisplay = Number.isFinite(paybackAsNumber)
       ? `${paybackAsNumber} months`
-      : results.paybackMonths;
+      : baselineResults.paybackMonths;
 
     const md = `
 # AI ROI Analysis: ${inputs.useCaseName}
 
 ## Summary
-- **Monthly Net Benefit**: ${formatMoney(results.netMonthlyBenefit, 0)}
-- **ROI**: ${results.roiPercentage.toFixed(1)}%
+- **Monthly Net Benefit**: ${formatMoney(baselineResults.netMonthlyBenefit, 0)}
+- **ROI**: ${baselineResults.roiPercentage.toFixed(1)}%
 - **Payback Period**: ${paybackDisplay}
-- **Cost per Unit**: ${formatMoney(results.totalCostPerUnit, 4)}
-- **Value per Unit**: ${formatMoney(results.grossValuePerUnit, 4)}
+- **Cost per Unit**: ${formatMoney(baselineResults.totalCostPerUnit, 4)}
+- **Value per Unit**: ${formatMoney(baselineResults.grossValuePerUnit, 4)}
 
 ## Inputs
 - Volume: ${formatNumber(inputs.monthlyVolume)} ${pluralize(inputs.unitName)}/mo
@@ -363,7 +388,7 @@ export default function App() {
       name,
       description,
       inputs: { ...inputs },
-      results: { ...results },
+      results: { ...baselineResults },
       createdAt: Date.now(),
       schemaVersion: SCENARIO_SCHEMA_VERSION,
       color: `hsl(${(scenarios.length * 137.5) % 360}, 70%, 50%)` // Golden angle for color distribution
@@ -509,18 +534,24 @@ export default function App() {
       const highDeviation = highROI - baselineROI;
 
       // Determine which scenario is worse (lower ROI = red) and better (higher ROI = green)
-      // This handles inverse relationships (e.g., costs where lower = better)
-      const worseDeviation = Math.min(lowDeviation, highDeviation);
-      const betterDeviation = Math.max(lowDeviation, highDeviation);
+      // This handles inverse relationships (e.g., costs where lower = better).
+      //
+      // Which *direction* produced the worse outcome has to travel with the number.
+      // For an inverse variable like Costs, -20% is the better case, so reporting the
+      // -20% ROI next to the worse deviation put a improved figure alongside a
+      // negative delta — the tooltip contradicted itself on both of its lines.
+      const lowIsWorse = lowDeviation <= highDeviation;
 
       return {
         variable: variable.name,
         // Tornado chart: worse (red) extends LEFT (negative), better (green) extends RIGHT (positive)
-        low: worseDeviation,   // Always the more negative deviation (red bar)
-        high: betterDeviation, // Always the more positive deviation (green bar)
+        low: lowIsWorse ? lowDeviation : highDeviation,   // more negative deviation (red bar)
+        high: lowIsWorse ? highDeviation : lowDeviation,  // more positive deviation (green bar)
         baseline: baselineROI,
-        lowAbsolute: lowROI,
-        highAbsolute: highROI
+        worseAbsolute: lowIsWorse ? lowROI : highROI,
+        betterAbsolute: lowIsWorse ? highROI : lowROI,
+        worseLabel: lowIsWorse ? '-20%' : '+20%',
+        betterLabel: lowIsWorse ? '+20%' : '-20%'
       };
     });
   }, [inputs]);
@@ -734,7 +765,7 @@ export default function App() {
           </div>
 
           {/* Sensitivity Simulation Active Banner */}
-          {(modifiers.volumeMultiplier !== 1 || modifiers.successRateMultiplier !== 1 || modifiers.costMultiplier !== 1 || modifiers.valueMultiplier !== 1) && (
+          {hasActiveModifiers && (
             <div className="bg-accent/10 border border-accent rounded-lg p-4">
               <div className="flex items-start">
                 <Info size={18} className="text-[#2C2C2C] mr-2 mt-0.5 flex-shrink-0" />
@@ -749,7 +780,7 @@ export default function App() {
                     )}
                     {modifiers.successRateMultiplier !== 1 && (
                       <div className="bg-white/50 rounded px-2 py-1">
-                        <span className="font-semibold text-slate-700">Realization Rate:</span> <span className="font-mono font-bold text-[#2C2C2C]">{inputs.successRate}% × {modifiers.successRateMultiplier} = {(inputs.successRate * modifiers.successRateMultiplier).toFixed(1)}%</span>
+                        <span className="font-semibold text-slate-700">Realization Rate:</span> <span className="font-mono font-bold text-[#2C2C2C]">{inputs.successRate}% × {modifiers.successRateMultiplier} = {effectiveRealizationRate.toFixed(1)}%</span>
                       </div>
                     )}
                     {modifiers.costMultiplier !== 1 && (
@@ -1259,7 +1290,12 @@ export default function App() {
                     <span className="text-[10px] text-slate-400">
                       {results.breakEvenVolume !== undefined
                         ? `${pluralize(inputs.unitName)}/mo to break even`
-                        : 'Negative margin'}
+                        : inputs.valueMethod === ValueMethod.RETENTION
+                          // Retention value comes from customersImpactedPerMonth, which is
+                          // independent of volume, so there is no volume that solves the
+                          // equation — at any margin, including a healthy positive one.
+                          ? "Doesn't scale with volume"
+                          : 'Negative margin'}
                     </span>
                 </div>
             </div>

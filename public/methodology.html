@@ -573,7 +573,7 @@ per unit — and a toggle switches back to per-unit entry.</p>
 <h3 id="method-1-cost-displacement">Method 1: Cost Displacement</h3>
 <p><strong>Use Cases:</strong> Customer support automation, document processing, data entry</p>
 <p><strong>Formula:</strong></p>
-<pre><code>GV = [(Bh × Dr) - (Rrc × Rr)] × (S / 100) × M_value
+<pre><code>GV = [(Bh × min(Dr × M_value, 100)) - (Rrc × Rr)] × (S / 100)
 </code></pre>
 <p><strong>Where:</strong></p>
 <ul>
@@ -581,7 +581,14 @@ per unit — and a toggle switches back to per-unit entry.</p>
 <li><code>Dr</code> = Deflection rate (% of work AI handles without escalation)</li>
 <li><code>Rrc</code> = Residual review cost per unit ($)</li>
 <li><code>Rr</code> = Residual review rate (% of AI outputs requiring human review)</li>
+<li><code>M_value</code> = Value sensitivity multiplier (1.0 at baseline)</li>
 </ul>
+<blockquote>
+<p><code>M_value</code> scales the deflection rate, capped at 100%, and <strong>not</strong> the residual review
+term — see <a href="#sensitivity-analysis">Sensitivity Analysis</a>. Writing it against the whole
+bracket instead, as this formula previously did, overstates the residual cost by the
+same factor and diverges from the engine whenever <code>Rrc × Rr &gt; 0</code>.</p>
+</blockquote>
 <p><strong>Example Calculation:</strong></p>
 <p><strong>Inputs</strong> (the Customer Support Bot preset):</p>
 <ul>
@@ -891,8 +898,10 @@ by more than an order of magnitude from the volume that actually matters there.<
 <p>Because more volume under Retention adds cost without adding value, the meaningful threshold
 is a <strong>ceiling</strong> — <code>V_max = (Total_Value − Cf_amortized) / C₂</code>, the volume beyond which
 running costs consume the fixed retention benefit. That is a different quantity than this
-field reports, so <code>V_breakeven</code> is left undefined for Retention and the break-even cards are
-hidden, rather than showing a floor that points the wrong way.</p>
+field reports, so <code>V_breakeven</code> is left undefined for Retention, rather than showing a floor
+that points the wrong way. The break-even insight cards are hidden and the KPI reads N/A,
+labelled &quot;doesn&#39;t scale with volume&quot; — not &quot;negative margin&quot;, which would be untrue: the
+retention preset is undefined here while earning a healthy positive margin.</p>
 <p><em>Premium Monetization is a borderline case:</em> total value is driven by subscriber count, but
 the app keeps subscribers synchronised with monthly volume, so at baseline <code>GV</code> is genuinely
 volume-invariant and the formula holds. It is still reported.</p>
