@@ -222,8 +222,10 @@ interface TornadoChartData {
   low: number;  // Deviation from baseline (negative)
   high: number; // Deviation from baseline (positive)
   baseline: number;
-  lowAbsolute: number;  // Absolute ROI at -20%
-  highAbsolute: number; // Absolute ROI at +20%
+  worseAbsolute: number;  // Absolute ROI of the worse case
+  betterAbsolute: number; // Absolute ROI of the better case
+  worseLabel: string;     // Which direction produced it, e.g. "+20%" for Costs
+  betterLabel: string;
 }
 
 interface TornadoChartProps {
@@ -284,12 +286,12 @@ export const TornadoChart = memo<TornadoChartProps>(({ data }) => {
                     Baseline: {data.baseline.toFixed(1)}% ROI
                   </p>
                   <p style={{ margin: 0, fontSize: '11px', color: '#ef4444' }}>
-                    Low (-20%): {data.lowAbsolute.toFixed(1)}% ({data.low > 0 ? '+' : ''}{data.low.toFixed(1)}%)
+                    Worse ({data.worseLabel}): {data.worseAbsolute.toFixed(1)}% ({data.low > 0 ? '+' : ''}{data.low.toFixed(1)}%)
                   </p>
                   <p style={{ margin: 0, fontSize: '11px', color: '#22c55e' }}>
-                    High (+20%): {data.highAbsolute.toFixed(1)}% ({data.high > 0 ? '+' : ''}{data.high.toFixed(1)}%)
+                    Better ({data.betterLabel}): {data.betterAbsolute.toFixed(1)}% ({data.high > 0 ? '+' : ''}{data.high.toFixed(1)}%)
                   </p>
-                  <p style={{ margin: 0, fontSize: '11px', color: '#ACE849', marginTop: '4px', fontWeight: 'bold' }}>
+                  <p style={{ margin: 0, fontSize: '11px', color: '#2C2C2C', marginTop: '4px', fontWeight: 'bold' }}>
                     Impact Range: {range.toFixed(1)}%
                   </p>
                 </div>

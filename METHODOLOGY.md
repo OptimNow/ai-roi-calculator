@@ -339,7 +339,7 @@ The calculator supports **four distinct value quantification methods**, selected
 
 **Formula:**
 ```
-GV = [(Bh × Dr) - (Rrc × Rr)] × (S / 100) × M_value
+GV = [(Bh × min(Dr × M_value, 100)) - (Rrc × Rr)] × (S / 100)
 ```
 
 **Where:**
@@ -347,6 +347,12 @@ GV = [(Bh × Dr) - (Rrc × Rr)] × (S / 100) × M_value
 - `Dr` = Deflection rate (% of work AI handles without escalation)
 - `Rrc` = Residual review cost per unit ($)
 - `Rr` = Residual review rate (% of AI outputs requiring human review)
+- `M_value` = Value sensitivity multiplier (1.0 at baseline)
+
+> `M_value` scales the deflection rate, capped at 100%, and **not** the residual review
+> term — see [Sensitivity Analysis](#sensitivity-analysis). Writing it against the whole
+> bracket instead, as this formula previously did, overstates the residual cost by the
+> same factor and diverges from the engine whenever `Rrc × Rr > 0`.
 
 **Example Calculation:**
 
@@ -680,8 +686,10 @@ by more than an order of magnitude from the volume that actually matters there.
 Because more volume under Retention adds cost without adding value, the meaningful threshold
 is a **ceiling** — `V_max = (Total_Value − Cf_amortized) / C₂`, the volume beyond which
 running costs consume the fixed retention benefit. That is a different quantity than this
-field reports, so `V_breakeven` is left undefined for Retention and the break-even cards are
-hidden, rather than showing a floor that points the wrong way.
+field reports, so `V_breakeven` is left undefined for Retention, rather than showing a floor
+that points the wrong way. The break-even insight cards are hidden and the KPI reads N/A,
+labelled "doesn't scale with volume" — not "negative margin", which would be untrue: the
+retention preset is undefined here while earning a healthy positive margin.
 
 *Premium Monetization is a borderline case:* total value is driven by subscriber count, but
 the app keeps subscribers synchronised with monthly volume, so at baseline `GV` is genuinely
