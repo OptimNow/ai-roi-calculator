@@ -98,7 +98,7 @@ export const ScenarioManager: React.FC<ScenarioManagerProps> = ({
     new Date(timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="bg-[#2C2C2C] px-6 py-4 flex items-center justify-between">
@@ -108,12 +108,12 @@ export const ScenarioManager: React.FC<ScenarioManagerProps> = ({
             </div>
             <div>
               <h2 className="text-xl font-bold font-headline text-white">Scenario Manager</h2>
-              <p className="text-sm text-white text-opacity-80">Save, compare, and manage calculation scenarios</p>
+              <p className="text-sm text-white/80">Save, compare, and manage calculation scenarios</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
+            className="p-2 hover:bg-white/20 rounded-lg transition-colors"
             aria-label="Close scenario manager"
           >
             <X size={24} className="text-white" />
@@ -156,7 +156,7 @@ export const ScenarioManager: React.FC<ScenarioManagerProps> = ({
               </div>
               <button
                 onClick={handleSave}
-                className="px-4 py-2 bg-accent text-charcoal font-semibold rounded-lg hover:bg-opacity-90 transition-colors flex items-center space-x-2"
+                className="px-4 py-2 bg-accent hover:bg-accent/90 text-charcoal font-semibold rounded-lg transition-colors flex items-center space-x-2"
               >
                 <Save size={16} />
                 <span>Save Scenario</span>
@@ -260,7 +260,7 @@ export const ScenarioManager: React.FC<ScenarioManagerProps> = ({
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => onLoadScenario(scenario)}
-                        className="flex-1 px-3 py-1.5 text-xs font-medium bg-accent text-charcoal rounded hover:bg-opacity-90 transition-colors"
+                        className="flex-1 px-3 py-1.5 text-xs font-medium bg-accent hover:bg-accent/90 text-charcoal rounded transition-colors"
                       >
                         Load
                       </button>

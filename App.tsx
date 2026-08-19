@@ -621,7 +621,7 @@ export default function App() {
              </div>
             <button
               onClick={() => setShowScenarios(true)}
-              className="p-1.5 sm:p-2 text-slate-500 hover:bg-accent hover:bg-opacity-10 rounded-md transition-colors relative"
+              className="p-1.5 sm:p-2 text-slate-500 hover:bg-accent/10 rounded-md transition-colors relative"
               title="Manage Scenarios"
               aria-label="Open scenario manager"
             >
@@ -634,7 +634,7 @@ export default function App() {
             </button>
             <button
               onClick={() => setShowHelp(true)}
-              className="p-1.5 sm:p-2 text-slate-500 hover:bg-accent hover:bg-opacity-10 rounded-md transition-colors"
+              className="p-1.5 sm:p-2 text-slate-500 hover:bg-accent/10 rounded-md transition-colors"
               title="How to Fill the Calculator"
               aria-label="Open help guide"
             >
@@ -647,7 +647,7 @@ export default function App() {
               href="/methodology.html"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden sm:block p-1.5 sm:p-2 text-slate-500 hover:bg-accent hover:bg-opacity-10 rounded-md transition-colors"
+              className="hidden sm:block p-1.5 sm:p-2 text-slate-500 hover:bg-accent/10 rounded-md transition-colors"
               title="View Calculation Methodology"
               aria-label="Open methodology documentation in new tab"
             >
@@ -678,7 +678,7 @@ export default function App() {
         <div className="lg:col-span-5 space-y-6 overflow-y-auto h-full p-6 rounded-lg" style={{ backgroundColor: 'var(--color-secondary)' }}>
           {/* Handover from the OptimToken — confirms what carried over */}
           {showDeepLinkBanner && (
-            <div className="bg-accent bg-opacity-10 border border-accent rounded-lg p-4">
+            <div className="bg-accent/10 border border-accent rounded-lg p-4">
               <div className="flex items-start">
                 <Info size={18} className="text-[#2C2C2C] mr-2 mt-0.5 flex-shrink-0" aria-hidden="true" />
                 <div className="flex-1">
@@ -737,7 +737,7 @@ export default function App() {
 
           {/* Sensitivity Simulation Active Banner */}
           {(modifiers.volumeMultiplier !== 1 || modifiers.successRateMultiplier !== 1 || modifiers.costMultiplier !== 1 || modifiers.valueMultiplier !== 1) && (
-            <div className="bg-accent bg-opacity-10 border border-accent rounded-lg p-4">
+            <div className="bg-accent/10 border border-accent rounded-lg p-4">
               <div className="flex items-start">
                 <Info size={18} className="text-[#2C2C2C] mr-2 mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
@@ -745,22 +745,22 @@ export default function App() {
                   <p className="text-xs text-slate-600 mb-2">Results shown are based on modified values below. Base inputs remain unchanged.</p>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     {modifiers.volumeMultiplier !== 1 && (
-                      <div className="bg-white bg-opacity-50 rounded px-2 py-1">
+                      <div className="bg-white/50 rounded px-2 py-1">
                         <span className="font-semibold text-slate-700">Volume:</span> <span className="font-mono font-bold text-[#2C2C2C]">{formatNumber(inputs.monthlyVolume)} × {modifiers.volumeMultiplier} = {formatNumber(inputs.monthlyVolume * modifiers.volumeMultiplier)}</span>
                       </div>
                     )}
                     {modifiers.successRateMultiplier !== 1 && (
-                      <div className="bg-white bg-opacity-50 rounded px-2 py-1">
+                      <div className="bg-white/50 rounded px-2 py-1">
                         <span className="font-semibold text-slate-700">Realization Rate:</span> <span className="font-mono font-bold text-[#2C2C2C]">{inputs.successRate}% × {modifiers.successRateMultiplier} = {(inputs.successRate * modifiers.successRateMultiplier).toFixed(1)}%</span>
                       </div>
                     )}
                     {modifiers.costMultiplier !== 1 && (
-                      <div className="bg-white bg-opacity-50 rounded px-2 py-1">
+                      <div className="bg-white/50 rounded px-2 py-1">
                         <span className="font-semibold text-slate-700">Costs:</span> <span className="font-mono font-bold text-[#2C2C2C]">×{modifiers.costMultiplier}</span>
                       </div>
                     )}
                     {modifiers.valueMultiplier !== 1 && (
-                      <div className="bg-white bg-opacity-50 rounded px-2 py-1">
+                      <div className="bg-white/50 rounded px-2 py-1">
                         <span className="font-semibold text-slate-700">Value:</span> <span className="font-mono font-bold text-[#2C2C2C]">×{modifiers.valueMultiplier}</span>
                       </div>
                     )}

@@ -72,17 +72,17 @@ export const ScenarioComparison: React.FC<ScenarioComparisonProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
       <div className="bg-white rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col my-8">
         {/* Header */}
         <div className="bg-[#2C2C2C] px-6 py-4 flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold font-headline text-white">Scenario Comparison</h2>
-            <p className="text-sm text-white text-opacity-90">Comparing {scenarios.length} scenarios side-by-side</p>
+            <p className="text-sm text-white/90">Comparing {scenarios.length} scenarios side-by-side</p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
+            className="p-2 hover:bg-white/20 rounded-lg transition-colors"
             aria-label="Close comparison"
           >
             <X size={24} className="text-white" />

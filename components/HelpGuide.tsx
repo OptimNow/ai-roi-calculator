@@ -10,7 +10,7 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
       <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
@@ -836,7 +836,7 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
           <hr className="border-slate-200" />
 
           {/* Tips & Best Practices */}
-          <section className="bg-accent bg-opacity-10 p-6 rounded-lg border border-accent border-opacity-30">
+          <section className="bg-accent/10 p-6 rounded-lg border border-accent/30">
             <h3 className="text-lg font-bold font-headline text-slate-800 mb-3">💡 Pro Tips</h3>
             <ul className="space-y-2 text-sm text-slate-700">
               <li className="flex items-start">
@@ -872,7 +872,7 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
         <div className="sticky bottom-0 bg-slate-50 border-t border-slate-200 px-6 py-4 flex justify-end rounded-b-2xl">
           <button
             onClick={onClose}
-            className="px-6 py-2 bg-accent text-charcoal font-semibold rounded-lg hover:bg-opacity-90 transition-colors"
+            className="px-6 py-2 bg-accent hover:bg-accent/90 text-charcoal font-semibold rounded-lg transition-colors"
           >
             Got it, let's calculate!
           </button>
