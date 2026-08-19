@@ -94,8 +94,10 @@ export const CostBreakdownChart = memo<CostBreakdownChartProps>(({ data, colors 
           data={data}
           cx="50%"
           cy="50%"
-          innerRadius={60}
-          outerRadius={80}
+          // Proportional rather than fixed, so the donut shrinks with its container
+          // instead of being clipped by it on a narrow viewport.
+          innerRadius="55%"
+          outerRadius="75%"
           paddingAngle={5}
           dataKey="value"
         >

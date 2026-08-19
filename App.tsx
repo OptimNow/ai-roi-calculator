@@ -1323,9 +1323,16 @@ export default function App() {
             {/* Main Visuals Container */}
             <div className="bg-white rounded-lg border border-slate-200 p-6">
                 <h3 className="text-sm font-bold font-headline text-slate-800 uppercase mb-6">Financial Overview</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 h-64">
-                    <CostValueChart data={chartDataMonthly} formatMoney={formatMoney} />
-                    <CostBreakdownChart data={pieDataCost} colors={COLORS} />
+                {/* The height belongs to each cell, not to the grid. As `h-64` on the
+                    grid it was 256px for the whole thing, so once the columns stacked
+                    on mobile each chart got ~112px — less than the donut's own diameter. */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="h-64">
+                      <CostValueChart data={chartDataMonthly} formatMoney={formatMoney} />
+                    </div>
+                    <div className="h-64">
+                      <CostBreakdownChart data={pieDataCost} colors={COLORS} />
+                    </div>
                 </div>
             </div>
 
