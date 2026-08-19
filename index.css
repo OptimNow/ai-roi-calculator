@@ -29,31 +29,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Override Tailwind with brand colors */
-.bg-accent {
-  background-color: var(--color-primary) !important;
-}
-
-.text-accent {
-  color: var(--color-primary) !important;
-}
-
-.border-accent {
-  border-color: var(--color-primary) !important;
-}
-
-.focus\:ring-accent:focus {
-  --tw-ring-color: var(--color-primary) !important;
-}
-
-.accent-accent {
-  accent-color: var(--color-primary) !important;
-}
-
-/* Button hover states with brand color */
-button:hover .text-accent {
-  filter: brightness(0.9);
-}
+/* The `accent` token lives in tailwind.config.js and resolves to the same #ACE849 as
+   --color-primary above, so the `!important` overrides that used to sit here only
+   restated what Tailwind already generates. They also outranked the `/N` opacity
+   modifiers, which is why translucent accent surfaces rendered as solid fills. */
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {

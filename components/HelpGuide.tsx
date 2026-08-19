@@ -1,16 +1,21 @@
 import React from 'react';
 import { X, Info, DollarSign, TrendingUp, Calculator, Settings } from 'lucide-react';
+import { useDialog } from './useDialog';
 
 interface HelpGuideProps {
-  isOpen: boolean;
   onClose: () => void;
 }
 
-export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
+export const HelpGuide: React.FC<HelpGuideProps> = ({ onClose }) => {
+  const closeRef = useDialog(onClose);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div
+      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="help-guide-title"
+    >
       <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
@@ -18,9 +23,10 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
             <div className="bg-accent text-charcoal p-2 rounded-lg">
               <Info size={24} />
             </div>
-            <h2 className="text-2xl font-bold font-headline text-slate-800">How to Fill the Calculator</h2>
+            <h2 id="help-guide-title" className="text-2xl font-bold font-headline text-slate-800">How to Fill the Calculator</h2>
           </div>
           <button
+            ref={closeRef}
             onClick={onClose}
             className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
             aria-label="Close help guide"
@@ -690,7 +696,7 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
                   <strong>Break-even volume</strong> is the monthly volume at which this month's account hits zero: amortized fixed cost ÷ (value per unit − variable cost per unit). It is a fixed threshold — changing your current volume does not move it.
                 </p>
                 <p className="text-xs text-slate-500 mt-2">
-                  💡 It reads N/A when value per unit does not cover the variable cost per unit. No volume fixes that: every extra unit loses money, so there is no threshold to reach.
+                  💡 It reads N/A when value per unit does not cover the variable cost per unit. No volume fixes that: every extra unit loses money, so there is no threshold to reach. It also reads N/A under <strong>Retention Uplift</strong>, for a different reason: there, value is driven by the customers you retain, not by how many units you process, so no volume balances the account — even a comfortably profitable one.
                 </p>
               </div>
 
@@ -836,7 +842,7 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
           <hr className="border-slate-200" />
 
           {/* Tips & Best Practices */}
-          <section className="bg-accent bg-opacity-10 p-6 rounded-lg border border-accent border-opacity-30">
+          <section className="bg-accent/10 p-6 rounded-lg border border-accent/30">
             <h3 className="text-lg font-bold font-headline text-slate-800 mb-3">💡 Pro Tips</h3>
             <ul className="space-y-2 text-sm text-slate-700">
               <li className="flex items-start">
@@ -872,7 +878,7 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
         <div className="sticky bottom-0 bg-slate-50 border-t border-slate-200 px-6 py-4 flex justify-end rounded-b-2xl">
           <button
             onClick={onClose}
-            className="px-6 py-2 bg-accent text-charcoal font-semibold rounded-lg hover:bg-opacity-90 transition-colors"
+            className="px-6 py-2 bg-accent hover:bg-accent/90 text-charcoal font-semibold rounded-lg transition-colors"
           >
             Got it, let's calculate!
           </button>

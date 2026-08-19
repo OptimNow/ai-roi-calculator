@@ -164,6 +164,28 @@ export default function App() {
 
   const results = useMemo(() => calculateROI(inputs, modifiers), [inputs, modifiers]);
 
+  const hasActiveModifiers =
+    modifiers.volumeMultiplier !== 1 ||
+    modifiers.successRateMultiplier !== 1 ||
+    modifiers.costMultiplier !== 1 ||
+    modifiers.valueMultiplier !== 1;
+
+  /**
+   * The same inputs with the sensitivity sliders left alone.
+   *
+   * Saving and exporting use this rather than the live `results`. A scenario
+   * records `inputs` unmodified, so pairing them with slider-modified results
+   * produced a record where `results !== calculateROI(inputs)`: the saved card
+   * showed one ROI and loading the scenario back showed another, and two
+   * scenarios saved under different slider positions compared as though their
+   * inputs differed. The simulator's own caption already promised the sliders
+   * "are not saved with a scenario".
+   */
+  const baselineResults = useMemo(
+    () => (hasActiveModifiers ? calculateROI(inputs) : results),
+    [inputs, results, hasActiveModifiers]
+  );
+
   const grossBeforeRealization = useMemo(() => {
     const effectiveRate = Math.min(100, inputs.successRate * modifiers.successRateMultiplier) / 100;
     if (effectiveRate <= 0) return 0;
@@ -302,7 +324,7 @@ export default function App() {
       format: 'json',
       use_case: inputs.useCaseName
     });
-    const dataStr = JSON.stringify({ inputs, results }, null, 2);
+    const dataStr = JSON.stringify({ inputs, results: baselineResults }, null, 2);
     const blob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -316,20 +338,23 @@ export default function App() {
       format: 'markdown',
       use_case: inputs.useCaseName
     });
-    const paybackAsNumber = Number(results.paybackMonths);
+    // Baseline, like the JSON export: the "## Inputs" section below quotes the
+    // unmodified inputs, so quoting slider-modified results beside them would
+    // describe a scenario that does not exist.
+    const paybackAsNumber = Number(baselineResults.paybackMonths);
     const paybackDisplay = Number.isFinite(paybackAsNumber)
       ? `${paybackAsNumber} months`
-      : results.paybackMonths;
+      : baselineResults.paybackMonths;
 
     const md = `
 # AI ROI Analysis: ${inputs.useCaseName}
 
 ## Summary
-- **Monthly Net Benefit**: ${formatMoney(results.netMonthlyBenefit, 0)}
-- **ROI**: ${results.roiPercentage.toFixed(1)}%
+- **Monthly Net Benefit**: ${formatMoney(baselineResults.netMonthlyBenefit, 0)}
+- **ROI**: ${baselineResults.roiPercentage.toFixed(1)}%
 - **Payback Period**: ${paybackDisplay}
-- **Cost per Unit**: ${formatMoney(results.totalCostPerUnit, 4)}
-- **Value per Unit**: ${formatMoney(results.grossValuePerUnit, 4)}
+- **Cost per Unit**: ${formatMoney(baselineResults.totalCostPerUnit, 4)}
+- **Value per Unit**: ${formatMoney(baselineResults.grossValuePerUnit, 4)}
 
 ## Inputs
 - Volume: ${formatNumber(inputs.monthlyVolume)} ${pluralize(inputs.unitName)}/mo
@@ -363,7 +388,7 @@ export default function App() {
       name,
       description,
       inputs: { ...inputs },
-      results: { ...results },
+      results: { ...baselineResults },
       createdAt: Date.now(),
       schemaVersion: SCENARIO_SCHEMA_VERSION,
       color: `hsl(${(scenarios.length * 137.5) % 360}, 70%, 50%)` // Golden angle for color distribution
@@ -509,18 +534,24 @@ export default function App() {
       const highDeviation = highROI - baselineROI;
 
       // Determine which scenario is worse (lower ROI = red) and better (higher ROI = green)
-      // This handles inverse relationships (e.g., costs where lower = better)
-      const worseDeviation = Math.min(lowDeviation, highDeviation);
-      const betterDeviation = Math.max(lowDeviation, highDeviation);
+      // This handles inverse relationships (e.g., costs where lower = better).
+      //
+      // Which *direction* produced the worse outcome has to travel with the number.
+      // For an inverse variable like Costs, -20% is the better case, so reporting the
+      // -20% ROI next to the worse deviation put a improved figure alongside a
+      // negative delta — the tooltip contradicted itself on both of its lines.
+      const lowIsWorse = lowDeviation <= highDeviation;
 
       return {
         variable: variable.name,
         // Tornado chart: worse (red) extends LEFT (negative), better (green) extends RIGHT (positive)
-        low: worseDeviation,   // Always the more negative deviation (red bar)
-        high: betterDeviation, // Always the more positive deviation (green bar)
+        low: lowIsWorse ? lowDeviation : highDeviation,   // more negative deviation (red bar)
+        high: lowIsWorse ? highDeviation : lowDeviation,  // more positive deviation (green bar)
         baseline: baselineROI,
-        lowAbsolute: lowROI,
-        highAbsolute: highROI
+        worseAbsolute: lowIsWorse ? lowROI : highROI,
+        betterAbsolute: lowIsWorse ? highROI : lowROI,
+        worseLabel: lowIsWorse ? '-20%' : '+20%',
+        betterLabel: lowIsWorse ? '+20%' : '-20%'
       };
     });
   }, [inputs]);
@@ -532,12 +563,11 @@ export default function App() {
           the split, since each one only returns null internally when closed. */}
       <Suspense fallback={null}>
         {/* Help Guide Modal */}
-        {showHelp && <HelpGuide isOpen onClose={() => setShowHelp(false)} />}
+        {showHelp && <HelpGuide onClose={() => setShowHelp(false)} />}
 
         {/* Scenario Manager Modal */}
         {showScenarios && (
           <ScenarioManager
-            isOpen
             onClose={() => setShowScenarios(false)}
             currentInputs={inputs}
             currentResults={results}
@@ -554,7 +584,6 @@ export default function App() {
         {/* Scenario Comparison Modal */}
         {showComparison && (
           <ScenarioComparison
-            isOpen
             onClose={() => setShowComparison(false)}
             scenarios={selectedScenarios}
           />
@@ -621,7 +650,7 @@ export default function App() {
              </div>
             <button
               onClick={() => setShowScenarios(true)}
-              className="p-1.5 sm:p-2 text-slate-500 hover:bg-accent hover:bg-opacity-10 rounded-md transition-colors relative"
+              className="p-1.5 sm:p-2 text-slate-500 hover:bg-accent/10 rounded-md transition-colors relative"
               title="Manage Scenarios"
               aria-label="Open scenario manager"
             >
@@ -634,7 +663,7 @@ export default function App() {
             </button>
             <button
               onClick={() => setShowHelp(true)}
-              className="p-1.5 sm:p-2 text-slate-500 hover:bg-accent hover:bg-opacity-10 rounded-md transition-colors"
+              className="p-1.5 sm:p-2 text-slate-500 hover:bg-accent/10 rounded-md transition-colors"
               title="How to Fill the Calculator"
               aria-label="Open help guide"
             >
@@ -647,7 +676,7 @@ export default function App() {
               href="/methodology.html"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden sm:block p-1.5 sm:p-2 text-slate-500 hover:bg-accent hover:bg-opacity-10 rounded-md transition-colors"
+              className="hidden sm:block p-1.5 sm:p-2 text-slate-500 hover:bg-accent/10 rounded-md transition-colors"
               title="View Calculation Methodology"
               aria-label="Open methodology documentation in new tab"
             >
@@ -678,7 +707,7 @@ export default function App() {
         <div className="lg:col-span-5 space-y-6 overflow-y-auto h-full p-6 rounded-lg" style={{ backgroundColor: 'var(--color-secondary)' }}>
           {/* Handover from the OptimToken — confirms what carried over */}
           {showDeepLinkBanner && (
-            <div className="bg-accent bg-opacity-10 border border-accent rounded-lg p-4">
+            <div className="bg-accent/10 border border-accent rounded-lg p-4">
               <div className="flex items-start">
                 <Info size={18} className="text-[#2C2C2C] mr-2 mt-0.5 flex-shrink-0" aria-hidden="true" />
                 <div className="flex-1">
@@ -736,8 +765,8 @@ export default function App() {
           </div>
 
           {/* Sensitivity Simulation Active Banner */}
-          {(modifiers.volumeMultiplier !== 1 || modifiers.successRateMultiplier !== 1 || modifiers.costMultiplier !== 1 || modifiers.valueMultiplier !== 1) && (
-            <div className="bg-accent bg-opacity-10 border border-accent rounded-lg p-4">
+          {hasActiveModifiers && (
+            <div className="bg-accent/10 border border-accent rounded-lg p-4">
               <div className="flex items-start">
                 <Info size={18} className="text-[#2C2C2C] mr-2 mt-0.5 flex-shrink-0" />
                 <div className="flex-1">
@@ -745,22 +774,22 @@ export default function App() {
                   <p className="text-xs text-slate-600 mb-2">Results shown are based on modified values below. Base inputs remain unchanged.</p>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     {modifiers.volumeMultiplier !== 1 && (
-                      <div className="bg-white bg-opacity-50 rounded px-2 py-1">
+                      <div className="bg-white/50 rounded px-2 py-1">
                         <span className="font-semibold text-slate-700">Volume:</span> <span className="font-mono font-bold text-[#2C2C2C]">{formatNumber(inputs.monthlyVolume)} × {modifiers.volumeMultiplier} = {formatNumber(inputs.monthlyVolume * modifiers.volumeMultiplier)}</span>
                       </div>
                     )}
                     {modifiers.successRateMultiplier !== 1 && (
-                      <div className="bg-white bg-opacity-50 rounded px-2 py-1">
-                        <span className="font-semibold text-slate-700">Realization Rate:</span> <span className="font-mono font-bold text-[#2C2C2C]">{inputs.successRate}% × {modifiers.successRateMultiplier} = {(inputs.successRate * modifiers.successRateMultiplier).toFixed(1)}%</span>
+                      <div className="bg-white/50 rounded px-2 py-1">
+                        <span className="font-semibold text-slate-700">Realization Rate:</span> <span className="font-mono font-bold text-[#2C2C2C]">{inputs.successRate}% × {modifiers.successRateMultiplier} = {effectiveRealizationRate.toFixed(1)}%</span>
                       </div>
                     )}
                     {modifiers.costMultiplier !== 1 && (
-                      <div className="bg-white bg-opacity-50 rounded px-2 py-1">
+                      <div className="bg-white/50 rounded px-2 py-1">
                         <span className="font-semibold text-slate-700">Costs:</span> <span className="font-mono font-bold text-[#2C2C2C]">×{modifiers.costMultiplier}</span>
                       </div>
                     )}
                     {modifiers.valueMultiplier !== 1 && (
-                      <div className="bg-white bg-opacity-50 rounded px-2 py-1">
+                      <div className="bg-white/50 rounded px-2 py-1">
                         <span className="font-semibold text-slate-700">Value:</span> <span className="font-mono font-bold text-[#2C2C2C]">×{modifiers.valueMultiplier}</span>
                       </div>
                     )}
@@ -787,7 +816,7 @@ export default function App() {
                     type="text"
                     value={inputs.useCaseName}
                     onChange={e => updateInput('useCaseName', e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-accent focus:outline-none"
+                    className="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-accent focus:border-charcoal focus:outline-none"
                    />
                  </div>
                  <div className="grid grid-cols-2 gap-4">
@@ -797,7 +826,7 @@ export default function App() {
                         type="text"
                         value={inputs.unitName}
                         onChange={e => updateInput('unitName', e.target.value)}
-                        className="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-accent focus:outline-none"
+                        className="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-accent focus:border-charcoal focus:outline-none"
                       />
                     </div>
                     <NumberInput label="Monthly Volume" value={inputs.monthlyVolume} onChange={v => updateInput('monthlyVolume', v)} />
@@ -820,7 +849,7 @@ export default function App() {
                     <select
                       value={inputs.valueMethod}
                       onChange={(e) => updateInput('valueMethod', e.target.value as ValueMethod)}
-                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded text-sm focus:ring-2 focus:ring-accent focus:outline-none"
+                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded text-sm focus:ring-2 focus:ring-accent focus:border-charcoal focus:outline-none"
                     >
                         {Object.values(ValueMethod).map(m => <option key={m} value={m}>{m}</option>)}
                     </select>
@@ -1153,7 +1182,7 @@ export default function App() {
                   href="/methodology.html"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-accent hover:underline"
+                  className="text-charcoal font-semibold underline hover:no-underline"
                 >
                   Full methodology →
                 </a>
@@ -1173,13 +1202,21 @@ export default function App() {
                         <Info size={12} />
                       </button>
                     </div>
+                    {/* A positive ROI is the answer the whole page exists to give, so it
+                        is charcoal rather than chartreuse: #ACE849 on white measures
+                        1.46:1, below the 3:1 floor for large text, and the brand reserves
+                        the accent for marks rather than type. The chartreuse rule below
+                        carries the "good" signal instead. */}
                     <span
-                      className={`text-2xl font-extrabold ${results.roiPercentage >= 0 ? 'text-success' : 'text-danger'}`}
+                      className={`text-2xl font-extrabold ${results.roiPercentage >= 0 ? 'text-charcoal' : 'text-danger'}`}
                       aria-labelledby="roi-label"
                       aria-live="polite"
                     >
                         {results.roiPercentage.toFixed(0)}%
                     </span>
+                    {results.roiPercentage >= 0 && (
+                      <span className="block w-8 h-1 bg-accent rounded-full mt-0.5" aria-hidden="true" />
+                    )}
                     <span className="text-[10px] text-slate-400">Monthly value vs. cost</span>
                 </div>
                 <div className="bg-white p-4 rounded-lg border border-slate-200 flex flex-col justify-between" role="article" aria-label="Net benefit metric">
@@ -1253,7 +1290,12 @@ export default function App() {
                     <span className="text-[10px] text-slate-400">
                       {results.breakEvenVolume !== undefined
                         ? `${pluralize(inputs.unitName)}/mo to break even`
-                        : 'Negative margin'}
+                        : inputs.valueMethod === ValueMethod.RETENTION
+                          // Retention value comes from customersImpactedPerMonth, which is
+                          // independent of volume, so there is no volume that solves the
+                          // equation — at any margin, including a healthy positive one.
+                          ? "Doesn't scale with volume"
+                          : 'Negative margin'}
                     </span>
                 </div>
             </div>
@@ -1317,9 +1359,16 @@ export default function App() {
             {/* Main Visuals Container */}
             <div className="bg-white rounded-lg border border-slate-200 p-6">
                 <h3 className="text-sm font-bold font-headline text-slate-800 uppercase mb-6">Financial Overview</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 h-64">
-                    <CostValueChart data={chartDataMonthly} formatMoney={formatMoney} />
-                    <CostBreakdownChart data={pieDataCost} colors={COLORS} />
+                {/* The height belongs to each cell, not to the grid. As `h-64` on the
+                    grid it was 256px for the whole thing, so once the columns stacked
+                    on mobile each chart got ~112px — less than the donut's own diameter. */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="h-64">
+                      <CostValueChart data={chartDataMonthly} formatMoney={formatMoney} />
+                    </div>
+                    <div className="h-64">
+                      <CostBreakdownChart data={pieDataCost} colors={COLORS} />
+                    </div>
                 </div>
             </div>
 
@@ -1357,19 +1406,21 @@ export default function App() {
                             <td className="px-6 py-3 text-right text-slate-800 font-mono">{formatMoney(results.totalCostPerUnit, 4)}</td>
                             <td className="px-6 py-3 text-right text-slate-800 font-mono">{formatMoney(results.totalMonthlyCost, 0)}</td>
                         </tr>
-                        <tr className="border-t-2 border-slate-200">
-                            <td className="px-6 py-3 text-success font-medium flex items-center space-x-2">
+                        {/* The value row is marked out by a chartreuse left rule rather than
+                            chartreuse type, which was unreadable on white at 1.46:1. */}
+                        <tr className="border-t-2 border-slate-200 border-l-4 border-l-accent bg-accent/5">
+                            <td className="px-6 py-3 text-charcoal font-bold flex items-center space-x-2">
                               <span>Total Monthly Value</span>
                               <button
-                                className="text-success opacity-50 hover:opacity-100 transition-opacity"
+                                className="text-slate-500 hover:text-charcoal transition-colors"
                                 title="Total Monthly Value: The gross business value generated per month from your selected Value Method (before subtracting costs)."
                                 aria-label="Total monthly value explanation"
                               >
                                 <Info size={14} />
                               </button>
                             </td>
-                            <td className="px-6 py-3 text-right text-success font-mono">{formatMoney(results.netValuePerUnit, 4)}</td>
-                            <td className="px-6 py-3 text-right text-success font-mono">{formatMoney(results.totalMonthlyValue, 0)}</td>
+                            <td className="px-6 py-3 text-right text-charcoal font-bold font-mono">{formatMoney(results.netValuePerUnit, 4)}</td>
+                            <td className="px-6 py-3 text-right text-charcoal font-bold font-mono">{formatMoney(results.totalMonthlyValue, 0)}</td>
                         </tr>
                     </tbody>
                 </table>
