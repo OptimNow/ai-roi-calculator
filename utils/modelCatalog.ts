@@ -279,8 +279,14 @@ const readStoredCatalog = (): StoredCatalog | null => {
     const raw = store.getItem(STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed.models) || parsed.models.length < MIN_MODELS) return null;
-    return parsed;
+    if (!Array.isArray(parsed.models)) return null;
+    // Shape-check every entry, exactly as the API path does. localStorage is as
+    // untrusted as the network: a model whose prices came back as strings would be
+    // repriced onto the form by repriceModels() and turn every cost metric into NaN,
+    // and the cache would keep serving it for the next 24 hours.
+    const models = parsed.models.filter(isValidModel);
+    if (models.length < MIN_MODELS) return null;
+    return { ...parsed, models };
   } catch {
     return null;
   }

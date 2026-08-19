@@ -39,8 +39,13 @@ const MODEL_ID_PATTERN = /^[a-z0-9-]{1,40}\/[a-z0-9-]{1,60}$/;
 const parseVolume = (raw: string | null): number | undefined => {
   if (!raw) return undefined;
   const value = Number(raw);
-  if (!Number.isFinite(value) || value <= 0) return undefined;
-  return Math.min(Math.round(value), MAX_VOLUME);
+  if (!Number.isFinite(value)) return undefined;
+  // Round before the positivity check, not after: anything under 0.5 used to clear
+  // the `> 0` guard and then round down to a volume of zero, which divides through
+  // the break-even card as "Infinity% increase".
+  const rounded = Math.round(value);
+  if (rounded <= 0) return undefined;
+  return Math.min(rounded, MAX_VOLUME);
 };
 
 const parseBoolean = (raw: string | null): boolean | undefined => {
