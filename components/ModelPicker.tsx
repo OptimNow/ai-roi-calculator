@@ -162,7 +162,7 @@ export const ModelPicker: React.FC<ModelPickerProps> = ({ slot, value, catalog, 
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={`Select ${slot} model`}
-        className="w-full flex items-center justify-between px-3 py-2 bg-white border border-slate-300 rounded text-sm hover:border-slate-400 focus:ring-2 focus:ring-accent focus:outline-none"
+        className="w-full flex items-center justify-between px-3 py-2 bg-white border border-slate-300 rounded text-sm hover:border-slate-400 focus:ring-2 focus:ring-accent focus:border-charcoal focus:outline-none"
       >
         <span className="flex items-center gap-2 min-w-0">
           {isCustom ? (

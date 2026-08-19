@@ -2,20 +2,22 @@ import React from 'react';
 import { X, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { Scenario } from '../types';
 import { formatCount, formatUsd } from '../utils/format';
+import { useDialog } from './useDialog';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 interface ScenarioComparisonProps {
-  isOpen: boolean;
   onClose: () => void;
   scenarios: Scenario[];
 }
 
 export const ScenarioComparison: React.FC<ScenarioComparisonProps> = ({
-  isOpen,
   onClose,
   scenarios,
 }) => {
-  if (!isOpen || scenarios.length < 2) return null;
+  const closeRef = useDialog(onClose);
+
+  // Comparing one scenario with itself has nothing to show.
+  if (scenarios.length < 2) return null;
 
   const formatMoney = (val: number) => formatUsd(val, 0);
   const formatNumber = (val: number) => formatCount(val);
@@ -72,15 +74,21 @@ export const ScenarioComparison: React.FC<ScenarioComparisonProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div
+      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="scenario-comparison-title"
+    >
       <div className="bg-white rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col my-8">
         {/* Header */}
         <div className="bg-[#2C2C2C] px-6 py-4 flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold font-headline text-white">Scenario Comparison</h2>
+            <h2 id="scenario-comparison-title" className="text-xl font-bold font-headline text-white">Scenario Comparison</h2>
             <p className="text-sm text-white/90">Comparing {scenarios.length} scenarios side-by-side</p>
           </div>
           <button
+            ref={closeRef}
             onClick={onClose}
             className="p-2 hover:bg-white/20 rounded-lg transition-colors"
             aria-label="Close comparison"

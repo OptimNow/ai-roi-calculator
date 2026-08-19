@@ -1,16 +1,21 @@
 import React from 'react';
 import { X, Info, DollarSign, TrendingUp, Calculator, Settings } from 'lucide-react';
+import { useDialog } from './useDialog';
 
 interface HelpGuideProps {
-  isOpen: boolean;
   onClose: () => void;
 }
 
-export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
+export const HelpGuide: React.FC<HelpGuideProps> = ({ onClose }) => {
+  const closeRef = useDialog(onClose);
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+    <div
+      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 overflow-y-auto"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="help-guide-title"
+    >
       <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
@@ -18,9 +23,10 @@ export const HelpGuide: React.FC<HelpGuideProps> = ({ isOpen, onClose }) => {
             <div className="bg-accent text-charcoal p-2 rounded-lg">
               <Info size={24} />
             </div>
-            <h2 className="text-2xl font-bold font-headline text-slate-800">How to Fill the Calculator</h2>
+            <h2 id="help-guide-title" className="text-2xl font-bold font-headline text-slate-800">How to Fill the Calculator</h2>
           </div>
           <button
+            ref={closeRef}
             onClick={onClose}
             className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
             aria-label="Close help guide"

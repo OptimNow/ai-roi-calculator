@@ -532,12 +532,11 @@ export default function App() {
           the split, since each one only returns null internally when closed. */}
       <Suspense fallback={null}>
         {/* Help Guide Modal */}
-        {showHelp && <HelpGuide isOpen onClose={() => setShowHelp(false)} />}
+        {showHelp && <HelpGuide onClose={() => setShowHelp(false)} />}
 
         {/* Scenario Manager Modal */}
         {showScenarios && (
           <ScenarioManager
-            isOpen
             onClose={() => setShowScenarios(false)}
             currentInputs={inputs}
             currentResults={results}
@@ -554,7 +553,6 @@ export default function App() {
         {/* Scenario Comparison Modal */}
         {showComparison && (
           <ScenarioComparison
-            isOpen
             onClose={() => setShowComparison(false)}
             scenarios={selectedScenarios}
           />
@@ -787,7 +785,7 @@ export default function App() {
                     type="text"
                     value={inputs.useCaseName}
                     onChange={e => updateInput('useCaseName', e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-accent focus:outline-none"
+                    className="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-accent focus:border-charcoal focus:outline-none"
                    />
                  </div>
                  <div className="grid grid-cols-2 gap-4">
@@ -797,7 +795,7 @@ export default function App() {
                         type="text"
                         value={inputs.unitName}
                         onChange={e => updateInput('unitName', e.target.value)}
-                        className="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-accent focus:outline-none"
+                        className="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-accent focus:border-charcoal focus:outline-none"
                       />
                     </div>
                     <NumberInput label="Monthly Volume" value={inputs.monthlyVolume} onChange={v => updateInput('monthlyVolume', v)} />
@@ -820,7 +818,7 @@ export default function App() {
                     <select
                       value={inputs.valueMethod}
                       onChange={(e) => updateInput('valueMethod', e.target.value as ValueMethod)}
-                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded text-sm focus:ring-2 focus:ring-accent focus:outline-none"
+                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded text-sm focus:ring-2 focus:ring-accent focus:border-charcoal focus:outline-none"
                     >
                         {Object.values(ValueMethod).map(m => <option key={m} value={m}>{m}</option>)}
                     </select>
@@ -1153,7 +1151,7 @@ export default function App() {
                   href="/methodology.html"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-accent hover:underline"
+                  className="text-charcoal font-semibold underline hover:no-underline"
                 >
                   Full methodology →
                 </a>
@@ -1173,13 +1171,21 @@ export default function App() {
                         <Info size={12} />
                       </button>
                     </div>
+                    {/* A positive ROI is the answer the whole page exists to give, so it
+                        is charcoal rather than chartreuse: #ACE849 on white measures
+                        1.46:1, below the 3:1 floor for large text, and the brand reserves
+                        the accent for marks rather than type. The chartreuse rule below
+                        carries the "good" signal instead. */}
                     <span
-                      className={`text-2xl font-extrabold ${results.roiPercentage >= 0 ? 'text-success' : 'text-danger'}`}
+                      className={`text-2xl font-extrabold ${results.roiPercentage >= 0 ? 'text-charcoal' : 'text-danger'}`}
                       aria-labelledby="roi-label"
                       aria-live="polite"
                     >
                         {results.roiPercentage.toFixed(0)}%
                     </span>
+                    {results.roiPercentage >= 0 && (
+                      <span className="block w-8 h-1 bg-accent rounded-full mt-0.5" aria-hidden="true" />
+                    )}
                     <span className="text-[10px] text-slate-400">Monthly value vs. cost</span>
                 </div>
                 <div className="bg-white p-4 rounded-lg border border-slate-200 flex flex-col justify-between" role="article" aria-label="Net benefit metric">
@@ -1357,19 +1363,21 @@ export default function App() {
                             <td className="px-6 py-3 text-right text-slate-800 font-mono">{formatMoney(results.totalCostPerUnit, 4)}</td>
                             <td className="px-6 py-3 text-right text-slate-800 font-mono">{formatMoney(results.totalMonthlyCost, 0)}</td>
                         </tr>
-                        <tr className="border-t-2 border-slate-200">
-                            <td className="px-6 py-3 text-success font-medium flex items-center space-x-2">
+                        {/* The value row is marked out by a chartreuse left rule rather than
+                            chartreuse type, which was unreadable on white at 1.46:1. */}
+                        <tr className="border-t-2 border-slate-200 border-l-4 border-l-accent bg-accent/5">
+                            <td className="px-6 py-3 text-charcoal font-bold flex items-center space-x-2">
                               <span>Total Monthly Value</span>
                               <button
-                                className="text-success opacity-50 hover:opacity-100 transition-opacity"
+                                className="text-slate-500 hover:text-charcoal transition-colors"
                                 title="Total Monthly Value: The gross business value generated per month from your selected Value Method (before subtracting costs)."
                                 aria-label="Total monthly value explanation"
                               >
                                 <Info size={14} />
                               </button>
                             </td>
-                            <td className="px-6 py-3 text-right text-success font-mono">{formatMoney(results.netValuePerUnit, 4)}</td>
-                            <td className="px-6 py-3 text-right text-success font-mono">{formatMoney(results.totalMonthlyValue, 0)}</td>
+                            <td className="px-6 py-3 text-right text-charcoal font-bold font-mono">{formatMoney(results.netValuePerUnit, 4)}</td>
+                            <td className="px-6 py-3 text-right text-charcoal font-bold font-mono">{formatMoney(results.totalMonthlyValue, 0)}</td>
                         </tr>
                     </tbody>
                 </table>

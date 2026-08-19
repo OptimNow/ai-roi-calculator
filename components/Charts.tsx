@@ -192,7 +192,9 @@ export const ROICurveChart = memo<ROICurveChartProps>(({ data, breakEvenMonth, f
             // Named for what it is: the payback month. Calling it "break-even"
             // invited confusion with the break-even volume KPI, which is a
             // quantity rather than a duration.
-            label={{ value: `Payback: month ${breakEvenMonth}`, position: 'top', fill: '#ACE849', fontSize: 11, fontWeight: 'bold' }}
+            // Chartreuse marks the line; the text is charcoal, because #ACE849 type
+            // on the white plot area measures 1.46:1.
+            label={{ value: `Payback: month ${breakEvenMonth}`, position: 'top', fill: '#2C2C2C', fontSize: 11, fontWeight: 'bold' }}
           />
         )}
         <Area

@@ -3,9 +3,9 @@ import { Save, FolderOpen, Trash2, X, Download, Upload, GitCompare } from 'lucid
 import { Scenario, UseCaseInputs, CalculationResults } from '../types';
 import { parseScenarioList } from '../utils/scenario';
 import { formatUsd } from '../utils/format';
+import { useDialog } from './useDialog';
 
 interface ScenarioManagerProps {
-  isOpen: boolean;
   onClose: () => void;
   currentInputs: UseCaseInputs;
   currentResults: CalculationResults;
@@ -28,7 +28,6 @@ const SCENARIO_COLORS = [
 ];
 
 export const ScenarioManager: React.FC<ScenarioManagerProps> = ({
-  isOpen,
   onClose,
   currentInputs,
   currentResults,
@@ -43,8 +42,7 @@ export const ScenarioManager: React.FC<ScenarioManagerProps> = ({
   const [scenarioName, setScenarioName] = useState('');
   const [scenarioDescription, setScenarioDescription] = useState('');
   const [selectedScenarios, setSelectedScenarios] = useState<string[]>([]);
-
-  if (!isOpen) return null;
+  const closeRef = useDialog(onClose);
 
   const handleSave = () => {
     if (!scenarioName.trim()) {
@@ -98,7 +96,12 @@ export const ScenarioManager: React.FC<ScenarioManagerProps> = ({
     new Date(timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div
+      className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="scenario-manager-title"
+    >
       <div className="bg-white rounded-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="bg-[#2C2C2C] px-6 py-4 flex items-center justify-between">
@@ -107,11 +110,12 @@ export const ScenarioManager: React.FC<ScenarioManagerProps> = ({
               <FolderOpen size={24} />
             </div>
             <div>
-              <h2 className="text-xl font-bold font-headline text-white">Scenario Manager</h2>
+              <h2 id="scenario-manager-title" className="text-xl font-bold font-headline text-white">Scenario Manager</h2>
               <p className="text-sm text-white/80">Save, compare, and manage calculation scenarios</p>
             </div>
           </div>
           <button
+            ref={closeRef}
             onClick={onClose}
             className="p-2 hover:bg-white/20 rounded-lg transition-colors"
             aria-label="Close scenario manager"
@@ -136,7 +140,7 @@ export const ScenarioManager: React.FC<ScenarioManagerProps> = ({
                   value={scenarioName}
                   onChange={(e) => setScenarioName(e.target.value)}
                   placeholder="e.g., Conservative Estimate"
-                  className="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-accent focus:outline-none"
+                  className="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-accent focus:border-charcoal focus:outline-none"
                 />
               </div>
               <div>
@@ -146,7 +150,7 @@ export const ScenarioManager: React.FC<ScenarioManagerProps> = ({
                   value={scenarioDescription}
                   onChange={(e) => setScenarioDescription(e.target.value)}
                   placeholder="e.g., Lower success rate assumptions"
-                  className="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-accent focus:outline-none"
+                  className="w-full px-3 py-2 border border-slate-300 rounded text-sm focus:ring-2 focus:ring-accent focus:border-charcoal focus:outline-none"
                 />
               </div>
             </div>
