@@ -138,7 +138,7 @@ ai-roi-calculator/
 ├── scripts/
 │   ├── build-methodology.mjs   # METHODOLOGY.md -> public/methodology.html (runs on prebuild)
 │   └── refresh-model-snapshot.mjs  # Regenerates the embedded price snapshot (weekly CI)
-├── .github/workflows/          # refresh-model-snapshot.yml
+├── .github/workflows/          # refresh-model-snapshot.yml, dependabot-automerge.yml
 ├── vercel.json                 # Security headers, SPA rewrite, immutable cache on /assets/*,
 │                               # day cache on /images/*, /favicon.ico redirect, canonical host
 ├── vite.config.ts              # Vite build config: dev server on port 3000, single vendor chunk
@@ -455,6 +455,8 @@ Prices come from the [OptimToken](https://optimtoken.optimnow.io), which refresh
 
 3. **Snapshot refresh** (`npm run refresh:models`): regenerates the embedded fallback between the `SNAPSHOT-START` / `SNAPSHOT-END` markers. Run weekly by `.github/workflows/refresh-model-snapshot.yml`. The script parses `presetModel()` calls out of `constants.ts` and **aborts if any preset's model has left the catalog** — otherwise `presetModel()` would throw at import and take the app down. Never hand-edit the snapshot block.
 
+   **The job opens a pull request and merges it; it does not push to main.** It used to, and that broke silently the day the ruleset on main started requiring a pull request (19 Aug 2026): every subsequent run did all the work and died at the push with `GH013 - Changes must be made through a pull request`, leaving the snapshot frozen at its 17 Aug values for a week. Two things made it hard to notice, and both are worth remembering. A scheduled run that fails sends no mail anyone reads, so the only signal was the red mark on a page nobody opens. And `ai-roi-calculator-mcp`'s weekly `sync-engine` kept reporting success throughout, because a frozen engine is an engine with nothing to sync: **green there means "unchanged", not "current"**, so it can never be the thing that tells you this job has stopped.
+
 When adding a preset, use `presetModel('Provider', 'Model Name', inTokens, outTokens)` so it inherits a real identity and published cache/batch rates.
 
 ## Deep Links from the OptimToken
@@ -734,13 +736,17 @@ npm run build:methodology      # Regenerate public/methodology.html from METHODO
 npm run check:methodology      # Fail if the committed page is stale
 
 # Git workflow
+# main is protected by a ruleset: every change arrives as a pull request.
+# A direct `git push origin main` is rejected with GH013, whoever you are.
 git status                     # Check status
+git checkout -b my-change      # Branch first
 git add .                      # Stage all changes
 git commit -m "message"        # Commit with message
-git push origin main           # Push to main branch
+git push -u origin my-change   # Push the branch
+gh pr create                   # Open the pull request
 
 # Vercel (via GitHub)
-git push origin main           # Auto-deploys to production
+# Production deploys from main, so a merged pull request is what ships.
 ```
 
 ---

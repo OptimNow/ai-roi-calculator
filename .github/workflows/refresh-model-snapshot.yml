@@ -3,6 +3,25 @@ name: Refresh model snapshot
 # The app fetches live prices from the AI Pricing Hub at runtime; this keeps the
 # embedded fallback in utils/modelCatalog.ts (which also seeds the presets) from
 # going stale. The script refuses to write a snapshot that drops a preset model.
+#
+# WHY THIS OPENS A PR RATHER THAN PUSHING TO MAIN. It used to push straight to
+# main, and stopped working the moment the ruleset on main started requiring a
+# pull request:
+#
+#     remote: error: GH013: Repository rule violations found for refs/heads/main.
+#     remote: - Changes must be made through a pull request.
+#     ! [remote rejected] main -> main
+#
+# That is not a transient failure and it does not heal itself: every run after
+# 19 Aug 2026 was guaranteed to fail at the last step, having done all the work.
+# The snapshot silently froze at its 17 Aug values, and ai-roi-calculator-mcp's
+# weekly sync-engine went on reporting success because it found nothing to sync.
+# Same class of breakage, and the same fix, as ai-pricing-hub PR #64.
+#
+# A bypass actor for GitHub Actions on the ruleset would have been one click. It
+# is deliberately not the route taken: the rule exists so that everything landing
+# on main is reviewable after the fact, and a bypass for the bot is a bypass for
+# anything else that later runs as the bot.
 
 on:
   schedule:
@@ -11,6 +30,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   refresh:
@@ -33,14 +53,52 @@ jobs:
           npm test
           npm run build
 
-      - name: Commit if the snapshot changed
+      - name: Open a pull request if the snapshot changed
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: chore/model-snapshot
         run: |
           if git diff --quiet -- utils/modelCatalog.ts; then
-            echo "Snapshot unchanged — nothing to commit."
+            echo "Snapshot unchanged - nothing to commit."
             exit 0
           fi
+
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
           git add utils/modelCatalog.ts
           git commit -m "chore: refresh embedded model price snapshot"
-          git push
+
+          # The branch is reused week to week, so this replaces whatever the
+          # previous run left there. Only ever force-pushes this bot branch.
+          git push --force origin "$BRANCH"
+
+          {
+            echo "Opened by the weekly \`Refresh model snapshot\` job. Prices come from"
+            echo "the AI Pricing Hub; \`npm test\` and \`npm run build\` both passed against"
+            echo "this snapshot before the pull request was opened."
+            echo
+            echo "\`scripts/refresh-model-snapshot.mjs\` refuses to write a snapshot that"
+            echo "drops a model a preset depends on, so a green run here means every"
+            echo "preset still resolves."
+          } > "$RUNNER_TEMP/pr-body.md"
+
+          if [ "$(gh pr view "$BRANCH" --json state --jq .state 2>/dev/null)" = "OPEN" ]; then
+            echo "A pull request is already open for $BRANCH; it now carries this week's snapshot."
+          else
+            gh pr create \
+              --base "${{ github.event.repository.default_branch }}" \
+              --head "$BRANCH" \
+              --title "Refresh the embedded model price snapshot" \
+              --body-file "$RUNNER_TEMP/pr-body.md"
+          fi
+
+          # --auto is refused when a pull request is already mergeable ("clean
+          # status"), which is the normal case here: nothing on this repo is a
+          # required check today. Falling through to a direct squash keeps the
+          # job hands-off, and still satisfies the ruleset, because the change
+          # went through a pull request either way.
+          if ! gh pr merge "$BRANCH" --squash --auto --delete-branch; then
+            echo "Auto-merge was refused (usually: already mergeable, nothing to wait for). Merging directly."
+            gh pr merge "$BRANCH" --squash --delete-branch
+          fi

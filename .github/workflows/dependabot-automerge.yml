@@ -1,0 +1,55 @@
+# Dependabot's pull requests are lockfile-only bumps of (mostly transitive)
+# dependencies. The ruleset on main requires every change to arrive as a pull
+# request, and this repo has no CI to gate them, so each one sat waiting for a
+# human to click merge on a security patch nobody needed to read. This workflow
+# approves dependabot's patch and minor bumps and queues an auto-merge, so they
+# land on their own. Major bumps are deliberately skipped: those change
+# behaviour and deserve eyes.
+#
+# Same automation as ai-roi-calculator-mcp, ai-pricing-hub and
+# ai-pricing-hub-mcp, kept deliberately identical to them.
+#
+# WHY THIS DOES NOT COVER THE SNAPSHOT REFRESH, which is the question anyone
+# reading this file will ask next. A pull request opened with the default
+# GITHUB_TOKEN does not raise a `pull_request` event - that is GitHub's loop
+# breaker, not a bug - so this workflow never fires for one, and github-actions
+# could not approve it in any case ("Can not approve your own pull request").
+# refresh-model-snapshot.yml therefore merges its own pull request inline. That
+# works only while main requires no approving review. If a review requirement
+# is ever added, the snapshot job will start failing at its merge step, and the
+# fix is a PAT stored as a secret so the pull request is authored by a human
+# identity and this workflow can approve it as github-actions. Do not "fix" it
+# by adding a bypass actor for GitHub Actions on the ruleset.
+#
+# Two repository settings must stay enabled for this to work:
+#   - General -> Allow auto-merge
+#   - Actions -> General -> Workflow permissions -> "Allow GitHub Actions to
+#     create and approve pull requests"
+name: Dependabot auto-merge
+
+on: pull_request
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  automerge:
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]' && github.repository == 'OptimNow/ai-roi-calculator'
+    steps:
+      - name: Fetch dependabot metadata
+        id: meta
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Approve and queue auto-merge (patch/minor only)
+        if: steps.meta.outputs.update-type != 'version-update:semver-major'
+        run: |
+          gh pr review "$PR_URL" --approve --body "Auto-approved dependabot ${UPDATE_TYPE#version-update:semver-} bump. Majors still wait for a human."
+          gh pr merge "$PR_URL" --squash --auto
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          UPDATE_TYPE: ${{ steps.meta.outputs.update-type }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
