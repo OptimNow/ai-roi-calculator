@@ -7,6 +7,10 @@
 
 ---
 
+## Commits and pull requests
+
+Do not add `Co-Authored-By`, `Claude-Session` or "Generated with Claude Code" lines to commit messages or pull request descriptions.
+
 ## Quick Start for AI Assistants
 
 This document helps AI assistants (Claude, etc.) quickly understand and work with this codebase.
