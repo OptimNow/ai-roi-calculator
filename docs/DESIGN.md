@@ -228,6 +228,36 @@ npm test           # Run unit + component tests (121 cases)
 npm run typecheck  # tsc --noEmit under strict. Vite does NOT typecheck, so run this before pushing
 ```
 
+### The weekly snapshot job and its deploy key
+
+`.github/workflows/refresh-model-snapshot.yml` refreshes the embedded prices every Monday
+at 06:00 UTC and, once `npm test` and `npm run build` have passed on them, pushes the commit
+to `main` with a deploy key. The ruleset on `main` asks for a pull request with one approving
+review, which no job can give itself, so the push needs a bypass: "Deploy keys" in the
+ruleset's bypass list. A green run means the snapshot is on `main`. Without the key, or if
+the push is refused, the job opens a pull request assigned to the maintainer and fails. The
+workflow's header has the history and the reasoning.
+
+`ai-roi-calculator-mcp` copies this repository's `main` an hour later. If a snapshot ever
+waits in a pull request here, merge it before that sync runs, never after: its CI compares
+the two engines on every push.
+
+One-time setup (the same two steps exist in `ai-roi-calculator-mcp` and in
+`cloud-sparkle-compare`). In a POSIX shell (Git Bash on Windows), from an empty folder:
+
+```bash
+ssh-keygen -t ed25519 -N "" -C "main-push ai-roi-calculator" -f main-push-key
+gh repo deploy-key add main-push-key.pub --repo OptimNow/ai-roi-calculator --allow-write --title "main-push (refresh-model-snapshot)"
+gh secret set MAIN_PUSH_DEPLOY_KEY --repo OptimNow/ai-roi-calculator < main-push-key
+rm main-push-key main-push-key.pub
+```
+
+Then, on GitHub: Settings -> Rules -> Rulesets -> `protect-default-branch` -> Bypass list ->
+Add bypass -> Deploy keys, mode Always. Check it with Actions -> Refresh model snapshot ->
+Run workflow: the run is green and, if prices moved, `main` gains a commit by
+`github-actions[bot]`. To withdraw the arrangement, delete the deploy key (Settings ->
+Deploy keys): the job goes back to the pull request and says so in red.
+
 ### Making Changes
 
 **IMPORTANT: Code Quality Standards**
