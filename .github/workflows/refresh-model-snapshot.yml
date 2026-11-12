@@ -4,24 +4,46 @@ name: Refresh model snapshot
 # embedded fallback in utils/modelCatalog.ts (which also seeds the presets) from
 # going stale. The script refuses to write a snapshot that drops a preset model.
 #
-# WHY THIS OPENS A PR RATHER THAN PUSHING TO MAIN. It used to push straight to
-# main, and stopped working the moment the ruleset on main started requiring a
-# pull request:
+# HOW THE SNAPSHOT REACHES MAIN, AND WHY IT TOOK THREE TRIES.
 #
-#     remote: error: GH013: Repository rule violations found for refs/heads/main.
-#     remote: - Changes must be made through a pull request.
-#     ! [remote rejected] main -> main
+# 1. It used to push straight to main with the job's token, and stopped working
+#    the moment the ruleset on main started requiring a pull request:
 #
-# That is not a transient failure and it does not heal itself: every run after
-# 19 Aug 2026 was guaranteed to fail at the last step, having done all the work.
-# The snapshot silently froze at its 17 Aug values, and ai-roi-calculator-mcp's
-# weekly sync-engine went on reporting success because it found nothing to sync.
-# Same class of breakage, and the same fix, as ai-pricing-hub PR #64.
+#        remote: error: GH013: Repository rule violations found for refs/heads/main.
+#        remote: - Changes must be made through a pull request.
+#        ! [remote rejected] main -> main
 #
-# A bypass actor for GitHub Actions on the ruleset would have been one click. It
-# is deliberately not the route taken: the rule exists so that everything landing
-# on main is reviewable after the fact, and a bypass for the bot is a bypass for
-# anything else that later runs as the bot.
+#    Every run after 19 Aug 2026 did all the work and failed at the last step.
+#    The snapshot froze at its 17 Aug values, and ai-roi-calculator-mcp's weekly
+#    sync-engine went on reporting success because it found nothing to sync.
+#
+# 2. It then opened a pull request and queued its merge. The same ruleset asks
+#    for one approving review, which a job cannot give to its own pull request,
+#    so the merge waited for a review that never came, and the run ended green
+#    every week. The pull request of 26 Oct 2026 sat open until 12 Nov, updated
+#    each Monday and read by nobody. It was merged by hand that day, a minute
+#    before ai-roi-calculator-mcp merged an engine copy taken from the old
+#    main: that repository's CI went red and its deploy stopped until its sync
+#    was run again.
+#
+# 3. So the push now goes to main through a deploy key (the
+#    MAIN_PUSH_DEPLOY_KEY secret), and the ruleset lists "Deploy keys" as a
+#    bypass actor, mode Always. This is the route cloud-sparkle-compare took on
+#    31 Oct 2026 for its own refresh jobs (.github/actions/gated-push there),
+#    for the same reason: a bypass for GitHub Actions is not offered on a
+#    repository owned by a personal account, and would be a bypass for anything
+#    that later runs as the bot. The key is narrower: it is handed to one step,
+#    for one push, after `npm test` and `npm run build` passed on the snapshot.
+#    The commit stays in the history of main, reviewable after the fact.
+#
+# WITHOUT THE KEY, OR IF THE PUSH IS REFUSED, the job falls back to the pull
+# request, assigns it to the maintainer, and FAILS. A green run must mean the
+# snapshot is on main; a pull request waiting for a human is not that.
+#
+# One-time setup, per repository (docs/DESIGN.md has the commands):
+#   - a deploy key with write access, its private half in the
+#     MAIN_PUSH_DEPLOY_KEY secret;
+#   - "Deploy keys" in the bypass list of the ruleset on main, mode Always.
 
 on:
   schedule:
@@ -53,11 +75,17 @@ jobs:
           npm test
           npm run build
 
-      - name: Open a pull request if the snapshot changed
+      # The deploy key reaches this step and no other: the install, the tests
+      # and the build above run third-party code and never see it.
+      - name: Land the snapshot on main
         env:
           GH_TOKEN: ${{ github.token }}
+          DEPLOY_KEY: ${{ secrets.MAIN_PUSH_DEPLOY_KEY }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           BRANCH: chore/model-snapshot
         run: |
+          set -euo pipefail
+
           if git diff --quiet -- utils/modelCatalog.ts; then
             echo "Snapshot unchanged - nothing to commit."
             exit 0
@@ -65,40 +93,65 @@ jobs:
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout -b "$BRANCH"
           git add utils/modelCatalog.ts
           git commit -m "chore: refresh embedded model price snapshot"
 
-          # The branch is reused week to week, so this replaces whatever the
-          # previous run left there. Only ever force-pushes this bot branch.
-          git push --force origin "$BRANCH"
+          why="the MAIN_PUSH_DEPLOY_KEY secret is not set"
+          if [ -n "$DEPLOY_KEY" ]; then
+            key_file="$RUNNER_TEMP/main-push-deploy-key"
+            known_hosts="$RUNNER_TEMP/main-push-known-hosts"
+            trap 'rm -f "$key_file"' EXIT
+
+            # GitHub's host keys come from its API, never trusted on first use.
+            gh api meta --jq '.ssh_keys[] | "github.com " + .' > "$known_hosts"
+            if [ ! -s "$known_hosts" ]; then
+              echo "::error title=No GitHub host keys::Could not read GitHub's SSH host keys from the API, so the deploy key cannot be used safely. Re-run the workflow."
+              exit 1
+            fi
+
+            ( umask 077; printf '%s\n' "$DEPLOY_KEY" > "$key_file" )
+            if GIT_SSH_COMMAND="ssh -i $key_file -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes -o UserKnownHostsFile=$known_hosts" \
+                 git push "git@github.com:${GITHUB_REPOSITORY}.git" "HEAD:refs/heads/$DEFAULT_BRANCH"; then
+              rm -f "$key_file"
+              echo "Snapshot pushed to $DEFAULT_BRANCH with the deploy key."
+              # A pull request left over from a week the push was refused now
+              # holds an older snapshot than main: close it with its branch.
+              if [ "$(gh pr view "$BRANCH" --json state --jq .state 2>/dev/null)" = "OPEN" ]; then
+                gh pr close "$BRANCH" --delete-branch \
+                  --comment "Superseded: this week's snapshot was pushed to $DEFAULT_BRANCH by the job."
+              fi
+              exit 0
+            fi
+            rm -f "$key_file"
+            why="the push with the deploy key was refused (the lines above say why: no write access, \"Deploy keys\" missing from the ruleset's bypass list, or $DEFAULT_BRANCH moved during the run)"
+          fi
+
+          # Fallback: a pull request, for a human. The branch is reused week to
+          # week, so this replaces whatever the previous run left there. Only
+          # ever force-pushes this bot branch.
+          git push --force origin "HEAD:refs/heads/$BRANCH"
 
           {
-            echo "Opened by the weekly \`Refresh model snapshot\` job. Prices come from"
-            echo "the AI Pricing Hub; \`npm test\` and \`npm run build\` both passed against"
-            echo "this snapshot before the pull request was opened."
+            echo "Opened by the weekly \`Refresh model snapshot\` job, which could not push to \`$DEFAULT_BRANCH\`: $why."
             echo
-            echo "\`scripts/refresh-model-snapshot.mjs\` refuses to write a snapshot that"
-            echo "drops a model a preset depends on, so a green run here means every"
-            echo "preset still resolves."
+            echo "Prices come from the AI Pricing Hub; \`npm test\` and \`npm run build\` both passed against this snapshot before the pull request was opened. \`scripts/refresh-model-snapshot.mjs\` refuses to write a snapshot that drops a model a preset depends on."
+            echo
+            echo "**Merge this before the next sync of ai-roi-calculator-mcp** (Mondays 07:00 UTC, or \`gh workflow run sync-engine.yml\` there): that repository copies this one's \`$DEFAULT_BRANCH\`, and its CI compares the two on every push."
           } > "$RUNNER_TEMP/pr-body.md"
 
           if [ "$(gh pr view "$BRANCH" --json state --jq .state 2>/dev/null)" = "OPEN" ]; then
+            gh pr edit "$BRANCH" --body-file "$RUNNER_TEMP/pr-body.md"
             echo "A pull request is already open for $BRANCH; it now carries this week's snapshot."
           else
+            # The assignment is the notification: a failed scheduled run sends
+            # no mail anyone reads.
             gh pr create \
-              --base "${{ github.event.repository.default_branch }}" \
+              --base "$DEFAULT_BRANCH" \
               --head "$BRANCH" \
               --title "Refresh the embedded model price snapshot" \
+              --assignee "$GITHUB_REPOSITORY_OWNER" \
               --body-file "$RUNNER_TEMP/pr-body.md"
           fi
 
-          # --auto is refused when a pull request is already mergeable ("clean
-          # status"), which is the normal case here: nothing on this repo is a
-          # required check today. Falling through to a direct squash keeps the
-          # job hands-off, and still satisfies the ruleset, because the change
-          # went through a pull request either way.
-          if ! gh pr merge "$BRANCH" --squash --auto --delete-branch; then
-            echo "Auto-merge was refused (usually: already mergeable, nothing to wait for). Merging directly."
-            gh pr merge "$BRANCH" --squash --delete-branch
-          fi
+          echo "::error title=Snapshot not on $DEFAULT_BRANCH::$why. The snapshot waits in the pull request on $BRANCH; merge it by hand, then fix the cause (see the header of this workflow)."
+          exit 1
